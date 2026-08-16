@@ -1,177 +1,202 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Family Invitation & Headcount Tracker</title>
+  <title>Family Count Tracker</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
-  <!-- Firebase SDKs (CDN Compat Mode) -->
+  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen">
-  <div class="max-w-7xl mx-auto p-4 md:p-8">
+<body class="bg-slate-100 text-slate-800 antialiased p-3 md:p-6 min-h-screen">
+  <div class="max-w-5xl mx-auto space-y-4">
     
-    <!-- Header -->
-    <header class="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-      <div>
-        <h1 class="text-3xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
-          <i class="fa-solid fa-users text-indigo-600"></i> Event Invitation & Guest Tracker
-        </h1>
-        <p class="text-slate-500 text-sm mt-1">Live cloud sync with Firestore • Gents, Ladies & Kids Breakdown</p>
+    <!-- Compact Header -->
+    <header class="flex items-center justify-between bg-white px-5 py-3.5 rounded-xl border border-slate-200 shadow-sm">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-sm">
+          <i class="fa-solid fa-users"></i>
+        </div>
+        <div>
+          <h1 class="text-base font-bold text-slate-900 leading-tight">Family Count Tracker</h1>
+          <p class="text-xs text-slate-500">Paternal & Maternal Invitation Summary</p>
+        </div>
       </div>
-      <div class="flex items-center gap-2">
-        <button onclick="exportCSV()" class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg shadow-sm transition">
-          <i class="fa-solid fa-file-csv"></i> Export to CSV
-        </button>
-        <button onclick="window.print()" class="inline-flex items-center gap-2 bg-slate-800 hover:bg-slate-900 text-white text-sm font-medium px-4 py-2.5 rounded-lg shadow-sm transition">
-          <i class="fa-solid fa-print"></i> Print Summary
-        </button>
-      </div>
+      <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold px-3 py-2 rounded-lg transition flex items-center gap-1.5">
+        <i class="fa-solid fa-print"></i> Print
+      </button>
     </header>
 
-    <!-- Summary Metrics Dashboard -->
-    <section class="grid grid-cols-2 md:grid-cols-6 gap-3 md:gap-4 mb-8">
-      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Families</p>
-        <p id="totalFamilies" class="text-2xl font-bold text-slate-800 mt-1">0</p>
-      </div>
-      <div class="bg-white p-4 rounded-xl border border-blue-100 shadow-sm bg-blue-50/30">
-        <p class="text-xs font-semibold uppercase tracking-wider text-blue-600">Total Gents</p>
-        <p id="totalGents" class="text-2xl font-bold text-blue-700 mt-1">0</p>
-      </div>
-      <div class="bg-white p-4 rounded-xl border border-pink-100 shadow-sm bg-pink-50/30">
-        <p class="text-xs font-semibold uppercase tracking-wider text-pink-600">Total Ladies</p>
-        <p id="totalLadies" class="text-2xl font-bold text-pink-700 mt-1">0</p>
-      </div>
-      <div class="bg-white p-4 rounded-xl border border-amber-100 shadow-sm bg-amber-50/30">
-        <p class="text-xs font-semibold uppercase tracking-wider text-amber-600">Total Kids</p>
-        <p id="totalKids" class="text-2xl font-bold text-amber-700 mt-1">0</p>
-      </div>
-      <div class="bg-white p-4 rounded-xl border border-purple-100 shadow-sm bg-purple-50/30">
-        <p class="text-xs font-semibold uppercase tracking-wider text-purple-600">Total Headcount</p>
-        <p id="totalHeadcount" class="text-2xl font-bold text-purple-700 mt-1">0</p>
-      </div>
-      <div class="bg-white p-4 rounded-xl border border-emerald-100 shadow-sm bg-emerald-50/30">
-        <p class="text-xs font-semibold uppercase tracking-wider text-emerald-600">Confirmed Coming</p>
-        <p id="totalAttending" class="text-2xl font-bold text-emerald-700 mt-1">0</p>
-      </div>
-    </section>
-
-    <!-- Main Section -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <!-- Side-by-Side Summary Dashboard -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
       
-      <!-- Input Form -->
-      <section class="lg:col-span-4 bg-white p-6 rounded-xl border border-slate-200 shadow-sm h-fit">
-        <h2 id="formTitle" class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-          <i class="fa-solid fa-user-plus text-indigo-600"></i> Add Family / Group
-        </h2>
-        <form id="familyForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
-          <input type="hidden" id="docId" value="" />
-          
-          <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">Family / Head Name *</label>
-            <input type="text" id="familyName" required placeholder="e.g. Ramesh Sharma & Family" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
-          </div>
+      <!-- Overall Summary -->
+      <div class="bg-indigo-900 text-white p-4 rounded-xl shadow-sm flex flex-col justify-between">
+        <span class="text-xs font-bold uppercase tracking-wider text-indigo-200">Total Headcount</span>
+        <div class="my-2">
+          <span id="grandTotal" class="text-3xl font-extrabold leading-none">0</span>
+          <span class="text-xs text-indigo-200 ml-1">people</span>
+        </div>
+        <div class="flex justify-between border-t border-indigo-700/60 pt-2 text-xs text-indigo-100">
+          <span>G: <b id="grandGents" class="text-white">0</b></span>
+          <span>L: <b id="grandLadies" class="text-white">0</b></span>
+          <span>K: <b id="grandKids" class="text-white">0</b></span>
+          <span>Coming: <b id="grandComing" class="text-emerald-300">0</b></span>
+        </div>
+      </div>
 
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">City / Location</label>
-              <input type="text" id="city" placeholder="e.g. Hyderabad" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">Phone Number</label>
-              <input type="tel" id="phone" placeholder="e.g. 9876543210" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
-            </div>
-          </div>
+      <!-- Paternal Side Summary -->
+      <div class="bg-white p-4 rounded-xl border border-blue-200 shadow-sm">
+        <div class="flex justify-between items-center mb-1">
+          <span class="text-xs font-bold uppercase tracking-wider text-blue-700">Paternal Side</span>
+          <span id="patFamilies" class="text-xs bg-blue-100 text-blue-800 font-semibold px-2 py-0.5 rounded-full">0 Families</span>
+        </div>
+        <div class="my-2">
+          <span id="patTotal" class="text-2xl font-bold text-slate-900">0</span>
+          <span class="text-xs text-slate-400">members</span>
+        </div>
+        <div class="grid grid-cols-3 gap-1 pt-2 border-t border-slate-100 text-xs text-slate-600 text-center">
+          <div class="bg-slate-50 py-1 rounded">G: <b id="patGents" class="text-slate-900">0</b></div>
+          <div class="bg-slate-50 py-1 rounded">L: <b id="patLadies" class="text-slate-900">0</b></div>
+          <div class="bg-slate-50 py-1 rounded">K: <b id="patKids" class="text-slate-900">0</b></div>
+        </div>
+      </div>
 
-          <div class="grid grid-cols-3 gap-3">
-            <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">Gents</label>
-              <input type="number" id="gentsCount" min="0" value="1" required class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">Ladies</label>
-              <input type="number" id="ladiesCount" min="0" value="1" required class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">Kids</label>
-              <input type="number" id="kidsCount" min="0" value="0" required class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
-            </div>
-          </div>
+      <!-- Maternal Side Summary -->
+      <div class="bg-white p-4 rounded-xl border border-purple-200 shadow-sm">
+        <div class="flex justify-between items-center mb-1">
+          <span class="text-xs font-bold uppercase tracking-wider text-purple-700">Maternal Side</span>
+          <span id="matFamilies" class="text-xs bg-purple-100 text-purple-800 font-semibold px-2 py-0.5 rounded-full">0 Families</span>
+        </div>
+        <div class="my-2">
+          <span id="matTotal" class="text-2xl font-bold text-slate-900">0</span>
+          <span class="text-xs text-slate-400">members</span>
+        </div>
+        <div class="grid grid-cols-3 gap-1 pt-2 border-t border-slate-100 text-xs text-slate-600 text-center">
+          <div class="bg-slate-50 py-1 rounded">G: <b id="matGents" class="text-slate-900">0</b></div>
+          <div class="bg-slate-50 py-1 rounded">L: <b id="matLadies" class="text-slate-900">0</b></div>
+          <div class="bg-slate-50 py-1 rounded">K: <b id="matKids" class="text-slate-900">0</b></div>
+        </div>
+      </div>
 
-          <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">RSVP / Attendance Status</label>
-            <select id="status" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-              <option value="Attending">Coming (Confirmed)</option>
-              <option value="Tentative">Tentative / Maybe</option>
-              <option value="Invited">Invited (Awaiting Response)</option>
-              <option value="Declined">Not Coming</option>
+    </div>
+
+    <!-- Quick Add Form -->
+    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+      <form id="familyForm" onsubmit="handleFormSubmit(event)" class="space-y-3">
+        <input type="hidden" id="docId" value="" />
+        
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-2.5">
+          <!-- Side Selection -->
+          <div class="md:col-span-3">
+            <label class="block text-xs font-bold text-slate-600 mb-1">Family Side</label>
+            <select id="side" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+              <option value="Paternal">Paternal Side</option>
+              <option value="Maternal">Maternal Side</option>
             </select>
           </div>
 
-          <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">Notes / Remarks</label>
-            <input type="text" id="notes" placeholder="e.g. Coming on 20th morning" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+          <!-- Family Name -->
+          <div class="md:col-span-5">
+            <label class="block text-xs font-bold text-slate-600 mb-1">Family / Contact Name</label>
+            <input type="text" id="familyName" required placeholder="e.g. Suresh Kumar & Family" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
           </div>
 
-          <div class="flex gap-2 pt-2">
-            <button type="submit" id="saveBtn" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold py-2.5 rounded-lg shadow-sm transition">
-              Add Family
-            </button>
-            <button type="button" id="cancelBtn" onclick="resetForm()" class="hidden px-4 bg-slate-200 hover:bg-slate-300 text-slate-700 text-sm font-semibold py-2.5 rounded-lg transition">
-              Cancel
-            </button>
-          </div>
-        </form>
-      </section>
-
-      <!-- Table Section -->
-      <section class="lg:col-span-8 bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
-        <div>
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-            <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-              <i class="fa-solid fa-list-check text-indigo-600"></i> Family Guest List
-            </h2>
-            <div class="flex gap-2">
-              <input type="text" id="searchInput" oninput="renderTable()" placeholder="Search by name/city..." class="px-3 py-1.5 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
-              <select id="filterStatus" onchange="renderTable()" class="px-3 py-1.5 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                <option value="All">All Statuses</option>
-                <option value="Attending">Coming</option>
-                <option value="Tentative">Tentative</option>
-                <option value="Invited">Invited</option>
-                <option value="Declined">Declined</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm border-collapse">
-              <thead>
-                <tr class="border-b border-slate-200 bg-slate-50 text-slate-600 text-xs font-semibold uppercase">
-                  <th class="py-3 px-3">Family & City</th>
-                  <th class="py-3 px-2 text-center text-blue-600">G</th>
-                  <th class="py-3 px-2 text-center text-pink-600">L</th>
-                  <th class="py-3 px-2 text-center text-amber-600">K</th>
-                  <th class="py-3 px-2 text-center font-bold">Total</th>
-                  <th class="py-3 px-3">Status</th>
-                  <th class="py-3 px-3 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody id="familyTableBody" class="divide-y divide-slate-100"></tbody>
-            </table>
+          <!-- RSVP Status -->
+          <div class="md:col-span-4">
+            <label class="block text-xs font-bold text-slate-600 mb-1">Status</label>
+            <select id="status" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+              <option value="Coming">Coming (Confirmed)</option>
+              <option value="Invited">Invited / Pending</option>
+              <option value="Declined">Not Coming</option>
+            </select>
           </div>
         </div>
 
-        <p id="emptyMessage" class="hidden text-center py-8 text-slate-400 text-sm">
-          No family entries found.
-        </p>
-      </section>
+        <div class="grid grid-cols-2 md:grid-cols-12 gap-2.5 items-end">
+          <!-- Counts -->
+          <div class="col-span-1 md:col-span-2">
+            <label class="block text-xs font-bold text-blue-700 mb-1 text-center">Gents</label>
+            <input type="number" id="gentsCount" min="0" value="1" required class="w-full text-center bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs font-semibold focus:outline-none" />
+          </div>
+          <div class="col-span-1 md:col-span-2">
+            <label class="block text-xs font-bold text-pink-700 mb-1 text-center">Ladies</label>
+            <input type="number" id="ladiesCount" min="0" value="1" required class="w-full text-center bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs font-semibold focus:outline-none" />
+          </div>
+          <div class="col-span-1 md:col-span-2">
+            <label class="block text-xs font-bold text-amber-700 mb-1 text-center">Kids</label>
+            <input type="number" id="kidsCount" min="0" value="0" required class="w-full text-center bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs font-semibold focus:outline-none" />
+          </div>
 
+          <!-- Notes -->
+          <div class="col-span-1 md:col-span-4">
+            <label class="block text-xs font-bold text-slate-600 mb-1">City / Remarks</label>
+            <input type="text" id="notes" placeholder="Optional notes" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+          </div>
+
+          <!-- Submit Button -->
+          <div class="col-span-2 md:col-span-2 flex gap-1">
+            <button type="submit" id="saveBtn" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2 rounded-lg transition shadow-sm">
+              Add
+            </button>
+            <button type="button" id="cancelBtn" onclick="resetForm()" class="hidden px-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold py-2 rounded-lg transition">
+              ✕
+            </button>
+          </div>
+        </div>
+      </form>
     </div>
+
+    <!-- Filter Bar -->
+    <div class="flex items-center justify-between gap-2 px-1">
+      <div class="flex gap-1.5">
+        <button onclick="setFilter('All')" id="tabAll" class="filter-tab active-tab text-xs font-semibold px-3 py-1.5 rounded-lg border">All</button>
+        <button onclick="setFilter('Paternal')" id="tabPat" class="filter-tab text-xs font-semibold px-3 py-1.5 rounded-lg border">Paternal</button>
+        <button onclick="setFilter('Maternal')" id="tabMat" class="filter-tab text-xs font-semibold px-3 py-1.5 rounded-lg border">Maternal</button>
+      </div>
+      <input type="text" id="searchInput" oninput="renderTable()" placeholder="Search name..." class="bg-white border border-slate-300 text-xs px-2.5 py-1.5 rounded-lg w-40 md:w-56 focus:outline-none" />
+    </div>
+
+    <!-- Compact Table -->
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs border-collapse">
+          <thead>
+            <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase">
+              <th class="py-2.5 px-3">Side</th>
+              <th class="py-2.5 px-3">Family Name</th>
+              <th class="py-2.5 px-2 text-center text-blue-700">G</th>
+              <th class="py-2.5 px-2 text-center text-pink-700">L</th>
+              <th class="py-2.5 px-2 text-center text-amber-700">K</th>
+              <th class="py-2.5 px-2 text-center font-extrabold">Total</th>
+              <th class="py-2.5 px-3">Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="familyTableBody" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+      <p id="emptyMessage" class="hidden text-center py-6 text-slate-400 text-xs">No entries added yet.</p>
+    </div>
+
   </div>
+
+  <style>
+    .active-tab {
+      background-color: #4f46e5;
+      color: #ffffff;
+      border-color: #4f46e5;
+    }
+    .filter-tab:not(.active-tab) {
+      background-color: #ffffff;
+      color: #475569;
+      border-color: #e2e8f0;
+    }
+  </style>
 
   <script>
     const firebaseConfig = {
@@ -190,8 +215,8 @@
     const collectionRef = db.collection("family_count");
 
     let families = [];
+    let currentSideFilter = 'All';
 
-    // Real-time Firestore sync
     collectionRef.onSnapshot((snapshot) => {
       families = [];
       snapshot.forEach((doc) => {
@@ -206,9 +231,8 @@
       const docId = document.getElementById('docId').value;
       
       const record = {
+        side: document.getElementById('side').value,
         name: document.getElementById('familyName').value.trim(),
-        city: document.getElementById('city').value.trim(),
-        phone: document.getElementById('phone').value.trim(),
         gents: parseInt(document.getElementById('gentsCount').value) || 0,
         ladies: parseInt(document.getElementById('ladiesCount').value) || 0,
         kids: parseInt(document.getElementById('kidsCount').value) || 0,
@@ -231,23 +255,21 @@
       if (!item) return;
 
       document.getElementById('docId').value = item.id;
+      document.getElementById('side').value = item.side || 'Paternal';
       document.getElementById('familyName').value = item.name;
-      document.getElementById('city').value = item.city || '';
-      document.getElementById('phone').value = item.phone || '';
       document.getElementById('gentsCount').value = item.gents;
       document.getElementById('ladiesCount').value = item.ladies;
       document.getElementById('kidsCount').value = item.kids;
       document.getElementById('status').value = item.status;
       document.getElementById('notes').value = item.notes || '';
 
-      document.getElementById('formTitle').innerHTML = `<i class="fa-solid fa-pen-to-square text-indigo-600"></i> Edit Family`;
-      document.getElementById('saveBtn').textContent = 'Update Entry';
+      document.getElementById('saveBtn').textContent = 'Update';
       document.getElementById('cancelBtn').classList.remove('hidden');
     }
 
     async function deleteEntry(id) {
       const item = families.find(f => f.id === id);
-      if (confirm(`Remove ${item ? item.name : 'this entry'}?`)) {
+      if (confirm(`Delete ${item ? item.name : 'this family'}?`)) {
         await collectionRef.doc(id).delete();
       }
     }
@@ -258,54 +280,77 @@
       document.getElementById('gentsCount').value = 1;
       document.getElementById('ladiesCount').value = 1;
       document.getElementById('kidsCount').value = 0;
-      document.getElementById('formTitle').innerHTML = `<i class="fa-solid fa-user-plus text-indigo-600"></i> Add Family / Group`;
-      document.getElementById('saveBtn').textContent = 'Add Family';
+      document.getElementById('saveBtn').textContent = 'Add';
       document.getElementById('cancelBtn').classList.add('hidden');
     }
 
+    function setFilter(side) {
+      currentSideFilter = side;
+      document.getElementById('tabAll').className = `filter-tab text-xs font-semibold px-3 py-1.5 rounded-lg border ${side === 'All' ? 'active-tab' : ''}`;
+      document.getElementById('tabPat').className = `filter-tab text-xs font-semibold px-3 py-1.5 rounded-lg border ${side === 'Paternal' ? 'active-tab' : ''}`;
+      document.getElementById('tabMat').className = `filter-tab text-xs font-semibold px-3 py-1.5 rounded-lg border ${side === 'Maternal' ? 'active-tab' : ''}`;
+      renderTable();
+    }
+
     function renderDashboard() {
-      let gents = 0, ladies = 0, kids = 0, attendingCount = 0;
+      let grandG = 0, grandL = 0, grandK = 0, grandComing = 0;
+      let patG = 0, patL = 0, patK = 0, patFam = 0;
+      let matG = 0, matL = 0, matK = 0, matFam = 0;
 
       families.forEach(f => {
-        gents += f.gents || 0;
-        ladies += f.ladies || 0;
-        kids += f.kids || 0;
-        if (f.status === 'Attending') {
-          attendingCount += ((f.gents || 0) + (f.ladies || 0) + (f.kids || 0));
+        const g = f.gents || 0;
+        const l = f.ladies || 0;
+        const k = f.kids || 0;
+
+        grandG += g;
+        grandL += l;
+        grandK += k;
+        if (f.status === 'Coming') grandComing += (g + l + k);
+
+        if (f.side === 'Maternal') {
+          matG += g;
+          matL += l;
+          matK += k;
+          matFam += 1;
+        } else {
+          patG += g;
+          patL += l;
+          patK += k;
+          patFam += 1;
         }
       });
 
-      document.getElementById('totalFamilies').textContent = families.length;
-      document.getElementById('totalGents').textContent = gents;
-      document.getElementById('totalLadies').textContent = ladies;
-      document.getElementById('totalKids').textContent = kids;
-      document.getElementById('totalHeadcount').textContent = gents + ladies + kids;
-      document.getElementById('totalAttending').textContent = attendingCount;
-    }
+      // Overall
+      document.getElementById('grandTotal').textContent = grandG + grandL + grandK;
+      document.getElementById('grandGents').textContent = grandG;
+      document.getElementById('grandLadies').textContent = grandL;
+      document.getElementById('grandKids').textContent = grandK;
+      document.getElementById('grandComing').textContent = grandComing;
 
-    function getStatusBadge(status) {
-      switch (status) {
-        case 'Attending':
-          return `<span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full text-xs font-semibold">Coming</span>`;
-        case 'Tentative':
-          return `<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full text-xs font-semibold">Tentative</span>`;
-        case 'Declined':
-          return `<span class="bg-rose-100 text-rose-800 px-2 py-0.5 rounded-full text-xs font-semibold">Declined</span>`;
-        default:
-          return `<span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full text-xs font-semibold">Invited</span>`;
-      }
+      // Paternal
+      document.getElementById('patTotal').textContent = patG + patL + patK;
+      document.getElementById('patGents').textContent = patG;
+      document.getElementById('patLadies').textContent = patL;
+      document.getElementById('patKids').textContent = patK;
+      document.getElementById('patFamilies').textContent = `${patFam} Families`;
+
+      // Maternal
+      document.getElementById('matTotal').textContent = matG + matL + matK;
+      document.getElementById('matGents').textContent = matG;
+      document.getElementById('matLadies').textContent = matL;
+      document.getElementById('matKids').textContent = matK;
+      document.getElementById('matFamilies').textContent = `${matFam} Families`;
     }
 
     function renderTable() {
       const tbody = document.getElementById('familyTableBody');
       const search = document.getElementById('searchInput').value.toLowerCase();
-      const statusFilter = document.getElementById('filterStatus').value;
       tbody.innerHTML = '';
 
       const filtered = families.filter(f => {
-        const matchesSearch = (f.name && f.name.toLowerCase().includes(search)) || (f.city && f.city.toLowerCase().includes(search));
-        const matchesStatus = (statusFilter === 'All') || (f.status === statusFilter);
-        return matchesSearch && matchesStatus;
+        const matchesSide = (currentSideFilter === 'All') || (f.side === currentSideFilter);
+        const matchesSearch = (f.name && f.name.toLowerCase().includes(search)) || (f.notes && f.notes.toLowerCase().includes(search));
+        return matchesSide && matchesSearch;
       });
 
       if (filtered.length === 0) {
@@ -316,59 +361,40 @@
 
       filtered.forEach(item => {
         const total = (item.gents || 0) + (item.ladies || 0) + (item.kids || 0);
+        const isPat = (item.side !== 'Maternal');
+        const statusBadge = item.status === 'Coming' 
+          ? `<span class="bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded text-[11px] font-semibold">Coming</span>`
+          : (item.status === 'Declined' 
+            ? `<span class="bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded text-[11px] font-semibold">Declined</span>`
+            : `<span class="bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded text-[11px] font-semibold">Invited</span>`);
+
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-slate-50 transition';
         tr.innerHTML = `
-          <td class="py-3 px-3">
-            <div class="font-semibold text-slate-900">${item.name}</div>
-            <div class="text-xs text-slate-400">${item.city ? item.city : 'No location'} ${item.phone ? '• ' + item.phone : ''}</div>
-            ${item.notes ? `<div class="text-xs text-indigo-600 mt-0.5 italic">Note: ${item.notes}</div>` : ''}
+          <td class="py-2 px-3">
+            <span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${isPat ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}">
+              ${isPat ? 'Paternal' : 'Maternal'}
+            </span>
           </td>
-          <td class="py-3 px-2 text-center font-medium text-slate-700">${item.gents}</td>
-          <td class="py-3 px-2 text-center font-medium text-slate-700">${item.ladies}</td>
-          <td class="py-3 px-2 text-center font-medium text-slate-700">${item.kids}</td>
-          <td class="py-3 px-2 text-center font-bold text-slate-900">${total}</td>
-          <td class="py-3 px-3">${getStatusBadge(item.status)}</td>
-          <td class="py-3 px-3 text-right">
-            <button onclick="editEntry('${item.id}')" class="text-slate-500 hover:text-indigo-600 p-1 mx-1" title="Edit">
-              <i class="fa-solid fa-pen"></i>
-            </button>
-            <button onclick="deleteEntry('${item.id}')" class="text-slate-500 hover:text-rose-600 p-1 mx-1" title="Delete">
-              <i class="fa-solid fa-trash"></i>
-            </button>
+          <td class="py-2 px-3">
+            <div class="font-semibold text-slate-800">${item.name}</div>
+            ${item.notes ? `<div class="text-[11px] text-slate-400">${item.notes}</div>` : ''}
+          </td>
+          <td class="py-2 px-2 text-center text-slate-700">${item.gents || 0}</td>
+          <td class="py-2 px-2 text-center text-slate-700">${item.ladies || 0}</td>
+          <td class="py-2 px-2 text-center text-slate-700">${item.kids || 0}</td>
+          <td class="py-2 px-2 text-center font-bold text-slate-900">${total}</td>
+          <td class="py-2 px-3">${statusBadge}</td>
+          <td class="py-2 px-3 text-right">
+            <button onclick="editEntry('${item.id}')" class="text-slate-400 hover:text-indigo-600 px-1" title="Edit"><i class="fa-solid fa-pen"></i></button>
+            <button onclick="deleteEntry('${item.id}')" class="text-slate-400 hover:text-rose-600 px-1" title="Delete"><i class="fa-solid fa-trash"></i></button>
           </td>
         `;
         tbody.appendChild(tr);
       });
     }
-
-    function exportCSV() {
-      if (families.length === 0) {
-        alert('No records to export!');
-        return;
-      }
-      const headers = ['Family Name', 'City', 'Phone', 'Gents', 'Ladies', 'Kids', 'Total Headcount', 'Status', 'Notes'];
-      const rows = families.map(f => [
-        `"${f.name}"`,
-        `"${f.city || ''}"`,
-        `"${f.phone || ''}"`,
-        f.gents,
-        f.ladies,
-        f.kids,
-        (f.gents || 0) + (f.ladies || 0) + (f.kids || 0),
-        `"${f.status}"`,
-        `"${f.notes || ''}"`
-      ]);
-
-      const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
-      const encodedUri = encodeURI(csvContent);
-      const link = document.createElement('a');
-      link.setAttribute('href', encodedUri);
-      link.setAttribute('download', 'Family_Invitation_Summary.csv');
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
   </script>
 </body>
 </html>
+
+```
