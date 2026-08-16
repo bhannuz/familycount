@@ -14,7 +14,7 @@
 <body class="bg-slate-100 text-slate-800 antialiased p-3 md:p-6 min-h-screen">
   <div class="max-w-6xl mx-auto space-y-4">
     
-    <!-- Header -->
+    <!-- Compact Header -->
     <header class="flex items-center justify-between bg-white px-5 py-3.5 rounded-xl border border-slate-200 shadow-sm">
       <div class="flex items-center gap-2.5">
         <div class="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-sm">
@@ -22,7 +22,7 @@
         </div>
         <div>
           <h1 class="text-base font-bold text-slate-900 leading-tight">Family Count Tracker</h1>
-          <p class="text-xs text-slate-500">Paternal & Maternal Invitation Summary</p>
+          <p class="text-xs text-slate-500">Paternal & Maternal Guest List & Headcount</p>
         </div>
       </div>
       <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold px-3 py-2 rounded-lg transition flex items-center gap-1.5">
@@ -30,21 +30,24 @@
       </button>
     </header>
 
-    <!-- Side-by-Side Summary Dashboard -->
+    <!-- Summary Dashboard -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
       
       <!-- Overall Summary -->
       <div class="bg-indigo-900 text-white p-4 rounded-xl shadow-sm flex flex-col justify-between">
-        <span class="text-xs font-bold uppercase tracking-wider text-indigo-200">Total Headcount</span>
+        <div class="flex justify-between items-center">
+          <span class="text-xs font-bold uppercase tracking-wider text-indigo-200">Final Attending Headcount</span>
+          <span id="grandFamilies" class="text-[11px] bg-indigo-800 text-indigo-200 px-2 py-0.5 rounded-full">0 Families</span>
+        </div>
         <div class="my-2">
-          <span id="grandTotal" class="text-3xl font-extrabold leading-none">0</span>
-          <span class="text-xs text-indigo-200 ml-1">people</span>
+          <span id="grandComingTotal" class="text-3xl font-extrabold text-emerald-300 leading-none">0</span>
+          <span class="text-xs text-indigo-200 ml-1">confirmed / <span id="grandTotal" class="text-white font-semibold">0</span> total</span>
         </div>
         <div class="flex justify-between border-t border-indigo-700/60 pt-2 text-xs text-indigo-100">
           <span>G: <b id="grandGents" class="text-white">0</b></span>
           <span>L: <b id="grandLadies" class="text-white">0</b></span>
           <span>K: <b id="grandKids" class="text-white">0</b></span>
-          <span>Coming: <b id="grandComing" class="text-emerald-300">0</b></span>
+          <span>Invited: <b id="grandInvitedCount" class="text-amber-300">0</b></span>
         </div>
       </div>
 
@@ -55,8 +58,8 @@
           <span id="patFamilies" class="text-xs bg-blue-100 text-blue-800 font-semibold px-2 py-0.5 rounded-full">0 Families</span>
         </div>
         <div class="my-2">
-          <span id="patTotal" class="text-2xl font-bold text-slate-900">0</span>
-          <span class="text-xs text-slate-400">members</span>
+          <span id="patComing" class="text-2xl font-bold text-emerald-600">0</span>
+          <span class="text-xs text-slate-400">coming (<span id="patTotal">0</span> total)</span>
         </div>
         <div class="grid grid-cols-3 gap-1 pt-2 border-t border-slate-100 text-xs text-slate-600 text-center">
           <div class="bg-slate-50 py-1 rounded">G: <b id="patGents" class="text-slate-900">0</b></div>
@@ -72,8 +75,8 @@
           <span id="matFamilies" class="text-xs bg-purple-100 text-purple-800 font-semibold px-2 py-0.5 rounded-full">0 Families</span>
         </div>
         <div class="my-2">
-          <span id="matTotal" class="text-2xl font-bold text-slate-900">0</span>
-          <span class="text-xs text-slate-400">members</span>
+          <span id="matComing" class="text-2xl font-bold text-emerald-600">0</span>
+          <span class="text-xs text-slate-400">coming (<span id="matTotal">0</span> total)</span>
         </div>
         <div class="grid grid-cols-3 gap-1 pt-2 border-t border-slate-100 text-xs text-slate-600 text-center">
           <div class="bg-slate-50 py-1 rounded">G: <b id="matGents" class="text-slate-900">0</b></div>
@@ -84,7 +87,7 @@
 
     </div>
 
-    <!-- Quick Add Form -->
+    <!-- Add/Edit Family Form -->
     <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
       <form id="familyForm" onsubmit="handleFormSubmit(event)" class="space-y-3">
         <input type="hidden" id="docId" value="" />
@@ -99,7 +102,7 @@
             </select>
           </div>
 
-          <!-- Relation Dropdown -->
+          <!-- Relation -->
           <div class="md:col-span-3">
             <label class="block text-xs font-bold text-slate-600 mb-1">Relation</label>
             <select id="relation" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
@@ -126,27 +129,27 @@
         </div>
 
         <div class="grid grid-cols-2 md:grid-cols-12 gap-2.5 items-end">
-          <!-- Counts -->
+          <!-- Total Family Counts -->
           <div class="col-span-1 md:col-span-2">
             <label class="block text-xs font-bold text-blue-700 mb-1 text-center">Gents</label>
-            <input type="number" id="gentsCount" min="0" value="1" required class="w-full text-center bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs font-semibold focus:outline-none" />
+            <input type="number" id="gentsCount" min="0" value="1" oninput="syncComingDefault()" required class="w-full text-center bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs font-semibold focus:outline-none" />
           </div>
           <div class="col-span-1 md:col-span-2">
             <label class="block text-xs font-bold text-pink-700 mb-1 text-center">Ladies</label>
-            <input type="number" id="ladiesCount" min="0" value="1" required class="w-full text-center bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs font-semibold focus:outline-none" />
+            <input type="number" id="ladiesCount" min="0" value="1" oninput="syncComingDefault()" required class="w-full text-center bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs font-semibold focus:outline-none" />
           </div>
           <div class="col-span-1 md:col-span-2">
             <label class="block text-xs font-bold text-amber-700 mb-1 text-center">Kids</label>
-            <input type="number" id="kidsCount" min="0" value="0" required class="w-full text-center bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs font-semibold focus:outline-none" />
+            <input type="number" id="kidsCount" min="0" value="0" oninput="syncComingDefault()" required class="w-full text-center bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs font-semibold focus:outline-none" />
           </div>
 
-          <!-- Notes -->
+          <!-- City / Notes -->
           <div class="col-span-1 md:col-span-4">
-            <label class="block text-xs font-bold text-slate-600 mb-1">City / Notes</label>
+            <label class="block text-xs font-bold text-slate-600 mb-1">City / Remarks</label>
             <input type="text" id="notes" placeholder="Optional notes" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
           </div>
 
-          <!-- Submit Button -->
+          <!-- Actions -->
           <div class="col-span-2 md:col-span-2 flex gap-1">
             <button type="submit" id="saveBtn" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2 rounded-lg transition shadow-sm">
               Add
@@ -159,7 +162,7 @@
       </form>
     </div>
 
-    <!-- Filter Bar -->
+    <!-- Filter & Search Bar -->
     <div class="flex items-center justify-between gap-2 px-1">
       <div class="flex gap-1.5">
         <button onclick="setFilter('All')" id="tabAll" class="filter-tab active-tab text-xs font-semibold px-3 py-1.5 rounded-lg border">All</button>
@@ -169,7 +172,7 @@
       <input type="text" id="searchInput" oninput="renderTable()" placeholder="Search name or relation..." class="bg-white border border-slate-300 text-xs px-2.5 py-1.5 rounded-lg w-48 md:w-64 focus:outline-none" />
     </div>
 
-    <!-- Table with Direct Inline Status Dropdowns -->
+    <!-- Table -->
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full text-left text-xs border-collapse">
@@ -181,8 +184,9 @@
               <th class="py-2.5 px-2 text-center text-blue-700">G</th>
               <th class="py-2.5 px-2 text-center text-pink-700">L</th>
               <th class="py-2.5 px-2 text-center text-amber-700">K</th>
-              <th class="py-2.5 px-2 text-center font-extrabold">Total</th>
-              <th class="py-2.5 px-3">Status (Quick Update)</th>
+              <th class="py-2.5 px-2 text-center font-bold text-slate-500">Family Total</th>
+              <th class="py-2.5 px-3 text-center">Invitation</th>
+              <th class="py-2.5 px-3 text-center bg-emerald-50/50 text-emerald-800">Coming Headcount</th>
               <th class="py-2.5 px-3 text-right">Actions</th>
             </tr>
           </thead>
@@ -239,19 +243,25 @@
       e.preventDefault();
       const docId = document.getElementById('docId').value;
       
+      const gents = parseInt(document.getElementById('gentsCount').value) || 0;
+      const ladies = parseInt(document.getElementById('ladiesCount').value) || 0;
+      const kids = parseInt(document.getElementById('kidsCount').value) || 0;
+      const totalFamily = gents + ladies + kids;
+
       const record = {
         side: document.getElementById('side').value,
         relation: document.getElementById('relation').value,
         name: document.getElementById('familyName').value.trim(),
-        gents: parseInt(document.getElementById('gentsCount').value) || 0,
-        ladies: parseInt(document.getElementById('ladiesCount').value) || 0,
-        kids: parseInt(document.getElementById('kidsCount').value) || 0,
+        gents: gents,
+        ladies: ladies,
+        kids: kids,
         notes: document.getElementById('notes').value.trim(),
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       };
 
       if (!docId) {
-        record.status = "Invited";
+        record.invitation = "Not Invited";
+        record.comingCount = 0; // Default when adding
       }
 
       if (docId) {
@@ -263,9 +273,29 @@
       resetForm();
     }
 
-    async function updateStatus(id, newStatus) {
+    async function updateInvitation(id, val) {
+      const item = families.find(f => f.id === id);
+      const totalFamily = (item.gents || 0) + (item.ladies || 0) + (item.kids || 0);
+      
+      let updatePayload = {
+        invitation: val,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+
+      // If marked as Invited and comingCount is 0, auto-suggest the whole family count
+      if (val === 'Invited' && (!item.comingCount || item.comingCount === 0)) {
+        updatePayload.comingCount = totalFamily;
+      } else if (val === 'Not Invited') {
+        updatePayload.comingCount = 0;
+      }
+
+      await collectionRef.doc(id).update(updatePayload);
+    }
+
+    async function updateComingCount(id, val) {
+      const count = parseInt(val) || 0;
       await collectionRef.doc(id).update({
-        status: newStatus,
+        comingCount: count,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       });
     }
@@ -313,29 +343,34 @@
     }
 
     function renderDashboard() {
-      let grandG = 0, grandL = 0, grandK = 0, grandComing = 0;
-      let patG = 0, patL = 0, patK = 0, patFam = 0;
-      let matG = 0, matL = 0, matK = 0, matFam = 0;
+      let grandG = 0, grandL = 0, grandK = 0, grandComing = 0, grandInvited = 0;
+      let patG = 0, patL = 0, patK = 0, patComing = 0, patFam = 0;
+      let matG = 0, matL = 0, matK = 0, matComing = 0, matFam = 0;
 
       families.forEach(f => {
         const g = f.gents || 0;
         const l = f.ladies || 0;
         const k = f.kids || 0;
+        const coming = parseInt(f.comingCount) || 0;
+        const isInvited = (f.invitation === 'Invited');
 
         grandG += g;
         grandL += l;
         grandK += k;
-        if (f.status === 'Coming') grandComing += (g + l + k);
+        grandComing += coming;
+        if (isInvited) grandInvited++;
 
         if (f.side === 'Maternal') {
           matG += g;
           matL += l;
           matK += k;
+          matComing += coming;
           matFam += 1;
         } else {
           patG += g;
           patL += l;
           patK += k;
+          patComing += coming;
           patFam += 1;
         }
       });
@@ -345,13 +380,16 @@
       document.getElementById('grandGents').textContent = grandG;
       document.getElementById('grandLadies').textContent = grandL;
       document.getElementById('grandKids').textContent = grandK;
-      document.getElementById('grandComing').textContent = grandComing;
+      document.getElementById('grandComingTotal').textContent = grandComing;
+      document.getElementById('grandInvitedCount').textContent = grandInvited;
+      document.getElementById('grandFamilies').textContent = `${families.length} Families`;
 
       // Paternal
       document.getElementById('patTotal').textContent = patG + patL + patK;
       document.getElementById('patGents').textContent = patG;
       document.getElementById('patLadies').textContent = patL;
       document.getElementById('patKids').textContent = patK;
+      document.getElementById('patComing').textContent = patComing;
       document.getElementById('patFamilies').textContent = `${patFam} Families`;
 
       // Maternal
@@ -359,6 +397,7 @@
       document.getElementById('matGents').textContent = matG;
       document.getElementById('matLadies').textContent = matL;
       document.getElementById('matKids').textContent = matK;
+      document.getElementById('matComing').textContent = matComing;
       document.getElementById('matFamilies').textContent = `${matFam} Families`;
     }
 
@@ -384,20 +423,29 @@
       filtered.forEach(item => {
         const total = (item.gents || 0) + (item.ladies || 0) + (item.kids || 0);
         const isPat = (item.side !== 'Maternal');
-        const currentStatus = item.status || 'Invited';
+        const isInvited = (item.invitation === 'Invited');
+        const comingCount = (item.comingCount !== undefined) ? item.comingCount : 0;
 
-        const statusSelect = `
-          <select onchange="updateStatus('${item.id}', this.value)" class="text-xs font-semibold px-2 py-1 rounded border focus:outline-none ${
-            currentStatus === 'Coming' 
-              ? 'bg-emerald-50 text-emerald-800 border-emerald-300' 
-              : (currentStatus === 'Declined' 
-                ? 'bg-rose-50 text-rose-800 border-rose-300' 
-                : 'bg-amber-50 text-amber-800 border-amber-300')
+        // Invitation Dropdown
+        const inviteSelect = `
+          <select onchange="updateInvitation('${item.id}', this.value)" class="text-xs font-semibold px-2 py-1 rounded border focus:outline-none ${
+            isInvited ? 'bg-emerald-50 text-emerald-800 border-emerald-300' : 'bg-slate-50 text-slate-600 border-slate-300'
           }">
-            <option value="Invited" ${currentStatus === 'Invited' ? 'selected' : ''}>📩 Invited</option>
-            <option value="Coming" ${currentStatus === 'Coming' ? 'selected' : ''}>✅ Coming</option>
-            <option value="Declined" ${currentStatus === 'Declined' ? 'selected' : ''}>❌ Declined</option>
+            <option value="Not Invited" ${!isInvited ? 'selected' : ''}>⏳ Not Invited</option>
+            <option value="Invited" ${isInvited ? 'selected' : ''}>📩 Invited</option>
           </select>
+        `;
+
+        // Coming Count Input (How many from this family are coming)
+        const comingInput = `
+          <div class="flex items-center justify-center gap-1">
+            <input type="number" min="0" max="${total}" value="${comingCount}" 
+              onchange="updateComingCount('${item.id}', this.value)"
+              class="w-14 text-center text-xs font-bold py-1 rounded border ${
+                comingCount > 0 ? 'bg-emerald-50 text-emerald-800 border-emerald-400' : 'bg-slate-50 text-slate-400 border-slate-300'
+              } focus:outline-none focus:ring-1 focus:ring-emerald-500" />
+            <span class="text-[10px] text-slate-400">/ ${total}</span>
+          </div>
         `;
 
         const tr = document.createElement('tr');
@@ -418,8 +466,9 @@
           <td class="py-2.5 px-2 text-center text-slate-700 font-medium">${item.gents || 0}</td>
           <td class="py-2.5 px-2 text-center text-slate-700 font-medium">${item.ladies || 0}</td>
           <td class="py-2.5 px-2 text-center text-slate-700 font-medium">${item.kids || 0}</td>
-          <td class="py-2.5 px-2 text-center font-bold text-slate-900">${total}</td>
-          <td class="py-2.5 px-3">${statusSelect}</td>
+          <td class="py-2.5 px-2 text-center font-bold text-slate-500">${total}</td>
+          <td class="py-2.5 px-3 text-center">${inviteSelect}</td>
+          <td class="py-2.5 px-3 text-center bg-emerald-50/20">${comingInput}</td>
           <td class="py-2.5 px-3 text-right">
             <button onclick="editEntry('${item.id}')" class="text-slate-400 hover:text-indigo-600 px-1" title="Edit"><i class="fa-solid fa-pen"></i></button>
             <button onclick="deleteEntry('${item.id}')" class="text-slate-400 hover:text-rose-600 px-1" title="Delete"><i class="fa-solid fa-trash"></i></button>
