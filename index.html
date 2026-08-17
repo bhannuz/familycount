@@ -17,7 +17,6 @@
   <div id="loginScreen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4">
     <div class="bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full space-y-4">
       
-      <!-- Header -->
       <div class="text-center space-y-1">
         <div class="w-12 h-12 bg-indigo-600 text-white rounded-full flex items-center justify-center mx-auto text-xl font-bold">
           <i class="fa-solid fa-lock"></i>
@@ -26,7 +25,6 @@
         <p class="text-xs text-slate-500">Enter your 4-digit code or create a new family entry</p>
       </div>
 
-      <!-- Tab Switcher -->
       <div class="grid grid-cols-2 gap-1 bg-slate-100 p-1 rounded-lg">
         <button type="button" onclick="switchAuthTab('login')" id="tabBtnLogin" class="text-xs font-bold py-1.5 rounded-md transition bg-white text-indigo-700 shadow-sm">
           Existing / Admin
@@ -36,7 +34,7 @@
         </button>
       </div>
 
-      <!-- Tab 1: Existing Login Form -->
+      <!-- Tab 1: Login Form -->
       <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-3">
         <div>
           <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">4-Digit Family Code / Passcode *</label>
@@ -47,7 +45,7 @@
         </button>
       </form>
 
-      <!-- Tab 2: Register New Family Form -->
+      <!-- Tab 2: Register Form -->
       <form id="registerForm" onsubmit="handleRegister(event)" class="space-y-2.5 hidden">
         <div>
           <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Mobile Number *</label>
@@ -76,11 +74,11 @@
   <!-- Hidden File Input for CSV Import -->
   <input type="file" id="csvFileInput" accept=".csv" onchange="handleCSVImport(event)" class="hidden" />
 
-  <!-- Main App Screen (Hidden by Default until Login) -->
+  <!-- Main App Screen -->
   <div id="appScreen" class="hidden max-w-6xl mx-auto space-y-2.5">
     
-    <!-- Top Header Bar with Top Right Actions (Login Code, Export, Import, Print, Logout) -->
-    <header class="bg-white p-2.5 sm:p-3 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-2.5">
+    <!-- Top Header Bar with Compact 3-Dot Dropdown Menu -->
+    <header class="bg-white p-2.5 sm:p-3 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between gap-2 relative">
       <div class="flex items-center gap-2">
         <div class="w-7 h-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shrink-0">
           <i class="fa-solid fa-users"></i>
@@ -91,39 +89,49 @@
         </div>
       </div>
 
-      <!-- Action Cluster on Top Right -->
-      <div class="flex flex-wrap items-center justify-end gap-1.5">
-        <!-- 1. Active Login Code Badge -->
-        <div class="flex items-center gap-1 bg-amber-50 border border-amber-300 text-amber-900 px-2 py-1 rounded-lg text-[10px] sm:text-[11px] font-bold shadow-xs shrink-0">
-          <i class="fa-solid fa-key text-[9px] text-amber-600"></i>
-          <span>Code: <span id="headerCodeBadge" class="font-mono text-indigo-700">—</span></span>
+      <!-- Single Action Menu Dropdown -->
+      <div class="relative">
+        <button onclick="toggleActionMenu(event)" id="actionMenuBtn" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition border border-slate-200">
+          <i class="fa-solid fa-ellipsis-vertical text-sm"></i>
+        </button>
+
+        <!-- Dropdown Popup Menu -->
+        <div id="actionMenuDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-200 py-1 z-40">
+          <!-- Active Code Badge -->
+          <div class="px-3 py-2 border-b border-slate-100 bg-amber-50/60 flex items-center justify-between text-xs font-bold text-amber-900">
+            <span class="flex items-center gap-1.5">
+              <i class="fa-solid fa-key text-[10px] text-amber-600"></i> Code:
+            </span>
+            <span id="menuCodeBadge" class="font-mono text-indigo-700 bg-white px-1.5 py-0.5 rounded border border-amber-200">—</span>
+          </div>
+
+          <!-- Export -->
+          <button onclick="closeActionMenu(); exportCSV();" class="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 flex items-center gap-2 transition">
+            <i class="fa-solid fa-file-arrow-down text-emerald-600 w-4"></i> Export to CSV
+          </button>
+
+          <!-- Import -->
+          <button onclick="closeActionMenu(); document.getElementById('csvFileInput').click();" class="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-sky-50 hover:text-sky-700 flex items-center gap-2 transition">
+            <i class="fa-solid fa-file-arrow-up text-sky-600 w-4"></i> Import CSV
+          </button>
+
+          <!-- Print -->
+          <button onclick="closeActionMenu(); window.print();" class="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-2 transition">
+            <i class="fa-solid fa-print text-slate-600 w-4"></i> Print Report
+          </button>
+
+          <div class="border-t border-slate-100 my-1"></div>
+
+          <!-- Logout -->
+          <button onclick="closeActionMenu(); logoutSession();" class="w-full text-left px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 flex items-center gap-2 transition">
+            <i class="fa-solid fa-right-from-bracket w-4"></i> Logout
+          </button>
         </div>
-
-        <!-- 2. Export CSV Button -->
-        <button onclick="exportCSV()" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-[11px] font-bold px-2 py-1 rounded-lg transition flex items-center gap-1 shrink-0">
-          <i class="fa-solid fa-file-arrow-down text-[10px]"></i> Export
-        </button>
-
-        <!-- 3. Import CSV Button -->
-        <button onclick="document.getElementById('csvFileInput').click()" class="bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 text-[11px] font-bold px-2 py-1 rounded-lg transition flex items-center gap-1 shrink-0">
-          <i class="fa-solid fa-file-arrow-up text-[10px]"></i> Import
-        </button>
-
-        <!-- 4. Print Summary Button -->
-        <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-900 text-white text-[11px] font-semibold px-2.5 py-1 rounded-lg transition flex items-center gap-1 shrink-0">
-          <i class="fa-solid fa-print text-[10px]"></i> Print
-        </button>
-
-        <!-- 5. Logout Button -->
-        <button onclick="logoutSession()" class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-[11px] font-bold px-2.5 py-1 rounded-lg transition flex items-center gap-1 shrink-0">
-          <i class="fa-solid fa-right-from-bracket text-[10px]"></i> Logout
-        </button>
       </div>
     </header>
 
     <!-- Side-by-Side Summary Chips -->
     <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
-      <!-- Chip 1: Confirmed Coming -->
       <div class="bg-indigo-900 text-white p-2.5 rounded-xl shadow-sm flex items-center justify-between col-span-1">
         <div>
           <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-indigo-200 block" id="summaryTitle">Coming</span>
@@ -135,7 +143,6 @@
         <i class="fa-solid fa-circle-check text-emerald-400 text-lg sm:text-xl opacity-80 shrink-0"></i>
       </div>
 
-      <!-- Chip 2: Total Invited Members -->
       <div class="bg-white border border-slate-200 p-2.5 rounded-xl shadow-sm flex items-center justify-between col-span-1">
         <div>
           <span class="text-[9px] sm:text-[10px] font-bold uppercase text-slate-400 block">Total Invited</span>
@@ -147,7 +154,6 @@
         <i class="fa-solid fa-user-group text-slate-300 text-lg sm:text-xl shrink-0"></i>
       </div>
 
-      <!-- Chip 3: Gents / Ladies / Kids Combined Single Chip -->
       <div class="bg-white border border-slate-200 p-2.5 rounded-xl shadow-sm col-span-2 md:col-span-1 flex flex-col justify-center">
         <span class="text-[9px] sm:text-[10px] font-bold uppercase text-slate-500 block mb-1">Breakdown (G / L / K)</span>
         <div class="flex items-center justify-around text-xs font-bold text-slate-800 bg-slate-50 py-1 px-2 rounded-lg border border-slate-100">
@@ -160,16 +166,16 @@
       </div>
     </div>
 
-    <!-- Entry Form Card -->
+    <!-- Entry Form Card (Seamless Custom Category Support) -->
     <div class="bg-white p-2.5 sm:p-3 rounded-xl border border-slate-200 shadow-sm">
       <form id="familyForm" onsubmit="handleFormSubmit(event)" class="space-y-2">
         <input type="hidden" id="docId" value="" />
         
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-1.5">
-          <!-- 1. Category / Side -->
+          <!-- 1. Category / Group with inline Custom Toggle -->
           <div class="md:col-span-3">
             <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Category / Group *</label>
-            <div class="flex gap-1">
+            <div id="groupSelectWrapper">
               <select id="groupSelect" onchange="checkCustomGroup(this.value)" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs font-semibold text-slate-700 focus:outline-none focus:border-indigo-500">
                 <option value="Paternal">Paternal Side</option>
                 <option value="Maternal">Maternal Side</option>
@@ -178,16 +184,19 @@
                 <option value="School Friends">School Friends</option>
                 <option value="College Friends">College Friends</option>
                 <option value="Neighbours">Neighbours</option>
-                <option value="__custom_group__">+ Add Custom Group...</option>
+                <option value="__custom_group__">+ Add Custom Category...</option>
               </select>
-              <input type="text" id="customGroupInput" placeholder="Enter Group Name" class="hidden w-full bg-white border border-indigo-400 rounded-lg px-2 py-1.5 text-xs font-semibold focus:outline-none" />
+            </div>
+            <div id="customGroupWrapper" class="hidden flex gap-1">
+              <input type="text" id="customGroupInput" placeholder="Type Category Name..." class="w-full bg-white border border-indigo-500 rounded-lg px-2 py-1.5 text-xs font-semibold focus:outline-none" />
+              <button type="button" onclick="cancelCustomGroup()" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-600 rounded-lg text-xs" title="Back to list">✕</button>
             </div>
           </div>
 
-          <!-- 2. Relation (Optional) -->
+          <!-- 2. Relation (Optional) with inline Custom Toggle -->
           <div class="md:col-span-2">
             <label class="block text-[10px] font-bold uppercase text-slate-400 mb-0.5">Relation (Optional)</label>
-            <div class="flex gap-1">
+            <div id="relationSelectWrapper">
               <select id="relationSelect" onchange="checkCustomRelation(this.value)" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs font-semibold text-slate-700 focus:outline-none focus:border-indigo-500">
                 <option value="">— None / Optional —</option>
                 <option value="Friend">Friend</option>
@@ -204,7 +213,10 @@
                 <option value="Cousin">Cousin</option>
                 <option value="__custom_rel__">+ Custom...</option>
               </select>
-              <input type="text" id="customRelationInput" placeholder="Enter Relation" class="hidden w-full bg-white border border-indigo-400 rounded-lg px-2 py-1.5 text-xs font-semibold focus:outline-none" />
+            </div>
+            <div id="customRelWrapper" class="hidden flex gap-1">
+              <input type="text" id="customRelationInput" placeholder="Type Relation..." class="w-full bg-white border border-indigo-500 rounded-lg px-2 py-1.5 text-xs font-semibold focus:outline-none" />
+              <button type="button" onclick="cancelCustomRelation()" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-600 rounded-lg text-xs" title="Back to list">✕</button>
             </div>
           </div>
 
@@ -273,12 +285,11 @@
         <span id="accordionActionText" class="text-[11px] font-semibold text-indigo-600">Tap to Expand</span>
       </button>
 
-      <!-- Collapsible Container (Hidden by default) -->
+      <!-- Collapsible Container -->
       <div id="historyContainer" class="hidden p-2.5 sm:p-3 space-y-2.5">
         
         <!-- Multi-Filter Control Bar in History -->
         <div class="bg-slate-50 p-2 sm:p-2.5 rounded-lg border border-slate-200 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
-          <!-- 1. Category / Group Filter -->
           <div>
             <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Category Filter:</label>
             <select id="histGroupFilter" onchange="renderFilteredHistory()" class="w-full bg-white border border-slate-300 text-xs font-semibold text-slate-700 px-2 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500">
@@ -293,7 +304,6 @@
             </select>
           </div>
 
-          <!-- 2. Member Type Filter -->
           <div>
             <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Member Type:</label>
             <select id="histMemberFilter" onchange="renderFilteredHistory()" class="w-full bg-white border border-slate-300 text-xs font-semibold text-slate-700 px-2 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500">
@@ -305,7 +315,6 @@
             </select>
           </div>
 
-          <!-- 3. RSVP / Attendance Status Filter -->
           <div>
             <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">RSVP Status:</label>
             <select id="histRsvpFilter" onchange="renderFilteredHistory()" class="w-full bg-white border border-slate-300 text-xs font-semibold text-slate-700 px-2 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500">
@@ -317,10 +326,9 @@
             </select>
           </div>
 
-          <!-- 4. Text Search -->
           <div>
             <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Search:</label>
-            <input type="text" id="searchInput" oninput="renderFilteredHistory()" placeholder="Search name, place, kid name..." class="w-full bg-white border border-slate-300 text-xs px-2.5 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500" />
+            <input type="text" id="searchInput" oninput="renderFilteredHistory()" placeholder="Search name, place, kid..." class="w-full bg-white border border-slate-300 text-xs px-2.5 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500" />
           </div>
         </div>
 
@@ -391,6 +399,26 @@
       document.getElementById('loginScreen').classList.remove('hidden');
       document.getElementById('appScreen').classList.add('hidden');
     }
+
+    // Top Right 3-Dots Dropdown Handlers
+    function toggleActionMenu(e) {
+      e.stopPropagation();
+      const menu = document.getElementById('actionMenuDropdown');
+      menu.classList.toggle('hidden');
+    }
+
+    function closeActionMenu() {
+      const menu = document.getElementById('actionMenuDropdown');
+      if (menu) menu.classList.add('hidden');
+    }
+
+    document.addEventListener('click', (e) => {
+      const menu = document.getElementById('actionMenuDropdown');
+      const btn = document.getElementById('actionMenuBtn');
+      if (menu && !menu.contains(e.target) && !btn.contains(e.target)) {
+        menu.classList.add('hidden');
+      }
+    });
 
     function switchAuthTab(tab) {
       const loginForm = document.getElementById('loginForm');
@@ -473,9 +501,9 @@
       document.getElementById('appScreen').classList.remove('hidden');
       
       const roleBadge = document.getElementById('roleBadge');
-      const headerCodeBadge = document.getElementById('headerCodeBadge');
+      const menuCodeBadge = document.getElementById('menuCodeBadge');
 
-      headerCodeBadge.textContent = loggedCode || '—';
+      menuCodeBadge.textContent = loggedCode || '—';
 
       if (isAdmin) {
         roleBadge.textContent = "👑 Admin View (All Families)";
@@ -494,7 +522,7 @@
         snapshot.forEach((doc) => {
           families.push({ id: doc.id, ...doc.data() });
         });
-        syncCategoryFilterDropdown();
+        syncCategoryDropdowns();
         renderDashboard();
         renderFilteredHistory();
       });
@@ -517,61 +545,112 @@
       }
     }
 
+    // --- Custom Category UI Switching ---
     function checkCustomGroup(val) {
-      const customInput = document.getElementById('customGroupInput');
-      const select = document.getElementById('groupSelect');
       if (val === '__custom_group__') {
-        select.classList.add('hidden');
-        customInput.classList.remove('hidden');
-        customInput.focus();
+        document.getElementById('groupSelectWrapper').classList.add('hidden');
+        const wrapper = document.getElementById('customGroupWrapper');
+        wrapper.classList.remove('hidden');
+        const input = document.getElementById('customGroupInput');
+        input.value = '';
+        input.focus();
       }
     }
 
+    function cancelCustomGroup() {
+      document.getElementById('customGroupWrapper').classList.add('hidden');
+      const selectWrapper = document.getElementById('groupSelectWrapper');
+      selectWrapper.classList.remove('hidden');
+      document.getElementById('groupSelect').selectedIndex = 0;
+      document.getElementById('customGroupInput').value = '';
+    }
+
+    // --- Custom Relation UI Switching ---
     function checkCustomRelation(val) {
-      const customInput = document.getElementById('customRelationInput');
-      const select = document.getElementById('relationSelect');
       if (val === '__custom_rel__') {
-        select.classList.add('hidden');
-        customInput.classList.remove('hidden');
-        customInput.focus();
+        document.getElementById('relationSelectWrapper').classList.add('hidden');
+        const wrapper = document.getElementById('customRelWrapper');
+        wrapper.classList.remove('hidden');
+        const input = document.getElementById('customRelationInput');
+        input.value = '';
+        input.focus();
       }
     }
 
-    function syncCategoryFilterDropdown() {
-      const filterSelect = document.getElementById('histGroupFilter');
-      const defaultOptions = ['All', 'Paternal', 'Maternal', 'Friends', 'Office Friends', 'School Friends', 'College Friends', 'Neighbours'];
+    function cancelCustomRelation() {
+      document.getElementById('customRelWrapper').classList.add('hidden');
+      const selectWrapper = document.getElementById('relationSelectWrapper');
+      selectWrapper.classList.remove('hidden');
+      document.getElementById('relationSelect').selectedIndex = 0;
+      document.getElementById('customRelationInput').value = '';
+    }
+
+    // Sync all custom categories into both form and filter selects
+    function syncCategoryDropdowns() {
+      const defaultOptions = ['Paternal', 'Maternal', 'Friends', 'Office Friends', 'School Friends', 'College Friends', 'Neighbours'];
       const uniqueGroups = new Set(defaultOptions);
 
       families.forEach(f => {
-        if (f.side) uniqueGroups.add(f.side);
+        if (f.side && f.side.trim()) uniqueGroups.add(f.side.trim());
       });
 
-      const currentVal = filterSelect.value;
-      filterSelect.innerHTML = '';
+      // 1. Update Filter Select
+      const filterSelect = document.getElementById('histGroupFilter');
+      const currentFilterVal = filterSelect.value;
+      filterSelect.innerHTML = '<option value="All">All Categories</option>';
       uniqueGroups.forEach(grp => {
         const opt = document.createElement('option');
         opt.value = grp;
-        opt.textContent = grp === 'All' ? 'All Categories' : (grp.includes('Side') || grp.includes('Friends') || grp.includes('Neighbours') ? grp : `${grp} Group`);
+        opt.textContent = grp.includes('Side') || grp.includes('Friends') || grp.includes('Neighbours') ? grp : `${grp} Group`;
         filterSelect.appendChild(opt);
       });
-      filterSelect.value = uniqueGroups.has(currentVal) ? currentVal : 'All';
+      filterSelect.value = uniqueGroups.has(currentFilterVal) ? currentFilterVal : 'All';
+
+      // 2. Update Form Select
+      const formSelect = document.getElementById('groupSelect');
+      const currentFormVal = formSelect.value;
+      formSelect.innerHTML = '';
+      uniqueGroups.forEach(grp => {
+        const opt = document.createElement('option');
+        opt.value = grp;
+        opt.textContent = grp === 'Paternal' ? 'Paternal Side' : (grp === 'Maternal' ? 'Maternal Side' : grp);
+        formSelect.appendChild(opt);
+      });
+      const customOpt = document.createElement('option');
+      customOpt.value = '__custom_group__';
+      customOpt.textContent = '+ Add Custom Category...';
+      formSelect.appendChild(customOpt);
+
+      if (uniqueGroups.has(currentFormVal)) {
+        formSelect.value = currentFormVal;
+      }
     }
 
     async function handleFormSubmit(e) {
       e.preventDefault();
       const docId = document.getElementById('docId').value;
       
-      const customGroupInput = document.getElementById('customGroupInput');
-      const groupSelect = document.getElementById('groupSelect');
-      let finalGroup = (!customGroupInput.classList.contains('hidden') && customGroupInput.value.trim()) 
-        ? customGroupInput.value.trim() 
-        : groupSelect.value;
+      // Determine final category (from custom input or select)
+      const customGroupWrapper = document.getElementById('customGroupWrapper');
+      let finalGroup = '';
+      if (!customGroupWrapper.classList.contains('hidden')) {
+        finalGroup = document.getElementById('customGroupInput').value.trim();
+        if (!finalGroup) {
+          alert('Please enter a custom category name.');
+          return;
+        }
+      } else {
+        finalGroup = document.getElementById('groupSelect').value;
+      }
 
-      const customRelInput = document.getElementById('customRelationInput');
-      const relSelect = document.getElementById('relationSelect');
-      let finalRelation = (!customRelInput.classList.contains('hidden') && customRelInput.value.trim()) 
-        ? customRelInput.value.trim() 
-        : relSelect.value;
+      // Determine final relation (from custom input or select)
+      const customRelWrapper = document.getElementById('customRelWrapper');
+      let finalRelation = '';
+      if (!customRelWrapper.classList.contains('hidden')) {
+        finalRelation = document.getElementById('customRelationInput').value.trim();
+      } else {
+        finalRelation = document.getElementById('relationSelect').value;
+      }
 
       const gents = parseInt(document.getElementById('gentsCount').value) || 0;
       const ladies = parseInt(document.getElementById('ladiesCount').value) || 0;
@@ -637,8 +716,8 @@
 
       document.getElementById('docId').value = item.id;
       
+      // Populate Category
       const groupSelect = document.getElementById('groupSelect');
-      const customGroupInput = document.getElementById('customGroupInput');
       let groupExists = false;
       for (let opt of groupSelect.options) {
         if (opt.value === item.side) {
@@ -648,16 +727,15 @@
       }
       if (groupExists) {
         groupSelect.value = item.side;
-        groupSelect.classList.remove('hidden');
-        customGroupInput.classList.add('hidden');
+        cancelCustomGroup();
       } else {
-        groupSelect.classList.add('hidden');
-        customGroupInput.classList.remove('hidden');
-        customGroupInput.value = item.side || '';
+        document.getElementById('groupSelectWrapper').classList.add('hidden');
+        document.getElementById('customGroupWrapper').classList.remove('hidden');
+        document.getElementById('customGroupInput').value = item.side || '';
       }
 
+      // Populate Relation
       const relSelect = document.getElementById('relationSelect');
-      const customRelInput = document.getElementById('customRelationInput');
       let relExists = false;
       for (let opt of relSelect.options) {
         if (opt.value === item.relation) {
@@ -667,12 +745,11 @@
       }
       if (relExists) {
         relSelect.value = item.relation || '';
-        relSelect.classList.remove('hidden');
-        customRelInput.classList.add('hidden');
+        cancelCustomRelation();
       } else {
-        relSelect.classList.add('hidden');
-        customRelInput.classList.remove('hidden');
-        customRelInput.value = item.relation || '';
+        document.getElementById('relationSelectWrapper').classList.add('hidden');
+        document.getElementById('customRelWrapper').classList.remove('hidden');
+        document.getElementById('customRelationInput').value = item.relation || '';
       }
 
       document.getElementById('familyName').value = item.name;
@@ -702,19 +779,8 @@
       document.getElementById('ladiesCount').value = 1;
       document.getElementById('kidsCount').value = 0;
       
-      const groupSelect = document.getElementById('groupSelect');
-      const customGroupInput = document.getElementById('customGroupInput');
-      groupSelect.classList.remove('hidden');
-      groupSelect.selectedIndex = 0;
-      customGroupInput.classList.add('hidden');
-      customGroupInput.value = '';
-
-      const relSelect = document.getElementById('relationSelect');
-      const customRelInput = document.getElementById('customRelationInput');
-      relSelect.classList.remove('hidden');
-      relSelect.selectedIndex = 0;
-      customRelInput.classList.add('hidden');
-      customRelInput.value = '';
+      cancelCustomGroup();
+      cancelCustomRelation();
 
       document.getElementById('saveBtn').textContent = 'Save Entry';
       document.getElementById('cancelBtn').classList.add('hidden');
@@ -939,10 +1005,9 @@
         const batch = db.batch();
         let count = 0;
 
-        // Skip header row
         for (let i = 1; i < lines.length; i++) {
           const row = parseCSVLine(lines[i]);
-          if (row.length < 3 || !row[2]) continue; // Ensure Name exists
+          if (row.length < 3 || !row[2]) continue;
 
           const record = {
             side: row[0] || 'General',
