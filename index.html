@@ -13,17 +13,17 @@
 </head>
 <body class="bg-slate-100 text-slate-800 antialiased p-2 md:p-4 min-h-screen">
 
-  <!-- Dual Authentication Screen (Login / Create New Family) -->
+  <!-- Authentication Modal (Login / Create New Family) -->
   <div id="loginScreen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4">
     <div class="bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full space-y-4">
       
-      <!-- Modal Header -->
+      <!-- Header -->
       <div class="text-center space-y-1">
         <div class="w-12 h-12 bg-indigo-600 text-white rounded-full flex items-center justify-center mx-auto text-xl font-bold">
           <i class="fa-solid fa-lock"></i>
         </div>
         <h2 class="text-lg font-bold text-slate-900">Event Invitation RSVP</h2>
-        <p class="text-xs text-slate-500">Access with Mobile & 4-Digit Code or Admin Passcode</p>
+        <p class="text-xs text-slate-500">Enter your 4-digit code or create a new family entry</p>
       </div>
 
       <!-- Tab Switcher -->
@@ -36,47 +36,34 @@
         </button>
       </div>
 
-      <!-- Option 1: Existing Login Form -->
+      <!-- Tab 1: Existing Login Form (Code Only) -->
       <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-3">
         <div>
-          <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Mobile Number (Optional for Admin)</label>
-          <input type="tel" id="loginPhoneInput" placeholder="Enter Registered Mobile" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-indigo-600" />
-        </div>
-        <div>
-          <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Access Code / Admin Code *</label>
-          <input type="text" id="accessCodeInput" maxlength="6" required placeholder="4-Digit Code or Admin Code" class="w-full text-center tracking-widest uppercase font-bold text-sm bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:border-indigo-600" />
+          <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">4-Digit Family Code / Admin Passcode *</label>
+          <input type="text" id="accessCodeInput" maxlength="6" required placeholder="Enter Code (e.g. 4821 or A2KU)" class="w-full text-center tracking-widest uppercase font-bold text-sm bg-slate-50 border border-slate-300 rounded-lg px-3 py-2.5 focus:outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100" />
         </div>
         <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2.5 rounded-lg transition shadow-sm">
-          Access RSVP Dashboard
+          Access RSVP
         </button>
       </form>
 
-      <!-- Option 2: Register New Family Form -->
+      <!-- Tab 2: Register New Family Form (No Maternal/Paternal Options) -->
       <form id="registerForm" onsubmit="handleRegister(event)" class="space-y-2.5 hidden">
         <div>
           <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Mobile Number *</label>
           <input type="tel" id="regPhone" required placeholder="10-digit Mobile Number" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-indigo-600" />
         </div>
         <div>
-          <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Set 4-Digit Security Code *</label>
+          <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Create 4-Digit Security Code *</label>
           <input type="text" id="regCode" maxlength="4" required placeholder="e.g. 4821" class="w-full text-center font-bold tracking-widest bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-indigo-600" />
         </div>
         <div>
           <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Family / Head Name *</label>
           <input type="text" id="regFamilyName" required placeholder="e.g. Ramesh Kumar & Family" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-indigo-600" />
         </div>
-        <div class="grid grid-cols-2 gap-1.5">
-          <div>
-            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Side *</label>
-            <select id="regSide" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs font-semibold focus:outline-none">
-              <option value="Paternal">Paternal</option>
-              <option value="Maternal">Maternal</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">City / Place</label>
-            <input type="text" id="regPlace" placeholder="e.g. Hyderabad" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none" />
-          </div>
+        <div>
+          <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">City / Place</label>
+          <input type="text" id="regPlace" placeholder="e.g. Hyderabad" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-indigo-600" />
         </div>
         <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2.5 rounded-lg transition shadow-sm">
           Create & Open RSVP
@@ -119,7 +106,7 @@
       </div>
     </header>
 
-    <!-- Compact Summary Strip -->
+    <!-- Summary Strip -->
     <div class="grid grid-cols-2 md:grid-cols-6 gap-2">
       <div class="bg-indigo-900 text-white px-3 py-1.5 rounded-lg shadow-sm">
         <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-200 block" id="summaryTitle">Confirmed Coming</span>
@@ -150,15 +137,16 @@
       </div>
     </div>
 
-    <!-- Family Add/Edit Form -->
+    <!-- Edit/Update Form for Current User / Admin -->
     <div class="bg-white p-2.5 rounded-lg border border-slate-200 shadow-sm">
       <form id="familyForm" onsubmit="handleFormSubmit(event)" class="space-y-1.5">
         <input type="hidden" id="docId" value="" />
         
-        <!-- Row 1: Side, Relation, Name, Place, Phone, 4-digit Code -->
+        <!-- Row 1: Identifiers -->
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-1.5">
-          <div class="md:col-span-2">
+          <div id="adminSideSelectCol" class="md:col-span-2">
             <select id="side" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs font-semibold text-slate-700 focus:outline-none focus:border-indigo-500">
+              <option value="General">General</option>
               <option value="Paternal">Paternal Side</option>
               <option value="Maternal">Maternal Side</option>
             </select>
@@ -167,6 +155,7 @@
           <div class="md:col-span-2">
             <div class="flex gap-1">
               <select id="relationSelect" onchange="checkCustomRelation(this.value)" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs font-semibold text-slate-700 focus:outline-none focus:border-indigo-500">
+                <option value="Relative">Relative</option>
                 <option value="Babai / Chacha">Babai / Chacha</option>
                 <option value="Peddananna / Tauji">Peddananna / Tauji</option>
                 <option value="Mama / Uncle">Mama / Uncle</option>
@@ -193,15 +182,15 @@
           </div>
 
           <div class="md:col-span-2">
-            <input type="tel" id="familyPhone" required placeholder="Mobile Number *" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs focus:outline-none focus:border-indigo-500" />
+            <input type="tel" id="familyPhone" placeholder="Mobile Number" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs focus:outline-none focus:border-indigo-500" />
           </div>
 
           <div class="md:col-span-1">
-            <input type="text" id="familyAccessCode" maxlength="4" required placeholder="4-Code *" class="w-full text-center bg-indigo-50 border border-indigo-200 rounded px-1 py-1 text-xs font-bold uppercase text-indigo-900 focus:outline-none focus:border-indigo-600" />
+            <input type="text" id="familyAccessCode" maxlength="4" placeholder="4-Code" class="w-full text-center bg-indigo-50 border border-indigo-200 rounded px-1 py-1 text-xs font-bold uppercase text-indigo-900 focus:outline-none focus:border-indigo-600" />
           </div>
         </div>
 
-        <!-- Row 2: Counts, Kid Names & Action Button -->
+        <!-- Row 2: Counts & Save Button -->
         <div class="grid grid-cols-2 md:grid-cols-12 gap-1.5 items-center">
           <div class="col-span-1 md:col-span-2 flex items-center gap-1 bg-slate-50 border border-slate-300 rounded px-1.5 py-0.5">
             <span class="text-[10px] font-bold text-blue-700">Gents:</span>
@@ -240,7 +229,7 @@
       <input type="text" id="searchInput" oninput="renderTable()" placeholder="Search name, phone, code, place..." class="bg-white border border-slate-300 text-xs px-2 py-1 rounded-lg w-52 md:w-64 focus:outline-none" />
     </div>
 
-    <!-- Flat Table -->
+    <!-- Table -->
     <div class="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full text-left text-xs border-collapse">
@@ -287,7 +276,6 @@
 
     let families = [];
     let loggedCode = localStorage.getItem('fc_user_code') || '';
-    let loggedPhone = localStorage.getItem('fc_user_phone') || '';
     let isAdmin = (loggedCode.toUpperCase() === ADMIN_CODE);
     let currentSideFilter = 'All';
 
@@ -318,26 +306,11 @@
     function handleLogin(e) {
       e.preventDefault();
       const code = document.getElementById('accessCodeInput').value.trim().toUpperCase();
-      const phone = document.getElementById('loginPhoneInput').value.trim();
-
       if (!code) return;
 
-      if (code === ADMIN_CODE) {
-        loggedCode = ADMIN_CODE;
-        loggedPhone = '';
-        isAdmin = true;
-      } else {
-        if (!phone) {
-          alert('Please enter your registered mobile number.');
-          return;
-        }
-        loggedCode = code;
-        loggedPhone = phone;
-        isAdmin = false;
-      }
-
+      loggedCode = code;
+      isAdmin = (loggedCode === ADMIN_CODE);
       localStorage.setItem('fc_user_code', loggedCode);
-      localStorage.setItem('fc_user_phone', loggedPhone);
       showApp();
     }
 
@@ -346,7 +319,6 @@
       const phone = document.getElementById('regPhone').value.trim();
       const code = document.getElementById('regCode').value.trim().toUpperCase();
       const name = document.getElementById('regFamilyName').value.trim();
-      const side = document.getElementById('regSide').value;
       const place = document.getElementById('regPlace').value.trim();
 
       if (!phone || !code || !name) {
@@ -358,7 +330,7 @@
         code: code,
         phone: phone,
         name: name,
-        side: side,
+        side: "General",
         relation: "Relative",
         place: place,
         gents: 1,
@@ -373,23 +345,18 @@
       await collectionRef.add(record);
 
       loggedCode = code;
-      loggedPhone = phone;
       isAdmin = false;
       localStorage.setItem('fc_user_code', loggedCode);
-      localStorage.setItem('fc_user_phone', loggedPhone);
       showApp();
     }
 
     function logout() {
       localStorage.removeItem('fc_user_code');
-      localStorage.removeItem('fc_user_phone');
       loggedCode = '';
-      loggedPhone = '';
       isAdmin = false;
       document.getElementById('appScreen').classList.add('hidden');
       document.getElementById('loginScreen').classList.remove('hidden');
       document.getElementById('accessCodeInput').value = '';
-      document.getElementById('loginPhoneInput').value = '';
     }
 
     function showApp() {
@@ -399,22 +366,22 @@
       const roleBadge = document.getElementById('roleBadge');
       const adminSideFilter = document.getElementById('adminSideFilterContainer');
       const adminSearchRow = document.getElementById('adminSearchRow');
+      const adminSideSelectCol = document.getElementById('adminSideSelectCol');
 
       if (isAdmin) {
         roleBadge.textContent = "👑 Admin View (All Families)";
         roleBadge.className = "text-[10px] font-bold text-amber-600";
         adminSideFilter.classList.remove('hidden');
         adminSearchRow.classList.remove('hidden');
-        // Clear default code for admin entries
+        adminSideSelectCol.classList.remove('hidden');
         document.getElementById('familyAccessCode').value = '';
-        document.getElementById('familyPhone').value = '';
       } else {
         roleBadge.textContent = `Family Code: ${loggedCode}`;
         roleBadge.className = "text-[10px] font-bold text-indigo-600";
         adminSideFilter.classList.add('hidden');
         adminSearchRow.classList.add('hidden');
+        adminSideSelectCol.classList.add('hidden');
         document.getElementById('familyAccessCode').value = loggedCode;
-        document.getElementById('familyPhone').value = loggedPhone;
       }
 
       listenData();
@@ -457,9 +424,8 @@
         ? customInput.value.trim() 
         : select.value;
 
-      const code = document.getElementById('familyAccessCode').value.trim().toUpperCase();
+      const code = document.getElementById('familyAccessCode').value.trim().toUpperCase() || loggedCode;
       const phone = document.getElementById('familyPhone').value.trim();
-
       const gents = parseInt(document.getElementById('gentsCount').value) || 0;
       const ladies = parseInt(document.getElementById('ladiesCount').value) || 0;
       const kids = parseInt(document.getElementById('kidsCount').value) || 0;
@@ -467,7 +433,7 @@
       const record = {
         code: code,
         phone: phone,
-        side: document.getElementById('side').value,
+        side: isAdmin ? document.getElementById('side').value : "General",
         relation: finalRelation,
         name: document.getElementById('familyName').value.trim(),
         place: document.getElementById('familyPlace').value.trim(),
@@ -523,7 +489,7 @@
       if (!item) return;
 
       document.getElementById('docId').value = item.id;
-      document.getElementById('side').value = item.side || 'Paternal';
+      document.getElementById('side').value = item.side || 'General';
       document.getElementById('familyAccessCode').value = item.code || '';
       document.getElementById('familyPhone').value = item.phone || '';
       
@@ -582,10 +548,8 @@
 
       if (!isAdmin) {
         document.getElementById('familyAccessCode').value = loggedCode;
-        document.getElementById('familyPhone').value = loggedPhone;
       } else {
         document.getElementById('familyAccessCode').value = '';
-        document.getElementById('familyPhone').value = '';
       }
 
       document.getElementById('saveBtn').textContent = 'Save Entry';
@@ -598,11 +562,8 @@
           ? families 
           : families.filter(f => f.side === currentSideFilter);
       } else {
-        // Must match both code and phone number for guest privacy
-        return families.filter(f => (
-          f.code && f.code.toUpperCase() === loggedCode &&
-          f.phone && f.phone.replace(/[^0-9]/g, '') === loggedPhone.replace(/[^0-9]/g, '')
-        ));
+        // Individual Family Login: matches strictly by 4-digit access code
+        return families.filter(f => (f.code && f.code.toUpperCase() === loggedCode));
       }
     }
 
@@ -663,9 +624,16 @@
 
       filtered.forEach(item => {
         const total = (item.gents || 0) + (item.ladies || 0) + (item.kids || 0);
-        const isPat = (item.side !== 'Maternal');
+        const isPat = (item.side === 'Paternal');
+        const isMat = (item.side === 'Maternal');
         const isInvited = (item.invitation === 'Invited');
         const comingCount = (item.comingCount !== undefined) ? item.comingCount : 0;
+
+        const sideBadge = isPat 
+          ? `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800">Paternal</span>`
+          : (isMat 
+            ? `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-800">Maternal</span>`
+            : `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700">General</span>`);
 
         const inviteSelect = `
           <select onchange="updateInvitation('${item.id}', this.value)" class="text-[11px] font-semibold px-1.5 py-0.5 rounded border focus:outline-none ${
@@ -695,11 +663,7 @@
               ${item.code || '—'}
             </span>
           </td>
-          <td class="py-1.5 px-2.5">
-            <span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${isPat ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}">
-              ${isPat ? 'Paternal' : 'Maternal'}
-            </span>
-          </td>
+          <td class="py-1.5 px-2.5">${sideBadge}</td>
           <td class="py-1.5 px-2.5 font-medium text-slate-700 text-xs">${item.relation || '—'}</td>
           <td class="py-1.5 px-2.5">
             <div class="font-semibold text-slate-800 text-xs leading-tight">${item.name}</div>
