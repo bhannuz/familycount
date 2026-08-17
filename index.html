@@ -71,6 +71,44 @@
     </div>
   </div>
 
+  <!-- Admin Code Management Modal -->
+  <div id="codeManagerModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-3">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden">
+      <div class="px-4 py-3 bg-slate-800 text-white flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-shield-halved text-amber-400 text-sm"></i>
+          <h3 class="text-sm font-bold">Manage Login Codes & Permissions</h3>
+        </div>
+        <button onclick="closeCodeManager()" class="text-slate-400 hover:text-white text-base">✕</button>
+      </div>
+
+      <div class="p-3 overflow-y-auto space-y-3">
+        <p class="text-xs text-slate-500">Toggle code status between <span class="font-bold text-emerald-700">Active</span> and <span class="font-bold text-rose-700">Blocked / Stopped</span>, edit 4-digit codes, or revoke family access.</p>
+        
+        <div class="overflow-x-auto border border-slate-200 rounded-lg">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase text-[10px]">
+                <th class="py-2 px-2.5">4-Digit Code</th>
+                <th class="py-2 px-2.5">Family Name</th>
+                <th class="py-2 px-2">Mobile</th>
+                <th class="py-2 px-2 text-center">Status</th>
+                <th class="py-2 px-2.5 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="codeManagerTableBody" class="divide-y divide-slate-100"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="px-4 py-2.5 bg-slate-50 border-t border-slate-200 flex justify-end">
+        <button onclick="closeCodeManager()" class="bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold px-4 py-1.5 rounded-lg transition">
+          Done
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Hidden File Input for CSV Import -->
   <input type="file" id="csvFileInput" accept=".csv" onchange="handleCSVImport(event)" class="hidden" />
 
@@ -95,12 +133,19 @@
           <i class="fa-solid fa-ellipsis-vertical text-sm"></i>
         </button>
 
-        <div id="actionMenuDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-200 py-1 z-40">
+        <div id="actionMenuDropdown" class="hidden absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-xl border border-slate-200 py-1 z-40">
           <div class="px-3 py-2 border-b border-slate-100 bg-amber-50/60 flex items-center justify-between text-xs font-bold text-amber-900">
             <span class="flex items-center gap-1.5">
               <i class="fa-solid fa-key text-[10px] text-amber-600"></i> Code:
             </span>
             <span id="menuCodeBadge" class="font-mono text-indigo-700 bg-white px-1.5 py-0.5 rounded border border-amber-200">—</span>
+          </div>
+
+          <!-- Admin-Only Code Manager Menu Item -->
+          <div id="adminCodeManagerMenuItem" class="hidden">
+            <button onclick="closeActionMenu(); openCodeManager();" class="w-full text-left px-3 py-2 text-xs font-bold text-indigo-700 hover:bg-indigo-50 flex items-center gap-2 transition border-b border-slate-100">
+              <i class="fa-solid fa-user-shield text-indigo-600 w-4"></i> Manage User Codes
+            </button>
           </div>
 
           <button onclick="closeActionMenu(); exportCSV();" class="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 flex items-center gap-2 transition">
@@ -402,7 +447,6 @@
       document.getElementById('appScreen').classList.add('hidden');
     }
 
-    // Generic accordion toggle helper
     function toggleAccordion(containerId, chevronId, textId) {
       const container = document.getElementById(containerId);
       const chevron = document.getElementById(chevronId);
@@ -420,7 +464,6 @@
       }
     }
 
-    // Action Menu Handlers
     function toggleActionMenu(e) {
       e.stopPropagation();
       const menu = document.getElementById('actionMenuDropdown');
@@ -459,13 +502,40 @@
       }
     }
 
-    function handleLogin(e) {
+    async function handleLogin(e) {
       e.preventDefault();
       const code = document.getElementById('accessCodeInput').value.trim().toUpperCase();
       if (!code) return;
 
+      if (code === ADMIN_CODE) {
+        loggedCode = ADMIN_CODE;
+        isAdmin = true;
+        localStorage.setItem('fc_user_code', loggedCode);
+        showApp();
+        return;
+      }
+
+      // Check if code exists and is active
+      const snapshot = await collectionRef.where('code', '==', code).get();
+      if (snapshot.empty) {
+        alert('Invalid 4-digit code. Please check or register as a new family.');
+        return;
+      }
+
+      let isBlocked = false;
+      snapshot.forEach(doc => {
+        if (doc.data().isBlocked === true) {
+          isBlocked = true;
+        }
+      });
+
+      if (isBlocked) {
+        alert('Access for this code has been stopped/revoked by the administrator.');
+        return;
+      }
+
       loggedCode = code;
-      isAdmin = (loggedCode === ADMIN_CODE);
+      isAdmin = false;
       localStorage.setItem('fc_user_code', loggedCode);
       showApp();
     }
@@ -495,6 +565,7 @@
         kidNames: "",
         invitation: "Invited",
         comingCount: 2,
+        isBlocked: false,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       };
 
@@ -522,15 +593,18 @@
       
       const roleBadge = document.getElementById('roleBadge');
       const menuCodeBadge = document.getElementById('menuCodeBadge');
+      const adminCodeMenuItem = document.getElementById('adminCodeManagerMenuItem');
 
       menuCodeBadge.textContent = loggedCode || '—';
 
       if (isAdmin) {
         roleBadge.textContent = "👑 Admin View (All Families)";
         roleBadge.className = "text-[10px] font-bold text-amber-600";
+        adminCodeMenuItem.classList.remove('hidden');
       } else {
         roleBadge.textContent = `Family Code: ${loggedCode}`;
         roleBadge.className = "text-[10px] font-bold text-indigo-600";
+        adminCodeMenuItem.classList.add('hidden');
       }
 
       listenData();
@@ -545,7 +619,83 @@
         syncCodeScopedDropdowns();
         renderDashboard();
         renderFilteredHistory();
+        if (isAdmin && !document.getElementById('codeManagerModal').classList.contains('hidden')) {
+          renderCodeManagerTable();
+        }
       });
+    }
+
+    // --- Admin Code Manager Logic ---
+    function openCodeManager() {
+      document.getElementById('codeManagerModal').classList.remove('hidden');
+      renderCodeManagerTable();
+    }
+
+    function closeCodeManager() {
+      document.getElementById('codeManagerModal').classList.add('hidden');
+    }
+
+    function renderCodeManagerTable() {
+      const tbody = document.getElementById('codeManagerTableBody');
+      tbody.innerHTML = '';
+
+      if (families.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-slate-400">No family records available.</td></tr>`;
+        return;
+      }
+
+      families.forEach(item => {
+        const isBlocked = item.isBlocked === true;
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50 transition';
+        tr.innerHTML = `
+          <td class="py-2 px-2.5">
+            <span class="font-mono font-bold text-indigo-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
+              ${item.code || '—'}
+            </span>
+          </td>
+          <td class="py-2 px-2.5 font-semibold text-slate-800">${item.name}</td>
+          <td class="py-2 px-2 text-slate-500">${item.phone || '—'}</td>
+          <td class="py-2 px-2 text-center">
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${
+              isBlocked ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'
+            }">
+              ${isBlocked ? '🛑 Stopped' : '✅ Active'}
+            </span>
+          </td>
+          <td class="py-2 px-2.5 text-right space-x-1">
+            <button onclick="toggleCodeAccess('${item.id}', ${!isBlocked})" class="px-2 py-1 text-[11px] font-bold rounded transition ${
+              isBlocked ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-amber-500 hover:bg-amber-600 text-white'
+            }" title="${isBlocked ? 'Allow Login Access' : 'Stop Login Access'}">
+              ${isBlocked ? 'Enable Access' : 'Stop Access'}
+            </button>
+            <button onclick="adminEditCode('${item.id}', '${item.code || ''}')" class="p-1 text-slate-500 hover:text-indigo-600" title="Modify 4-Digit Code">
+              <i class="fa-solid fa-pen-to-square"></i>
+            </button>
+            <button onclick="deleteEntry('${item.id}')" class="p-1 text-slate-500 hover:text-rose-600" title="Revoke & Delete Family">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function toggleCodeAccess(id, blockStatus) {
+      await collectionRef.doc(id).update({
+        isBlocked: blockStatus,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    }
+
+    async function adminEditCode(id, currentCode) {
+      const newCode = prompt(`Modify 4-digit login code:`, currentCode);
+      if (newCode && newCode.trim() !== '') {
+        await collectionRef.doc(id).update({
+          code: newCode.trim().toUpperCase(),
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      }
     }
 
     function checkCustomGroup(val) {
@@ -586,7 +736,7 @@
       document.getElementById('customRelationInput').value = '';
     }
 
-    // Scopes custom categories & custom relations ONLY to the logged in code (independent per user)
+    // Scopes custom categories & relations ONLY to the logged in code
     function syncCodeScopedDropdowns() {
       const defaultCategories = ['Paternal', 'Maternal', 'Friends', 'Office Friends', 'School Friends', 'College Friends', 'Neighbours'];
       const defaultRelations = ['Friend', 'Colleague', 'Babai / Chacha', 'Peddananna / Tauji', 'Mama / Uncle', 'Atta / Bua / Mami', 'Annaya / Bhaiya', 'Thammudu / Younger Bro', 'Akka / Didi', 'Chelli / Younger Sis', 'Bava / Jiju', 'Cousin'];
@@ -600,7 +750,7 @@
         if (f.relation && f.relation.trim()) scopedRelations.add(f.relation.trim());
       });
 
-      // 1. Sync Category in Filter Panel
+      // Filter Panel
       const filterSelect = document.getElementById('histGroupFilter');
       const currentFilterVal = filterSelect.value;
       filterSelect.innerHTML = '<option value="All">All Categories</option>';
@@ -612,7 +762,7 @@
       });
       filterSelect.value = scopedCategories.has(currentFilterVal) ? currentFilterVal : 'All';
 
-      // 2. Sync Category in Entry Form
+      // Entry Form Category
       const formGroupSelect = document.getElementById('groupSelect');
       const currentFormGroupVal = formGroupSelect.value;
       formGroupSelect.innerHTML = '';
@@ -631,7 +781,7 @@
         formGroupSelect.value = currentFormGroupVal;
       }
 
-      // 3. Sync Relation in Entry Form
+      // Entry Form Relation
       const formRelSelect = document.getElementById('relationSelect');
       const currentFormRelVal = formRelSelect.value;
       formRelSelect.innerHTML = '<option value="">— None / Optional —</option>';
@@ -690,6 +840,7 @@
         ladies: ladies,
         kids: kids,
         kidNames: document.getElementById('kidNames').value.trim(),
+        isBlocked: false,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       };
 
@@ -737,7 +888,6 @@
       const item = families.find(f => f.id === id);
       if (!item) return;
 
-      // Expand Entry form if collapsed
       const entryContainer = document.getElementById('entryContainer');
       if (entryContainer.classList.contains('hidden')) {
         toggleAccordion('entryContainer', 'entryChevron', 'entryActionText');
@@ -794,7 +944,7 @@
 
     async function deleteEntry(id) {
       const item = families.find(f => f.id === id);
-      if (confirm(`Delete ${item ? item.name : 'this entry'}?`)) {
+      if (confirm(`Revoke and delete ${item ? item.name : 'this entry'}?`)) {
         await collectionRef.doc(id).delete();
       }
     }
@@ -1047,6 +1197,7 @@
             invitation: row[10] || 'Invited',
             comingCount: parseInt(row[11]) || (parseInt(row[5]) || 0) + (parseInt(row[6]) || 0) + (parseInt(row[7]) || 0),
             code: row[12] || loggedCode || 'A2KU',
+            isBlocked: false,
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
           };
 
