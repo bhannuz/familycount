@@ -11,133 +11,80 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
-<body class="bg-slate-100 text-slate-800 antialiased p-2 md:p-5 min-h-screen">
-  <div class="max-w-6xl mx-auto space-y-3">
+<body class="bg-slate-100 text-slate-800 antialiased p-2 md:p-4 min-h-screen">
+  <div class="max-w-6xl mx-auto space-y-2.5">
     
-    <!-- Event Host & Master Data Banner -->
-    <header class="bg-white px-4 py-3 rounded-xl border border-slate-200 shadow-sm space-y-2">
-      <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2">
-        <div class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-sm">
-            <i class="fa-solid fa-crown"></i>
-          </div>
-          <div>
-            <h1 class="text-sm font-bold text-slate-900 leading-none">Event Master Configuration</h1>
-            <p class="text-[11px] text-slate-400 mt-0.5">Primary inviter & event details reference</p>
-          </div>
+    <!-- Ultra-Compact Top Bar -->
+    <header class="flex items-center justify-between bg-white px-3 py-2 rounded-lg border border-slate-200 shadow-sm">
+      <div class="flex items-center gap-2">
+        <div class="w-6 h-6 rounded bg-indigo-600 text-white flex items-center justify-center font-bold text-xs">
+          <i class="fa-solid fa-users"></i>
         </div>
-        <div class="flex items-center gap-2">
-          <button onclick="saveMasterData()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-semibold px-2.5 py-1 rounded transition flex items-center gap-1">
-            <i class="fa-solid fa-floppy-disk"></i> Save Master Data
-          </button>
-          <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold px-3 py-1 rounded transition flex items-center gap-1">
-            <i class="fa-solid fa-print"></i> Print
-          </button>
-        </div>
+        <h1 class="text-sm font-bold text-slate-900 leading-none">Family Count & Guest Tracker</h1>
       </div>
-
-      <!-- Master Data Fields -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 text-xs">
-        <div>
-          <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Event / Function Name *</label>
-          <input type="text" id="masterEventName" placeholder="e.g. Rahul & Sneha Wedding / Gruhapravesam" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 focus:outline-none focus:border-indigo-500 font-semibold text-slate-900" />
+      
+      <!-- Side View Switcher -->
+      <div class="flex items-center gap-2">
+        <div class="flex items-center gap-1.5 bg-slate-50 border border-slate-300 rounded px-2 py-0.5">
+          <label class="text-[11px] font-bold text-slate-600">View Side:</label>
+          <select id="sideViewFilter" onchange="onSideFilterChange(this.value)" class="text-xs font-semibold bg-transparent text-indigo-700 outline-none cursor-pointer">
+            <option value="All">All Families</option>
+            <option value="Paternal">Paternal Side</option>
+            <option value="Maternal">Maternal Side</option>
+          </select>
         </div>
-        <div>
-          <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Host / Inviter Name *</label>
-          <input type="text" id="masterHostName" placeholder="e.g. Ramesh Kumar (Self)" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 focus:outline-none focus:border-indigo-500 font-semibold text-indigo-900" />
-        </div>
-        <div>
-          <label class="block text-[10px] font-bold uppercase text-blue-700 mb-0.5">Father / Paternal Lineage</label>
-          <input type="text" id="masterFatherName" placeholder="e.g. Late Sri Venkat Rao" class="w-full bg-blue-50/50 border border-blue-200 rounded px-2 py-1 focus:outline-none focus:border-blue-500 text-slate-800" />
-        </div>
-        <div>
-          <label class="block text-[10px] font-bold uppercase text-purple-700 mb-0.5">Mother / Maternal Lineage</label>
-          <input type="text" id="masterMotherName" placeholder="e.g. Smt. Lakshmi Devi" class="w-full bg-purple-50/50 border border-purple-200 rounded px-2 py-1 focus:outline-none focus:border-purple-500 text-slate-800" />
-        </div>
+        <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-900 text-white text-[11px] font-semibold px-2.5 py-1 rounded transition flex items-center gap-1">
+          <i class="fa-solid fa-print"></i> Print
+        </button>
       </div>
     </header>
 
-    <!-- Side-by-Side Summary Dashboard -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-2.5">
-      
-      <!-- Overall Summary -->
-      <div class="bg-indigo-900 text-white p-3 rounded-xl shadow-sm flex flex-col justify-between">
-        <div class="flex justify-between items-center text-[11px] font-bold uppercase tracking-wider text-indigo-200">
-          <span>Total Attending</span>
-          <span id="grandFamilies" class="bg-indigo-800 text-indigo-100 px-1.5 py-0.5 rounded text-[10px]">0 Families</span>
-        </div>
-        <div class="my-1">
-          <span id="grandComingTotal" class="text-2xl font-extrabold text-emerald-300 leading-none">0</span>
-          <span class="text-[11px] text-indigo-200 ml-1">coming / <span id="grandTotal" class="text-white font-semibold">0</span> total</span>
-        </div>
-        <div class="flex justify-between border-t border-indigo-700/60 pt-1.5 text-[11px] text-indigo-100">
-          <span>G: <b id="grandGents" class="text-white">0</b></span>
-          <span>L: <b id="grandLadies" class="text-white">0</b></span>
-          <span>K: <b id="grandKids" class="text-white">0</b></span>
-          <span>Invited: <b id="grandInvitedCount" class="text-amber-300">0</b></span>
+    <!-- Compact Dynamic Summary Strip -->
+    <div class="grid grid-cols-2 md:grid-cols-6 gap-2">
+      <div class="bg-indigo-900 text-white px-3 py-2 rounded-lg shadow-sm">
+        <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-200 block" id="summaryTitle">All Families</span>
+        <div class="flex items-baseline gap-1 mt-0.5">
+          <span id="statComing" class="text-xl font-black text-emerald-300">0</span>
+          <span class="text-[10px] text-indigo-200">coming</span>
         </div>
       </div>
-
-      <!-- Paternal Side Summary -->
-      <div class="bg-white p-3 rounded-xl border border-blue-200 shadow-sm">
-        <div class="flex justify-between items-center mb-0.5">
-          <div>
-            <span class="text-[11px] font-bold uppercase tracking-wider text-blue-700">Paternal Side</span>
-            <span id="patSubLabel" class="block text-[10px] text-slate-400 italic">Father's side</span>
-          </div>
-          <span id="patFamilies" class="text-[10px] bg-blue-50 text-blue-800 font-semibold px-1.5 py-0.5 rounded">0 Fam</span>
-        </div>
-        <div class="my-1">
-          <span id="patComing" class="text-xl font-bold text-emerald-600">0</span>
-          <span class="text-[11px] text-slate-400">coming (<span id="patTotal">0</span> total)</span>
-        </div>
-        <div class="grid grid-cols-3 gap-1 pt-1.5 border-t border-slate-100 text-[11px] text-slate-600 text-center">
-          <div class="bg-slate-50 py-0.5 rounded">G: <b id="patGents" class="text-slate-900">0</b></div>
-          <div class="bg-slate-50 py-0.5 rounded">L: <b id="patLadies" class="text-slate-900">0</b></div>
-          <div class="bg-slate-50 py-0.5 rounded">K: <b id="patKids" class="text-slate-900">0</b></div>
-        </div>
+      <div class="bg-white border border-slate-200 px-3 py-2 rounded-lg shadow-sm">
+        <span class="text-[10px] font-bold uppercase text-slate-400 block">Total Headcount</span>
+        <span id="statTotal" class="text-lg font-bold text-slate-800 mt-0.5 block">0</span>
       </div>
-
-      <!-- Maternal Side Summary -->
-      <div class="bg-white p-3 rounded-xl border border-purple-200 shadow-sm">
-        <div class="flex justify-between items-center mb-0.5">
-          <div>
-            <span class="text-[11px] font-bold uppercase tracking-wider text-purple-700">Maternal Side</span>
-            <span id="matSubLabel" class="block text-[10px] text-slate-400 italic">Mother's side</span>
-          </div>
-          <span id="matFamilies" class="text-[10px] bg-purple-50 text-purple-800 font-semibold px-1.5 py-0.5 rounded">0 Fam</span>
-        </div>
-        <div class="my-1">
-          <span id="matComing" class="text-xl font-bold text-emerald-600">0</span>
-          <span class="text-[11px] text-slate-400">coming (<span id="matTotal">0</span> total)</span>
-        </div>
-        <div class="grid grid-cols-3 gap-1 pt-1.5 border-t border-slate-100 text-[11px] text-slate-600 text-center">
-          <div class="bg-slate-50 py-0.5 rounded">G: <b id="matGents" class="text-slate-900">0</b></div>
-          <div class="bg-slate-50 py-0.5 rounded">L: <b id="matLadies" class="text-slate-900">0</b></div>
-          <div class="bg-slate-50 py-0.5 rounded">K: <b id="matKids" class="text-slate-900">0</b></div>
-        </div>
+      <div class="bg-blue-50/50 border border-blue-100 px-3 py-2 rounded-lg shadow-sm">
+        <span class="text-[10px] font-bold uppercase text-blue-600 block">Gents</span>
+        <span id="statGents" class="text-lg font-bold text-blue-700 mt-0.5 block">0</span>
       </div>
-
+      <div class="bg-pink-50/50 border border-pink-100 px-3 py-2 rounded-lg shadow-sm">
+        <span class="text-[10px] font-bold uppercase text-pink-600 block">Ladies</span>
+        <span id="statLadies" class="text-lg font-bold text-pink-700 mt-0.5 block">0</span>
+      </div>
+      <div class="bg-amber-50/50 border border-amber-100 px-3 py-2 rounded-lg shadow-sm">
+        <span class="text-[10px] font-bold uppercase text-amber-600 block">Kids</span>
+        <span id="statKids" class="text-lg font-bold text-amber-700 mt-0.5 block">0</span>
+      </div>
+      <div class="bg-emerald-50/50 border border-emerald-100 px-3 py-2 rounded-lg shadow-sm">
+        <span class="text-[10px] font-bold uppercase text-emerald-600 block">Invited Count</span>
+        <span id="statInvited" class="text-lg font-bold text-emerald-700 mt-0.5 block">0 Fam</span>
+      </div>
     </div>
 
-    <!-- Compact Entry Form -->
-    <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+    <!-- Quick Add Form -->
+    <div class="bg-white p-2.5 rounded-lg border border-slate-200 shadow-sm">
       <form id="familyForm" onsubmit="handleFormSubmit(event)" class="space-y-2">
         <input type="hidden" id="docId" value="" />
         
-        <!-- Row 1 -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-2">
-          
+        <!-- Row 1: Side, Relation, Name, Place, Phone -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-1.5">
           <div class="md:col-span-2">
-            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Side *</label>
             <select id="side" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs font-semibold text-slate-700 focus:outline-none focus:border-indigo-500">
-              <option value="Paternal">Paternal (Father's Side)</option>
-              <option value="Maternal">Maternal (Mother's Side)</option>
+              <option value="Paternal">Paternal Side</option>
+              <option value="Maternal">Maternal Side</option>
             </select>
           </div>
 
           <div class="md:col-span-3">
-            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Relation with Inviter *</label>
             <div class="flex gap-1">
               <select id="relationSelect" onchange="checkCustomRelation(this.value)" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs font-semibold text-slate-700 focus:outline-none focus:border-indigo-500">
                 <option value="Babai / Chacha">Babai / Chacha</option>
@@ -151,113 +98,89 @@
                 <option value="Bava / Jiju">Bava / Jiju</option>
                 <option value="Cousin">Cousin</option>
                 <option value="Friend">Friend</option>
-                <option value="__custom__">+ Add Custom Relation...</option>
+                <option value="__custom__">+ Custom Relation...</option>
               </select>
               <input type="text" id="customRelationInput" placeholder="Enter Relation" class="hidden w-full bg-white border border-indigo-400 rounded px-2 py-1 text-xs font-semibold focus:outline-none" />
             </div>
           </div>
 
           <div class="md:col-span-3">
-            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Family / Head Name *</label>
-            <input type="text" id="familyName" required placeholder="e.g. Ramesh & Family" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs focus:outline-none focus:border-indigo-500" />
+            <input type="text" id="familyName" required placeholder="Family / Head Name *" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs focus:outline-none focus:border-indigo-500" />
           </div>
 
           <div class="md:col-span-2">
-            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Family Place</label>
-            <input type="text" id="familyPlace" placeholder="e.g. Hyderabad" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs focus:outline-none focus:border-indigo-500" />
+            <input type="text" id="familyPlace" placeholder="Place (e.g. Hyd)" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs focus:outline-none focus:border-indigo-500" />
           </div>
 
           <div class="md:col-span-2">
-            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Phone Number</label>
-            <input type="tel" id="familyPhone" placeholder="e.g. 9876543210" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs focus:outline-none focus:border-indigo-500" />
+            <input type="tel" id="familyPhone" placeholder="Phone Number" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs focus:outline-none focus:border-indigo-500" />
           </div>
-
         </div>
 
-        <!-- Row 2 -->
-        <div class="grid grid-cols-2 md:grid-cols-12 gap-2 items-end">
-          
-          <div class="col-span-1 md:col-span-2">
-            <label class="block text-[10px] font-bold text-blue-700 mb-0.5 text-center">Gents</label>
-            <input type="number" id="gentsCount" min="0" value="1" required class="w-full text-center bg-slate-50 border border-slate-300 rounded py-1 text-xs font-bold focus:outline-none" />
+        <!-- Row 2: Counts, Remarks, Add Button -->
+        <div class="grid grid-cols-2 md:grid-cols-12 gap-1.5 items-center">
+          <div class="col-span-1 md:col-span-2 flex items-center gap-1 bg-slate-50 border border-slate-300 rounded px-1.5 py-0.5">
+            <span class="text-[10px] font-bold text-blue-700">G:</span>
+            <input type="number" id="gentsCount" min="0" value="1" required class="w-full text-center bg-transparent text-xs font-bold focus:outline-none" />
           </div>
 
-          <div class="col-span-1 md:col-span-2">
-            <label class="block text-[10px] font-bold text-pink-700 mb-0.5 text-center">Ladies</label>
-            <input type="number" id="ladiesCount" min="0" value="1" required class="w-full text-center bg-slate-50 border border-slate-300 rounded py-1 text-xs font-bold focus:outline-none" />
+          <div class="col-span-1 md:col-span-2 flex items-center gap-1 bg-slate-50 border border-slate-300 rounded px-1.5 py-0.5">
+            <span class="text-[10px] font-bold text-pink-700">L:</span>
+            <input type="number" id="ladiesCount" min="0" value="1" required class="w-full text-center bg-transparent text-xs font-bold focus:outline-none" />
           </div>
 
-          <div class="col-span-1 md:col-span-2">
-            <label class="block text-[10px] font-bold text-amber-700 mb-0.5 text-center">Kids</label>
-            <input type="number" id="kidsCount" min="0" value="0" required class="w-full text-center bg-slate-50 border border-slate-300 rounded py-1 text-xs font-bold focus:outline-none" />
+          <div class="col-span-1 md:col-span-2 flex items-center gap-1 bg-slate-50 border border-slate-300 rounded px-1.5 py-0.5">
+            <span class="text-[10px] font-bold text-amber-700">K:</span>
+            <input type="number" id="kidsCount" min="0" value="0" required class="w-full text-center bg-transparent text-xs font-bold focus:outline-none" />
           </div>
 
           <div class="col-span-1 md:col-span-4">
-            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Remarks / Notes</label>
-            <input type="text" id="notes" placeholder="Optional remarks" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs focus:outline-none focus:border-indigo-500" />
+            <input type="text" id="notes" placeholder="Remarks / Notes" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs focus:outline-none focus:border-indigo-500" />
           </div>
 
           <div class="col-span-2 md:col-span-2 flex gap-1">
-            <button type="submit" id="saveBtn" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-1.5 rounded transition shadow-sm">
+            <button type="submit" id="saveBtn" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-1 rounded transition shadow-sm">
               Add
             </button>
-            <button type="button" id="cancelBtn" onclick="resetForm()" class="hidden px-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold py-1.5 rounded transition">
+            <button type="button" id="cancelBtn" onclick="resetForm()" class="hidden px-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold py-1 rounded transition">
               ✕
             </button>
           </div>
-
         </div>
       </form>
     </div>
 
-    <!-- Filter & Search Bar -->
-    <div class="flex items-center justify-between gap-2 px-1">
-      <div class="flex gap-1">
-        <button onclick="setFilter('All')" id="tabAll" class="filter-tab active-tab text-xs font-semibold px-2.5 py-1 rounded border">All</button>
-        <button onclick="setFilter('Paternal')" id="tabPat" class="filter-tab text-xs font-semibold px-2.5 py-1 rounded border">Paternal</button>
-        <button onclick="setFilter('Maternal')" id="tabMat" class="filter-tab text-xs font-semibold px-2.5 py-1 rounded border">Maternal</button>
-      </div>
-      <input type="text" id="searchInput" oninput="renderTable()" placeholder="Search name, relation, place..." class="bg-white border border-slate-300 text-xs px-2.5 py-1 rounded-lg w-48 md:w-64 focus:outline-none" />
+    <!-- Search & Search Filter -->
+    <div class="flex items-center justify-between gap-2 px-0.5">
+      <span id="tableCountLabel" class="text-xs font-bold text-slate-600">Showing 0 entries</span>
+      <input type="text" id="searchInput" oninput="renderTable()" placeholder="Search name, relation, place..." class="bg-white border border-slate-300 text-xs px-2 py-1 rounded-lg w-48 md:w-64 focus:outline-none" />
     </div>
 
-    <!-- Compact Table -->
-    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+    <!-- Table -->
+    <div class="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full text-left text-xs border-collapse">
           <thead>
             <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase text-[11px]">
-              <th class="py-2 px-3">Side</th>
-              <th class="py-2 px-3">Relation</th>
-              <th class="py-2 px-3">Family & Place</th>
-              <th class="py-2 px-2 text-center text-blue-700">G</th>
-              <th class="py-2 px-2 text-center text-pink-700">L</th>
-              <th class="py-2 px-2 text-center text-amber-700">K</th>
-              <th class="py-2 px-2 text-center font-bold text-slate-500">Total</th>
-              <th class="py-2 px-3 text-center">Invitation</th>
-              <th class="py-2 px-3 text-center bg-emerald-50/50 text-emerald-800">Coming Headcount</th>
-              <th class="py-2 px-3 text-right">Actions</th>
+              <th class="py-2 px-2.5">Side</th>
+              <th class="py-2 px-2.5">Relation</th>
+              <th class="py-2 px-2.5">Family Name & Place</th>
+              <th class="py-2 px-1.5 text-center text-blue-700">G</th>
+              <th class="py-2 px-1.5 text-center text-pink-700">L</th>
+              <th class="py-2 px-1.5 text-center text-amber-700">K</th>
+              <th class="py-2 px-1.5 text-center font-bold text-slate-500">Total</th>
+              <th class="py-2 px-2.5 text-center">Invitation</th>
+              <th class="py-2 px-2.5 text-center bg-emerald-50/50 text-emerald-800">Coming Headcount</th>
+              <th class="py-2 px-2 text-right">Actions</th>
             </tr>
           </thead>
           <tbody id="familyTableBody" class="divide-y divide-slate-100"></tbody>
         </table>
       </div>
-      <p id="emptyMessage" class="hidden text-center py-5 text-slate-400 text-xs">No entries found.</p>
+      <p id="emptyMessage" class="hidden text-center py-4 text-slate-400 text-xs">No entries found.</p>
     </div>
 
   </div>
-
-  <style>
-    .active-tab {
-      background-color: #4f46e5;
-      color: #ffffff;
-      border-color: #4f46e5;
-    }
-    .filter-tab:not(.active-tab) {
-      background-color: #ffffff;
-      color: #475569;
-      border-color: #e2e8f0;
-    }
-  </style>
 
   <script>
     const firebaseConfig = {
@@ -274,40 +197,9 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const collectionRef = db.collection("family_count");
-    const masterDocRef = db.collection("app_settings").doc("event_master");
 
     let families = [];
     let currentSideFilter = 'All';
-
-    // Realtime listener for Master Host Data
-    masterDocRef.onSnapshot((doc) => {
-      if (doc.exists) {
-        const d = doc.data();
-        document.getElementById('masterEventName').value = d.eventName || '';
-        document.getElementById('masterHostName').value = d.hostName || '';
-        document.getElementById('masterFatherName').value = d.fatherName || '';
-        document.getElementById('masterMotherName').value = d.motherName || '';
-
-        if (d.fatherName) {
-          document.getElementById('patSubLabel').textContent = `${d.fatherName}'s side`;
-        }
-        if (d.motherName) {
-          document.getElementById('matSubLabel').textContent = `${d.motherName}'s side`;
-        }
-      }
-    });
-
-    async function saveMasterData() {
-      const payload = {
-        eventName: document.getElementById('masterEventName').value.trim(),
-        hostName: document.getElementById('masterHostName').value.trim(),
-        fatherName: document.getElementById('masterFatherName').value.trim(),
-        motherName: document.getElementById('masterMotherName').value.trim(),
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      };
-      await masterDocRef.set(payload, { merge: true });
-      alert('Master Data saved successfully!');
-    }
 
     // Realtime guest list
     collectionRef.onSnapshot((snapshot) => {
@@ -318,6 +210,12 @@
       renderDashboard();
       renderTable();
     });
+
+    function onSideFilterChange(val) {
+      currentSideFilter = val;
+      renderDashboard();
+      renderTable();
+    }
 
     function checkCustomRelation(val) {
       const customInput = document.getElementById('customRelationInput');
@@ -461,71 +359,33 @@
       document.getElementById('cancelBtn').classList.add('hidden');
     }
 
-    function setFilter(side) {
-      currentSideFilter = side;
-      document.getElementById('tabAll').className = `filter-tab text-xs font-semibold px-2.5 py-1 rounded border ${side === 'All' ? 'active-tab' : ''}`;
-      document.getElementById('tabPat').className = `filter-tab text-xs font-semibold px-2.5 py-1 rounded border ${side === 'Paternal' ? 'active-tab' : ''}`;
-      document.getElementById('tabMat').className = `filter-tab text-xs font-semibold px-2.5 py-1 rounded border ${side === 'Maternal' ? 'active-tab' : ''}`;
-      renderTable();
-    }
-
     function renderDashboard() {
-      let grandG = 0, grandL = 0, grandK = 0, grandComing = 0, grandInvited = 0;
-      let patG = 0, patL = 0, patK = 0, patComing = 0, patFam = 0;
-      let matG = 0, matL = 0, matK = 0, matComing = 0, matFam = 0;
+      const targetFamilies = (currentSideFilter === 'All') 
+        ? families 
+        : families.filter(f => f.side === currentSideFilter);
 
-      families.forEach(f => {
+      let gCount = 0, lCount = 0, kCount = 0, comingCount = 0, invitedFamCount = 0;
+
+      targetFamilies.forEach(f => {
         const g = f.gents || 0;
         const l = f.ladies || 0;
         const k = f.kids || 0;
         const coming = parseInt(f.comingCount) || 0;
-        const isInvited = (f.invitation === 'Invited');
 
-        grandG += g;
-        grandL += l;
-        grandK += k;
-        grandComing += coming;
-        if (isInvited) grandInvited++;
-
-        if (f.side === 'Maternal') {
-          matG += g;
-          matL += l;
-          matK += k;
-          matComing += coming;
-          matFam += 1;
-        } else {
-          patG += g;
-          patL += l;
-          patK += k;
-          patComing += coming;
-          patFam += 1;
-        }
+        gCount += g;
+        lCount += l;
+        kCount += k;
+        comingCount += coming;
+        if (f.invitation === 'Invited') invitedFamCount++;
       });
 
-      // Overall
-      document.getElementById('grandTotal').textContent = grandG + grandL + grandK;
-      document.getElementById('grandGents').textContent = grandG;
-      document.getElementById('grandLadies').textContent = grandL;
-      document.getElementById('grandKids').textContent = grandK;
-      document.getElementById('grandComingTotal').textContent = grandComing;
-      document.getElementById('grandInvitedCount').textContent = grandInvited;
-      document.getElementById('grandFamilies').textContent = `${families.length} Families`;
-
-      // Paternal
-      document.getElementById('patTotal').textContent = patG + patL + patK;
-      document.getElementById('patGents').textContent = patG;
-      document.getElementById('patLadies').textContent = patL;
-      document.getElementById('patKids').textContent = patK;
-      document.getElementById('patComing').textContent = patComing;
-      document.getElementById('patFamilies').textContent = `${patFam} Fam`;
-
-      // Maternal
-      document.getElementById('matTotal').textContent = matG + matL + matK;
-      document.getElementById('matGents').textContent = matG;
-      document.getElementById('matLadies').textContent = matL;
-      document.getElementById('matKids').textContent = matK;
-      document.getElementById('matComing').textContent = matComing;
-      document.getElementById('matFamilies').textContent = `${matFam} Fam`;
+      document.getElementById('summaryTitle').textContent = currentSideFilter === 'All' ? 'All Families' : `${currentSideFilter} Side`;
+      document.getElementById('statComing').textContent = comingCount;
+      document.getElementById('statTotal').textContent = gCount + lCount + kCount;
+      document.getElementById('statGents').textContent = gCount;
+      document.getElementById('statLadies').textContent = lCount;
+      document.getElementById('statKids').textContent = kCount;
+      document.getElementById('statInvited').textContent = `${invitedFamCount} / ${targetFamilies.length}`;
     }
 
     function renderTable() {
@@ -543,6 +403,8 @@
         return matchesSide && matchesSearch;
       });
 
+      document.getElementById('tableCountLabel').textContent = `Showing ${filtered.length} entries`;
+
       if (filtered.length === 0) {
         document.getElementById('emptyMessage').classList.remove('hidden');
       } else {
@@ -556,7 +418,7 @@
         const comingCount = (item.comingCount !== undefined) ? item.comingCount : 0;
 
         const inviteSelect = `
-          <select onchange="updateInvitation('${item.id}', this.value)" class="text-xs font-semibold px-2 py-0.5 rounded border focus:outline-none ${
+          <select onchange="updateInvitation('${item.id}', this.value)" class="text-[11px] font-semibold px-1.5 py-0.5 rounded border focus:outline-none ${
             isInvited ? 'bg-emerald-50 text-emerald-800 border-emerald-300' : 'bg-slate-50 text-slate-600 border-slate-300'
           }">
             <option value="Not Invited" ${!isInvited ? 'selected' : ''}>⏳ Not Invited</option>
@@ -568,7 +430,7 @@
           <div class="flex items-center justify-center gap-1">
             <input type="number" min="0" max="${total}" value="${comingCount}" 
               onchange="updateComingCount('${item.id}', this.value)"
-              class="w-12 text-center text-xs font-bold py-0.5 rounded border ${
+              class="w-11 text-center text-xs font-bold py-0.5 rounded border ${
                 comingCount > 0 ? 'bg-emerald-50 text-emerald-800 border-emerald-400' : 'bg-slate-50 text-slate-400 border-slate-300'
               } focus:outline-none" />
             <span class="text-[10px] text-slate-400">/ ${total}</span>
@@ -578,27 +440,27 @@
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-slate-50 transition';
         tr.innerHTML = `
-          <td class="py-2 px-3">
+          <td class="py-1.5 px-2.5">
             <span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${isPat ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}">
               ${isPat ? 'Paternal' : 'Maternal'}
             </span>
           </td>
-          <td class="py-2 px-3 font-medium text-slate-700">${item.relation || '—'}</td>
-          <td class="py-2 px-3">
-            <div class="font-semibold text-slate-800 leading-tight">${item.name}</div>
-            <div class="text-[10px] text-slate-400 flex items-center gap-2 mt-0.5">
-              ${item.place ? `<span><i class="fa-solid fa-location-dot text-slate-400 mr-0.5"></i>${item.place}</span>` : ''}
-              ${item.phone ? `<span><i class="fa-solid fa-phone text-slate-400 mr-0.5"></i>${item.phone}</span>` : ''}
+          <td class="py-1.5 px-2.5 font-medium text-slate-700 text-xs">${item.relation || '—'}</td>
+          <td class="py-1.5 px-2.5">
+            <div class="font-semibold text-slate-800 text-xs leading-tight">${item.name}</div>
+            <div class="text-[10px] text-slate-400 flex items-center gap-2">
+              ${item.place ? `<span><i class="fa-solid fa-location-dot mr-0.5"></i>${item.place}</span>` : ''}
+              ${item.phone ? `<span><i class="fa-solid fa-phone mr-0.5"></i>${item.phone}</span>` : ''}
             </div>
-            ${item.notes ? `<div class="text-[10px] text-indigo-500 italic mt-0.5">${item.notes}</div>` : ''}
+            ${item.notes ? `<div class="text-[10px] text-indigo-500 italic">${item.notes}</div>` : ''}
           </td>
-          <td class="py-2 px-2 text-center text-slate-700 font-medium">${item.gents || 0}</td>
-          <td class="py-2 px-2 text-center text-slate-700 font-medium">${item.ladies || 0}</td>
-          <td class="py-2 px-2 text-center text-slate-700 font-medium">${item.kids || 0}</td>
-          <td class="py-2 px-2 text-center font-bold text-slate-500">${total}</td>
-          <td class="py-2 px-3 text-center">${inviteSelect}</td>
-          <td class="py-2 px-3 text-center bg-emerald-50/20">${comingInput}</td>
-          <td class="py-2 px-3 text-right">
+          <td class="py-1.5 px-1.5 text-center text-slate-700 font-medium">${item.gents || 0}</td>
+          <td class="py-1.5 px-1.5 text-center text-slate-700 font-medium">${item.ladies || 0}</td>
+          <td class="py-1.5 px-1.5 text-center text-slate-700 font-medium">${item.kids || 0}</td>
+          <td class="py-1.5 px-1.5 text-center font-bold text-slate-500">${total}</td>
+          <td class="py-1.5 px-2.5 text-center">${inviteSelect}</td>
+          <td class="py-1.5 px-2.5 text-center bg-emerald-50/20">${comingInput}</td>
+          <td class="py-1.5 px-2 text-right">
             <button onclick="editEntry('${item.id}')" class="text-slate-400 hover:text-indigo-600 px-1" title="Edit"><i class="fa-solid fa-pen"></i></button>
             <button onclick="deleteEntry('${item.id}')" class="text-slate-400 hover:text-rose-600 px-1" title="Delete"><i class="fa-solid fa-trash"></i></button>
           </td>
