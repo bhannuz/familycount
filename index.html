@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Family Count & Guest Tracker</title>
+  <title>Family Count & RSVP Tracker</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
@@ -12,27 +12,55 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
 <body class="bg-slate-100 text-slate-800 antialiased p-2 md:p-4 min-h-screen">
-  <div class="max-w-6xl mx-auto space-y-2">
+
+  <!-- Login Modal / Screen -->
+  <div id="loginScreen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4">
+    <div class="bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full text-center space-y-4">
+      <div class="w-12 h-12 bg-indigo-600 text-white rounded-full flex items-center justify-center mx-auto text-xl font-bold">
+        <i class="fa-solid fa-lock"></i>
+      </div>
+      <div>
+        <h2 class="text-lg font-bold text-slate-900">Event Invitation RSVP</h2>
+        <p class="text-xs text-slate-500 mt-1">Enter your 4-digit family code or Admin Access code</p>
+      </div>
+      <form onsubmit="handleLogin(event)" class="space-y-3">
+        <input type="text" id="accessCodeInput" maxlength="6" required placeholder="Enter Code (e.g. 1234 or A2KU)" class="w-full text-center tracking-widest uppercase font-bold text-base bg-slate-50 border border-slate-300 rounded-lg px-3 py-2.5 focus:outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100" />
+        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2.5 rounded-lg transition shadow-sm">
+          Access Dashboard
+        </button>
+      </form>
+      <p class="text-[11px] text-slate-400">Admin code sees all families. Family code views only their own family RSVP.</p>
+    </div>
+  </div>
+
+  <!-- Main App View -->
+  <div id="appScreen" class="hidden max-w-6xl mx-auto space-y-2">
     
-    <!-- Ultra-Compact Top Bar -->
+    <!-- Top Bar -->
     <header class="flex items-center justify-between bg-white px-3 py-2 rounded-lg border border-slate-200 shadow-sm">
       <div class="flex items-center gap-2">
         <div class="w-6 h-6 rounded bg-indigo-600 text-white flex items-center justify-center font-bold text-xs">
           <i class="fa-solid fa-users"></i>
         </div>
-        <h1 class="text-sm font-bold text-slate-900 leading-none">Family Count & Guest Tracker</h1>
+        <div>
+          <h1 class="text-sm font-bold text-slate-900 leading-none">Family Headcount Tracker</h1>
+          <span id="roleBadge" class="text-[10px] font-bold text-indigo-600">Guest Mode</span>
+        </div>
       </div>
       
-      <!-- Side View Switcher -->
+      <!-- Side View Switcher (Admin Only) & Logout -->
       <div class="flex items-center gap-2">
-        <div class="flex items-center gap-1.5 bg-slate-50 border border-slate-300 rounded px-2 py-0.5">
-          <label class="text-[11px] font-bold text-slate-600">View Side:</label>
+        <div id="adminSideFilterContainer" class="flex items-center gap-1.5 bg-slate-50 border border-slate-300 rounded px-2 py-0.5">
+          <label class="text-[11px] font-bold text-slate-600">Side:</label>
           <select id="sideViewFilter" onchange="onSideFilterChange(this.value)" class="text-xs font-semibold bg-transparent text-indigo-700 outline-none cursor-pointer">
             <option value="All">All Families</option>
             <option value="Paternal">Paternal Side</option>
             <option value="Maternal">Maternal Side</option>
           </select>
         </div>
+        <button onclick="logout()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-[11px] font-semibold px-2.5 py-1 rounded transition">
+          Logout
+        </button>
         <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-900 text-white text-[11px] font-semibold px-2.5 py-1 rounded transition flex items-center gap-1">
           <i class="fa-solid fa-print"></i> Print
         </button>
@@ -42,14 +70,14 @@
     <!-- Compact Summary Strip -->
     <div class="grid grid-cols-2 md:grid-cols-6 gap-2">
       <div class="bg-indigo-900 text-white px-3 py-1.5 rounded-lg shadow-sm">
-        <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-200 block" id="summaryTitle">All Families</span>
+        <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-200 block" id="summaryTitle">Confirmed Coming</span>
         <div class="flex items-baseline gap-1">
           <span id="statComing" class="text-xl font-black text-emerald-300">0</span>
-          <span class="text-[10px] text-indigo-200">coming</span>
+          <span class="text-[10px] text-indigo-200">attending</span>
         </div>
       </div>
       <div class="bg-white border border-slate-200 px-3 py-1.5 rounded-lg shadow-sm">
-        <span class="text-[10px] font-bold uppercase text-slate-400 block">Total Headcount</span>
+        <span class="text-[10px] font-bold uppercase text-slate-400 block">Total Invited Members</span>
         <span id="statTotal" class="text-base font-bold text-slate-800 block">0</span>
       </div>
       <div class="bg-blue-50/50 border border-blue-100 px-3 py-1.5 rounded-lg shadow-sm">
@@ -65,17 +93,17 @@
         <span id="statKids" class="text-base font-bold text-amber-700 block">0</span>
       </div>
       <div class="bg-emerald-50/50 border border-emerald-100 px-3 py-1.5 rounded-lg shadow-sm">
-        <span class="text-[10px] font-bold uppercase text-emerald-600 block">Invited Count</span>
+        <span class="text-[10px] font-bold uppercase text-emerald-600 block">Invited Families</span>
         <span id="statInvited" class="text-base font-bold text-emerald-700 block">0 Fam</span>
       </div>
     </div>
 
-    <!-- Single-Row Compact Entry Form -->
+    <!-- Family Add/Edit Form (With Custom 4-digit code) -->
     <div class="bg-white p-2.5 rounded-lg border border-slate-200 shadow-sm">
       <form id="familyForm" onsubmit="handleFormSubmit(event)" class="space-y-1.5">
         <input type="hidden" id="docId" value="" />
         
-        <!-- Row 1: Basic Identifiers -->
+        <!-- Row 1: Side, Relation, Name, Place, Phone, 4-digit Code -->
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-1.5">
           <div class="md:col-span-2">
             <select id="side" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs font-semibold text-slate-700 focus:outline-none focus:border-indigo-500">
@@ -84,7 +112,7 @@
             </select>
           </div>
 
-          <div class="md:col-span-3">
+          <div class="md:col-span-2">
             <div class="flex gap-1">
               <select id="relationSelect" onchange="checkCustomRelation(this.value)" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs font-semibold text-slate-700 focus:outline-none focus:border-indigo-500">
                 <option value="Babai / Chacha">Babai / Chacha</option>
@@ -115,36 +143,36 @@
           <div class="md:col-span-2">
             <input type="tel" id="familyPhone" placeholder="Phone Number" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs focus:outline-none focus:border-indigo-500" />
           </div>
+
+          <div class="md:col-span-1">
+            <input type="text" id="familyAccessCode" maxlength="4" placeholder="4-Digit Code" class="w-full text-center bg-indigo-50 border border-indigo-200 rounded px-1 py-1 text-xs font-bold uppercase text-indigo-900 focus:outline-none focus:border-indigo-600" />
+          </div>
         </div>
 
-        <!-- Row 2: Direct G, L, K Numbers + Optional Kid Names -->
+        <!-- Row 2: Direct Counts G, L, K, Kid Names & Buttons -->
         <div class="grid grid-cols-2 md:grid-cols-12 gap-1.5 items-center">
-          <div class="col-span-1 md:col-span-1 flex items-center gap-1 bg-slate-50 border border-slate-300 rounded px-1.5 py-0.5">
-            <span class="text-[10px] font-bold text-blue-700">G:</span>
+          <div class="col-span-1 md:col-span-2 flex items-center gap-1 bg-slate-50 border border-slate-300 rounded px-1.5 py-0.5">
+            <span class="text-[10px] font-bold text-blue-700">Gents:</span>
             <input type="number" id="gentsCount" min="0" value="1" required class="w-full text-center bg-transparent text-xs font-bold focus:outline-none" />
           </div>
 
-          <div class="col-span-1 md:col-span-1 flex items-center gap-1 bg-slate-50 border border-slate-300 rounded px-1.5 py-0.5">
-            <span class="text-[10px] font-bold text-pink-700">L:</span>
+          <div class="col-span-1 md:col-span-2 flex items-center gap-1 bg-slate-50 border border-slate-300 rounded px-1.5 py-0.5">
+            <span class="text-[10px] font-bold text-pink-700">Ladies:</span>
             <input type="number" id="ladiesCount" min="0" value="1" required class="w-full text-center bg-transparent text-xs font-bold focus:outline-none" />
           </div>
 
-          <div class="col-span-1 md:col-span-1 flex items-center gap-1 bg-slate-50 border border-slate-300 rounded px-1.5 py-0.5">
-            <span class="text-[10px] font-bold text-amber-700">K:</span>
+          <div class="col-span-1 md:col-span-2 flex items-center gap-1 bg-slate-50 border border-slate-300 rounded px-1.5 py-0.5">
+            <span class="text-[10px] font-bold text-amber-700">Kids:</span>
             <input type="number" id="kidsCount" min="0" value="0" required class="w-full text-center bg-transparent text-xs font-bold focus:outline-none" />
           </div>
 
-          <div class="col-span-1 md:col-span-4">
-            <input type="text" id="kidNames" placeholder="Kid names (e.g. Aryan, Riya) - optional" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs focus:outline-none focus:border-indigo-500" />
-          </div>
-
-          <div class="col-span-1 md:col-span-3">
-            <input type="text" id="notes" placeholder="Remarks / Notes" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs focus:outline-none focus:border-indigo-500" />
+          <div class="col-span-2 md:col-span-4">
+            <input type="text" id="kidNames" placeholder="Kid names (optional)" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs focus:outline-none focus:border-indigo-500" />
           </div>
 
           <div class="col-span-2 md:col-span-2 flex gap-1">
             <button type="submit" id="saveBtn" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-1 rounded transition shadow-sm">
-              Add
+              Save Entry
             </button>
             <button type="button" id="cancelBtn" onclick="resetForm()" class="hidden px-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold py-1 rounded transition">
               ✕
@@ -154,39 +182,42 @@
       </form>
     </div>
 
-    <!-- Search & Search Filter -->
-    <div class="flex items-center justify-between gap-2 px-0.5">
+    <!-- Table Filter & Search (Admin only) -->
+    <div id="adminSearchRow" class="flex items-center justify-between gap-2 px-0.5">
       <span id="tableCountLabel" class="text-xs font-bold text-slate-600">Showing 0 entries</span>
-      <input type="text" id="searchInput" oninput="renderTable()" placeholder="Search name, relation, place..." class="bg-white border border-slate-300 text-xs px-2 py-1 rounded-lg w-48 md:w-64 focus:outline-none" />
+      <input type="text" id="searchInput" oninput="renderTable()" placeholder="Search name, code, relation, place..." class="bg-white border border-slate-300 text-xs px-2 py-1 rounded-lg w-52 md:w-64 focus:outline-none" />
     </div>
 
-    <!-- Flat Compact Table -->
+    <!-- Flat Table -->
     <div class="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full text-left text-xs border-collapse">
           <thead>
             <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase text-[11px]">
+              <th class="py-2 px-2">Code</th>
               <th class="py-2 px-2.5">Side</th>
               <th class="py-2 px-2.5">Relation</th>
-              <th class="py-2 px-2.5">Family Name & Place</th>
+              <th class="py-2 px-2.5">Family & Place</th>
               <th class="py-2 px-1.5 text-center text-blue-700">G</th>
               <th class="py-2 px-1.5 text-center text-pink-700">L</th>
               <th class="py-2 px-1.5 text-center text-amber-700">K</th>
-              <th class="py-2 px-1.5 text-center font-bold text-slate-500">Total</th>
+              <th class="py-2 px-1.5 text-center font-bold text-slate-500">Total Inv.</th>
               <th class="py-2 px-2.5 text-center">Invitation</th>
-              <th class="py-2 px-2.5 text-center bg-emerald-50/50 text-emerald-800">Coming Count</th>
+              <th class="py-2 px-2.5 text-center bg-emerald-50/60 text-emerald-900 font-bold">Coming / Attending Count</th>
               <th class="py-2 px-2 text-right">Actions</th>
             </tr>
           </thead>
           <tbody id="familyTableBody" class="divide-y divide-slate-100"></tbody>
         </table>
       </div>
-      <p id="emptyMessage" class="hidden text-center py-4 text-slate-400 text-xs">No entries found.</p>
+      <p id="emptyMessage" class="hidden text-center py-4 text-slate-400 text-xs">No matching entries found.</p>
     </div>
 
   </div>
 
   <script>
+    const ADMIN_CODE = "A2KU";
+
     const firebaseConfig = {
       apiKey: "AIzaSyDbMtnm-PXJfs1ZEobc-lxu7T1yjFSjtUg",
       authDomain: "familycount-c6860.firebaseapp.com",
@@ -203,16 +234,69 @@
     const collectionRef = db.collection("family_count");
 
     let families = [];
+    let loggedCode = localStorage.getItem('fc_user_code') || '';
+    let isAdmin = (loggedCode.toUpperCase() === ADMIN_CODE);
     let currentSideFilter = 'All';
 
-    collectionRef.onSnapshot((snapshot) => {
-      families = [];
-      snapshot.forEach((doc) => {
-        families.push({ id: doc.id, ...doc.data() });
+    // Auto-check stored session
+    if (loggedCode) {
+      showApp();
+    }
+
+    function handleLogin(e) {
+      e.preventDefault();
+      const code = document.getElementById('accessCodeInput').value.trim().toUpperCase();
+      if (!code) return;
+
+      loggedCode = code;
+      isAdmin = (loggedCode === ADMIN_CODE);
+      localStorage.setItem('fc_user_code', loggedCode);
+      showApp();
+    }
+
+    function logout() {
+      localStorage.removeItem('fc_user_code');
+      loggedCode = '';
+      isAdmin = false;
+      document.getElementById('appScreen').classList.add('hidden');
+      document.getElementById('loginScreen').classList.remove('hidden');
+      document.getElementById('accessCodeInput').value = '';
+    }
+
+    function showApp() {
+      document.getElementById('loginScreen').classList.add('hidden');
+      document.getElementById('appScreen').classList.remove('hidden');
+      
+      const roleBadge = document.getElementById('roleBadge');
+      const adminSideFilter = document.getElementById('adminSideFilterContainer');
+      const adminSearchRow = document.getElementById('adminSearchRow');
+
+      if (isAdmin) {
+        roleBadge.textContent = "👑 Admin View (Full Access)";
+        roleBadge.className = "text-[10px] font-bold text-amber-600";
+        adminSideFilter.classList.remove('hidden');
+        adminSearchRow.classList.remove('hidden');
+      } else {
+        roleBadge.textContent = `Family Code: ${loggedCode}`;
+        roleBadge.className = "text-[10px] font-bold text-indigo-600";
+        adminSideFilter.classList.add('hidden');
+        adminSearchRow.classList.add('hidden');
+        document.getElementById('familyAccessCode').value = loggedCode;
+      }
+
+      listenData();
+    }
+
+    function listenData() {
+      collectionRef.onSnapshot((snapshot) => {
+        families = [];
+        snapshot.forEach((doc) => {
+          families.push({ id: doc.id, ...doc.data() });
+        });
+        renderDashboard();
+        renderTable();
       });
-      renderDashboard();
-      renderTable();
-    });
+    }
 
     function onSideFilterChange(val) {
       currentSideFilter = val;
@@ -240,17 +324,27 @@
         ? customInput.value.trim() 
         : select.value;
 
+      // Assign or use the entered code
+      let code = document.getElementById('familyAccessCode').value.trim().toUpperCase();
+      if (!code) {
+        code = Math.floor(1000 + Math.random() * 9000).toString();
+      }
+
+      const gents = parseInt(document.getElementById('gentsCount').value) || 0;
+      const ladies = parseInt(document.getElementById('ladiesCount').value) || 0;
+      const kids = parseInt(document.getElementById('kidsCount').value) || 0;
+
       const record = {
+        code: code,
         side: document.getElementById('side').value,
         relation: finalRelation,
         name: document.getElementById('familyName').value.trim(),
         place: document.getElementById('familyPlace').value.trim(),
         phone: document.getElementById('familyPhone').value.trim(),
-        gents: parseInt(document.getElementById('gentsCount').value) || 0,
-        ladies: parseInt(document.getElementById('ladiesCount').value) || 0,
-        kids: parseInt(document.getElementById('kidsCount').value) || 0,
+        gents: gents,
+        ladies: ladies,
+        kids: kids,
         kidNames: document.getElementById('kidNames').value.trim(),
-        notes: document.getElementById('notes').value.trim(),
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       };
 
@@ -300,6 +394,7 @@
 
       document.getElementById('docId').value = item.id;
       document.getElementById('side').value = item.side || 'Paternal';
+      document.getElementById('familyAccessCode').value = item.code || '';
       
       const select = document.getElementById('relationSelect');
       const customInput = document.getElementById('customRelationInput');
@@ -329,7 +424,6 @@
       document.getElementById('ladiesCount').value = item.ladies || 0;
       document.getElementById('kidsCount').value = item.kids || 0;
       document.getElementById('kidNames').value = item.kidNames || '';
-      document.getElementById('notes').value = item.notes || '';
 
       document.getElementById('saveBtn').textContent = 'Update';
       document.getElementById('cancelBtn').classList.remove('hidden');
@@ -356,14 +450,27 @@
       customInput.classList.add('hidden');
       customInput.value = '';
 
-      document.getElementById('saveBtn').textContent = 'Add';
+      if (!isAdmin) {
+        document.getElementById('familyAccessCode').value = loggedCode;
+      }
+
+      document.getElementById('saveBtn').textContent = 'Save Entry';
       document.getElementById('cancelBtn').classList.add('hidden');
     }
 
+    function getVisibleFamilies() {
+      if (isAdmin) {
+        return (currentSideFilter === 'All') 
+          ? families 
+          : families.filter(f => f.side === currentSideFilter);
+      } else {
+        // Individual Family Login: only match their 4-digit code
+        return families.filter(f => (f.code && f.code.toUpperCase() === loggedCode));
+      }
+    }
+
     function renderDashboard() {
-      const targetFamilies = (currentSideFilter === 'All') 
-        ? families 
-        : families.filter(f => f.side === currentSideFilter);
+      const targetFamilies = getVisibleFamilies();
 
       let gCount = 0, lCount = 0, kCount = 0, comingCount = 0, invitedFamCount = 0;
 
@@ -380,7 +487,10 @@
         if (f.invitation === 'Invited') invitedFamCount++;
       });
 
-      document.getElementById('summaryTitle').textContent = currentSideFilter === 'All' ? 'All Families' : `${currentSideFilter} Side`;
+      document.getElementById('summaryTitle').textContent = isAdmin 
+        ? (currentSideFilter === 'All' ? 'All Confirmed Coming' : `${currentSideFilter} Coming`)
+        : 'Your Confirmed Coming';
+
       document.getElementById('statComing').textContent = comingCount;
       document.getElementById('statTotal').textContent = gCount + lCount + kCount;
       document.getElementById('statGents').textContent = gCount;
@@ -391,18 +501,19 @@
 
     function renderTable() {
       const tbody = document.getElementById('familyTableBody');
-      const search = document.getElementById('searchInput').value.toLowerCase();
+      const search = isAdmin ? document.getElementById('searchInput').value.toLowerCase() : '';
       tbody.innerHTML = '';
 
-      const filtered = families.filter(f => {
-        const matchesSide = (currentSideFilter === 'All') || (f.side === currentSideFilter);
-        const matchesSearch = (f.name && f.name.toLowerCase().includes(search)) || 
-                              (f.relation && f.relation.toLowerCase().includes(search)) || 
-                              (f.place && f.place.toLowerCase().includes(search)) || 
-                              (f.phone && f.phone.includes(search)) || 
-                              (f.kidNames && f.kidNames.toLowerCase().includes(search)) ||
-                              (f.notes && f.notes.toLowerCase().includes(search));
-        return matchesSide && matchesSearch;
+      const targetFamilies = getVisibleFamilies();
+
+      const filtered = targetFamilies.filter(f => {
+        if (!isAdmin) return true;
+        return (f.name && f.name.toLowerCase().includes(search)) || 
+               (f.code && f.code.toLowerCase().includes(search)) ||
+               (f.relation && f.relation.toLowerCase().includes(search)) || 
+               (f.place && f.place.toLowerCase().includes(search)) || 
+               (f.phone && f.phone.includes(search)) || 
+               (f.kidNames && f.kidNames.toLowerCase().includes(search));
       });
 
       document.getElementById('tableCountLabel').textContent = `Showing ${filtered.length} entries`;
@@ -428,20 +539,26 @@
           </select>
         `;
 
+        // Direct Attending/Coming count changer
         const comingInput = `
           <div class="flex items-center justify-center gap-1">
             <input type="number" min="0" max="${total}" value="${comingCount}" 
               onchange="updateComingCount('${item.id}', this.value)"
-              class="w-11 text-center text-xs font-bold py-0.5 rounded border ${
-                comingCount > 0 ? 'bg-emerald-50 text-emerald-800 border-emerald-400' : 'bg-slate-50 text-slate-400 border-slate-300'
+              class="w-12 text-center text-xs font-black py-0.5 rounded border ${
+                comingCount > 0 ? 'bg-emerald-100 text-emerald-900 border-emerald-500' : 'bg-slate-50 text-slate-400 border-slate-300'
               } focus:outline-none" />
-            <span class="text-[10px] text-slate-400">/ ${total}</span>
+            <span class="text-[10px] text-slate-400 font-semibold">/ ${total}</span>
           </div>
         `;
 
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-slate-50 transition';
         tr.innerHTML = `
+          <td class="py-1.5 px-2">
+            <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-100 text-slate-700 border border-slate-200">
+              ${item.code || '—'}
+            </span>
+          </td>
           <td class="py-1.5 px-2.5">
             <span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${isPat ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}">
               ${isPat ? 'Paternal' : 'Maternal'}
@@ -455,17 +572,16 @@
               ${item.phone ? `<span><i class="fa-solid fa-phone mr-0.5"></i>${item.phone}</span>` : ''}
             </div>
             ${item.kidNames ? `<div class="text-[10px] text-amber-700 mt-0.5"><i class="fa-solid fa-child text-[9px] mr-1"></i>${item.kidNames}</div>` : ''}
-            ${item.notes ? `<div class="text-[10px] text-indigo-500 italic mt-0.5">${item.notes}</div>` : ''}
           </td>
           <td class="py-1.5 px-1.5 text-center text-slate-700 font-medium">${item.gents || 0}</td>
           <td class="py-1.5 px-1.5 text-center text-slate-700 font-medium">${item.ladies || 0}</td>
           <td class="py-1.5 px-1.5 text-center text-amber-700 font-bold">${item.kids || 0}</td>
           <td class="py-1.5 px-1.5 text-center font-bold text-slate-600">${total}</td>
           <td class="py-1.5 px-2.5 text-center">${inviteSelect}</td>
-          <td class="py-1.5 px-2.5 text-center bg-emerald-50/20">${comingInput}</td>
+          <td class="py-1.5 px-2.5 text-center bg-emerald-50/30">${comingInput}</td>
           <td class="py-1.5 px-2 text-right">
             <button onclick="editEntry('${item.id}')" class="text-slate-400 hover:text-indigo-600 px-1" title="Edit"><i class="fa-solid fa-pen"></i></button>
-            <button onclick="deleteEntry('${item.id}')" class="text-slate-400 hover:text-rose-600 px-1" title="Delete"><i class="fa-solid fa-trash"></i></button>
+            ${isAdmin ? `<button onclick="deleteEntry('${item.id}')" class="text-slate-400 hover:text-rose-600 px-1" title="Delete"><i class="fa-solid fa-trash"></i></button>` : ''}
           </td>
         `;
         tbody.appendChild(tr);
