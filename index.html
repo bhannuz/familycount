@@ -14,9 +14,8 @@
 <body class="bg-slate-100 text-slate-800 antialiased p-2 sm:p-3 md:p-4 min-h-screen">
   <div class="max-w-6xl mx-auto space-y-2.5">
     
-    <!-- Top Header Bar (Fully Mobile Responsive, No Overflow) -->
+    <!-- Top Header Bar -->
     <header class="bg-white p-2.5 sm:p-3 rounded-xl border border-slate-200 shadow-sm flex flex-col gap-2">
-      <!-- Title & Admin Badge -->
       <div class="flex items-center justify-between gap-2">
         <div class="flex items-center gap-2">
           <div class="w-7 h-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shrink-0">
@@ -31,23 +30,10 @@
         </div>
       </div>
 
-      <!-- Action Row: Category Filter + Print + Logout -->
-      <div class="flex flex-wrap items-center justify-between gap-1.5 pt-1 border-t border-slate-100">
-        <!-- Filter Category Dropdown -->
-        <div class="flex items-center gap-1 bg-slate-50 border border-slate-300 rounded px-2 py-1 flex-1 min-w-[130px]">
-          <label class="text-[10px] font-bold text-slate-500 uppercase shrink-0">Filter:</label>
-          <select id="groupViewFilter" onchange="onGroupFilterChange(this.value)" class="text-xs font-semibold bg-transparent text-indigo-700 outline-none w-full cursor-pointer">
-            <option value="All">All Groups</option>
-            <option value="Paternal">Paternal Side</option>
-            <option value="Maternal">Maternal Side</option>
-            <option value="Office Friends">Office Friends</option>
-            <option value="School Friends">School Friends</option>
-            <option value="College Friends">College Friends</option>
-            <option value="Neighbours">Neighbours</option>
-          </select>
+      <div class="flex items-center justify-between gap-1.5 pt-1 border-t border-slate-100">
+        <div class="text-[11px] font-semibold text-slate-600">
+          Total Registered: <span id="headerTotalBadge" class="font-bold text-indigo-700">0</span> Families
         </div>
-
-        <!-- Buttons -->
         <div class="flex items-center gap-1.5 shrink-0">
           <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-900 text-white text-[11px] font-semibold px-2.5 py-1 rounded-lg transition flex items-center gap-1">
             <i class="fa-solid fa-print text-[10px]"></i> Print
@@ -59,7 +45,7 @@
       </div>
     </header>
 
-    <!-- Side-by-Side Mobile Chips Layout (2 Columns on mobile for Coming & Total) -->
+    <!-- Side-by-Side Summary Chips -->
     <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
       <!-- Chip 1: Confirmed Coming -->
       <div class="bg-indigo-900 text-white p-2.5 rounded-xl shadow-sm flex items-center justify-between col-span-1">
@@ -73,7 +59,7 @@
         <i class="fa-solid fa-circle-check text-emerald-400 text-lg sm:text-xl opacity-80 shrink-0"></i>
       </div>
 
-      <!-- Chip 2: Total Invited Members (Next to Coming on mobile) -->
+      <!-- Chip 2: Total Invited Members -->
       <div class="bg-white border border-slate-200 p-2.5 rounded-xl shadow-sm flex items-center justify-between col-span-1">
         <div>
           <span class="text-[9px] sm:text-[10px] font-bold uppercase text-slate-400 block">Total Invited</span>
@@ -85,7 +71,7 @@
         <i class="fa-solid fa-user-group text-slate-300 text-lg sm:text-xl shrink-0"></i>
       </div>
 
-      <!-- Chip 3: Gents / Ladies / Kids Combined Single Chip (Spans full width on mobile) -->
+      <!-- Chip 3: Gents / Ladies / Kids Combined Single Chip -->
       <div class="bg-white border border-slate-200 p-2.5 rounded-xl shadow-sm col-span-2 md:col-span-1 flex flex-col justify-center">
         <span class="text-[9px] sm:text-[10px] font-bold uppercase text-slate-500 block mb-1">Breakdown (G / L / K)</span>
         <div class="flex items-center justify-around text-xs font-bold text-slate-800 bg-slate-50 py-1 px-2 rounded-lg border border-slate-100">
@@ -103,7 +89,6 @@
       <form id="familyForm" onsubmit="handleFormSubmit(event)" class="space-y-2">
         <input type="hidden" id="docId" value="" />
         
-        <!-- Row 1: Category -> Relation -> Guest Name -> Place -> Phone -->
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-1.5">
           <!-- 1. Category / Side -->
           <div class="md:col-span-3">
@@ -112,6 +97,7 @@
               <select id="groupSelect" onchange="checkCustomGroup(this.value)" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs font-semibold text-slate-700 focus:outline-none focus:border-indigo-500">
                 <option value="Paternal">Paternal Side</option>
                 <option value="Maternal">Maternal Side</option>
+                <option value="Friends">Friends</option>
                 <option value="Office Friends">Office Friends</option>
                 <option value="School Friends">School Friends</option>
                 <option value="College Friends">College Friends</option>
@@ -212,11 +198,65 @@
       </button>
 
       <!-- Collapsible Container (Hidden by default) -->
-      <div id="historyContainer" class="hidden p-2.5 space-y-2">
-        <!-- Search Filter -->
-        <div class="flex items-center justify-between gap-2">
-          <span id="tableCountLabel" class="text-[11px] font-bold text-slate-500">Showing 0 entries</span>
-          <input type="text" id="searchInput" oninput="renderTable()" placeholder="Search guest name, category, place..." class="bg-slate-50 border border-slate-300 text-xs px-2.5 py-1 rounded-lg w-48 sm:w-64 focus:outline-none focus:border-indigo-500" />
+      <div id="historyContainer" class="hidden p-2.5 sm:p-3 space-y-2.5">
+        
+        <!-- Multi-Filter Control Bar in History -->
+        <div class="bg-slate-50 p-2 sm:p-2.5 rounded-lg border border-slate-200 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
+          <!-- 1. Category / Group Filter -->
+          <div>
+            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Category Filter:</label>
+            <select id="histGroupFilter" onchange="renderFilteredHistory()" class="w-full bg-white border border-slate-300 text-xs font-semibold text-slate-700 px-2 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500">
+              <option value="All">All Categories</option>
+              <option value="Paternal">Paternal</option>
+              <option value="Maternal">Maternal</option>
+              <option value="Friends">Friends (All)</option>
+              <option value="Office Friends">Office Friends</option>
+              <option value="School Friends">School Friends</option>
+              <option value="College Friends">College Friends</option>
+              <option value="Neighbours">Neighbours</option>
+            </select>
+          </div>
+
+          <!-- 2. Member Type Filter (Kids, Only Adults, Has Gents, Has Ladies) -->
+          <div>
+            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Member Type:</label>
+            <select id="histMemberFilter" onchange="renderFilteredHistory()" class="w-full bg-white border border-slate-300 text-xs font-semibold text-slate-700 px-2 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500">
+              <option value="All">All Families</option>
+              <option value="has_kids">Has Kids (👶 > 0)</option>
+              <option value="no_kids">No Kids (Adults Only)</option>
+              <option value="has_gents">Has Gents (👨 > 0)</option>
+              <option value="has_ladies">Has Ladies (👩 > 0)</option>
+            </select>
+          </div>
+
+          <!-- 3. RSVP / Attendance Status Filter -->
+          <div>
+            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">RSVP Status:</label>
+            <select id="histRsvpFilter" onchange="renderFilteredHistory()" class="w-full bg-white border border-slate-300 text-xs font-semibold text-slate-700 px-2 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500">
+              <option value="All">All RSVP Statuses</option>
+              <option value="Coming">Attending / Coming (Count > 0)</option>
+              <option value="Not Coming">Not Attending (Count = 0)</option>
+              <option value="Invited">Marked as Invited</option>
+              <option value="Not Invited">Pending / Not Invited</option>
+            </select>
+          </div>
+
+          <!-- 4. Text Search -->
+          <div>
+            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Search:</label>
+            <input type="text" id="searchInput" oninput="renderFilteredHistory()" placeholder="Search name, place, kid name..." class="w-full bg-white border border-slate-300 text-xs px-2.5 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500" />
+          </div>
+        </div>
+
+        <!-- Filtered Dynamic Stat Indicator -->
+        <div class="flex flex-wrap items-center justify-between gap-1.5 text-xs bg-indigo-50/60 border border-indigo-100 p-2 rounded-lg text-indigo-900 font-semibold">
+          <span id="filteredResultsLabel">Showing 0 families</span>
+          <div class="flex items-center gap-2 text-[11px]">
+            <span class="text-blue-700">G: <b id="filtGents">0</b></span>
+            <span class="text-pink-700">L: <b id="filtLadies">0</b></span>
+            <span class="text-amber-700">K: <b id="filtKids">0</b></span>
+            <span class="text-emerald-700">Coming: <b id="filtComing">0</b></span>
+          </div>
         </div>
 
         <!-- Table -->
@@ -239,7 +279,7 @@
             <tbody id="familyTableBody" class="divide-y divide-slate-100"></tbody>
           </table>
         </div>
-        <p id="emptyMessage" class="hidden text-center py-4 text-slate-400 text-xs">No matching entries found.</p>
+        <p id="emptyMessage" class="hidden text-center py-4 text-slate-400 text-xs">No matching entries found for this filter combination.</p>
       </div>
     </div>
 
@@ -262,7 +302,6 @@
     const collectionRef = db.collection("family_count");
 
     let families = [];
-    let currentGroupFilter = 'All';
     let isHistoryExpanded = false;
 
     // Realtime Firestore sync
@@ -273,7 +312,7 @@
       });
       syncCategoryFilterDropdown();
       renderDashboard();
-      renderTable();
+      renderFilteredHistory();
     });
 
     function toggleHistoryAccordion() {
@@ -300,12 +339,6 @@
       }
     }
 
-    function onGroupFilterChange(val) {
-      currentGroupFilter = val;
-      renderDashboard();
-      renderTable();
-    }
-
     function checkCustomGroup(val) {
       const customInput = document.getElementById('customGroupInput');
       const select = document.getElementById('groupSelect');
@@ -327,8 +360,8 @@
     }
 
     function syncCategoryFilterDropdown() {
-      const filterSelect = document.getElementById('groupViewFilter');
-      const defaultOptions = ['All', 'Paternal', 'Maternal', 'Office Friends', 'School Friends', 'College Friends', 'Neighbours'];
+      const filterSelect = document.getElementById('histGroupFilter');
+      const defaultOptions = ['All', 'Paternal', 'Maternal', 'Friends', 'Office Friends', 'School Friends', 'College Friends', 'Neighbours'];
       const uniqueGroups = new Set(defaultOptions);
 
       families.forEach(f => {
@@ -340,7 +373,7 @@
       uniqueGroups.forEach(grp => {
         const opt = document.createElement('option');
         opt.value = grp;
-        opt.textContent = grp === 'All' ? 'All Groups' : (grp.includes('Side') || grp.includes('Friends') || grp.includes('Neighbours') ? grp : `${grp} Group`);
+        opt.textContent = grp === 'All' ? 'All Categories' : (grp.includes('Side') || grp.includes('Friends') || grp.includes('Neighbours') ? grp : `${grp} Group`);
         filterSelect.appendChild(opt);
       });
       filterSelect.value = uniqueGroups.has(currentVal) ? currentVal : 'All';
@@ -509,33 +542,22 @@
     }
 
     function renderDashboard() {
-      const targetFamilies = (currentGroupFilter === 'All') 
-        ? families 
-        : families.filter(f => f.side === currentGroupFilter);
-
       let gCount = 0, lCount = 0, kCount = 0, comingCount = 0;
 
-      targetFamilies.forEach(f => {
-        const g = f.gents || 0;
-        const l = f.ladies || 0;
-        const k = f.kids || 0;
-        const coming = parseInt(f.comingCount) || 0;
-
-        gCount += g;
-        lCount += l;
-        kCount += k;
-        comingCount += coming;
+      families.forEach(f => {
+        gCount += f.gents || 0;
+        lCount += f.ladies || 0;
+        kCount += f.kids || 0;
+        comingCount += parseInt(f.comingCount) || 0;
       });
-
-      document.getElementById('summaryTitle').textContent = currentGroupFilter === 'All' 
-        ? 'Coming' 
-        : `${currentGroupFilter}`;
 
       document.getElementById('statComing').textContent = comingCount;
       document.getElementById('statTotal').textContent = gCount + lCount + kCount;
       document.getElementById('statGents').textContent = gCount;
       document.getElementById('statLadies').textContent = lCount;
       document.getElementById('statKids').textContent = kCount;
+      
+      document.getElementById('headerTotalBadge').textContent = families.length;
       document.getElementById('historyBadgeCount').textContent = `${families.length} Entries`;
     }
 
@@ -546,26 +568,81 @@
       if (group.includes('Office')) return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-cyan-100 text-cyan-800">Office</span>`;
       if (group.includes('School')) return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-100 text-emerald-800">School</span>`;
       if (group.includes('College')) return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-800">College</span>`;
+      if (group.includes('Friend')) return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-teal-100 text-teal-800">Friends</span>`;
       return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">${group}</span>`;
     }
 
-    function renderTable() {
+    function renderFilteredHistory() {
       const tbody = document.getElementById('familyTableBody');
       const search = document.getElementById('searchInput').value.toLowerCase();
+      
+      const groupFilter = document.getElementById('histGroupFilter').value;
+      const memberFilter = document.getElementById('histMemberFilter').value;
+      const rsvpFilter = document.getElementById('histRsvpFilter').value;
+
       tbody.innerHTML = '';
 
       const filtered = families.filter(f => {
-        const matchesGroup = (currentGroupFilter === 'All') || (f.side === currentGroupFilter);
+        // 1. Group / Category Match
+        let matchesGroup = (groupFilter === 'All');
+        if (!matchesGroup) {
+          if (groupFilter === 'Friends') {
+            matchesGroup = (f.side && f.side.toLowerCase().includes('friend'));
+          } else {
+            matchesGroup = (f.side === groupFilter);
+          }
+        }
+
+        // 2. Member Type Match
+        let matchesMember = true;
+        if (memberFilter === 'has_kids') {
+          matchesMember = (f.kids > 0 || (f.kidNames && f.kidNames.trim().length > 0));
+        } else if (memberFilter === 'no_kids') {
+          matchesMember = (!f.kids || f.kids === 0) && (!f.kidNames || f.kidNames.trim().length === 0);
+        } else if (memberFilter === 'has_gents') {
+          matchesMember = (f.gents > 0);
+        } else if (memberFilter === 'has_ladies') {
+          matchesMember = (f.ladies > 0);
+        }
+
+        // 3. RSVP Match
+        let matchesRsvp = true;
+        const coming = parseInt(f.comingCount) || 0;
+        if (rsvpFilter === 'Coming') {
+          matchesRsvp = (coming > 0);
+        } else if (rsvpFilter === 'Not Coming') {
+          matchesRsvp = (coming === 0);
+        } else if (rsvpFilter === 'Invited') {
+          matchesRsvp = (f.invitation === 'Invited');
+        } else if (rsvpFilter === 'Not Invited') {
+          matchesRsvp = (f.invitation === 'Not Invited');
+        }
+
+        // 4. Text Search Match
         const matchesSearch = (f.name && f.name.toLowerCase().includes(search)) || 
                               (f.side && f.side.toLowerCase().includes(search)) || 
                               (f.relation && f.relation.toLowerCase().includes(search)) || 
                               (f.place && f.place.toLowerCase().includes(search)) || 
                               (f.phone && f.phone.includes(search)) || 
                               (f.kidNames && f.kidNames.toLowerCase().includes(search));
-        return matchesGroup && matchesSearch;
+
+        return matchesGroup && matchesMember && matchesRsvp && matchesSearch;
       });
 
-      document.getElementById('tableCountLabel').textContent = `Showing ${filtered.length} of ${families.length}`;
+      // Update Filter stats
+      let filtG = 0, filtL = 0, filtK = 0, filtC = 0;
+      filtered.forEach(item => {
+        filtG += item.gents || 0;
+        filtL += item.ladies || 0;
+        filtK += item.kids || 0;
+        filtC += parseInt(item.comingCount) || 0;
+      });
+
+      document.getElementById('filteredResultsLabel').textContent = `Showing ${filtered.length} of ${families.length} entries`;
+      document.getElementById('filtGents').textContent = filtG;
+      document.getElementById('filtLadies').textContent = filtL;
+      document.getElementById('filtKids').textContent = filtK;
+      document.getElementById('filtComing').textContent = filtC;
 
       if (filtered.length === 0) {
         document.getElementById('emptyMessage').classList.remove('hidden');
