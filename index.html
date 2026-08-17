@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Family Count & Invitation Tracker</title>
+  <title>Family Count & Guest Tracker</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
@@ -14,7 +14,7 @@
 <body class="bg-slate-100 text-slate-800 antialiased p-2 md:p-4 min-h-screen">
   <div class="max-w-6xl mx-auto space-y-2.5">
     
-    <!-- Ultra-Compact Top Bar -->
+    <!-- Top Bar -->
     <header class="flex items-center justify-between bg-white px-3 py-2 rounded-lg border border-slate-200 shadow-sm">
       <div class="flex items-center gap-2">
         <div class="w-6 h-6 rounded bg-indigo-600 text-white flex items-center justify-center font-bold text-xs">
@@ -70,93 +70,115 @@
       </div>
     </div>
 
-    <!-- Quick Add Form -->
-    <div class="bg-white p-2.5 rounded-lg border border-slate-200 shadow-sm">
-      <form id="familyForm" onsubmit="handleFormSubmit(event)" class="space-y-2">
+    <!-- Multi-Level Form (Level 1: Family & Adults | Level 2: Kids Detail) -->
+    <div class="bg-white p-3 rounded-lg border border-slate-200 shadow-sm space-y-2.5">
+      <form id="familyForm" onsubmit="handleFormSubmit(event)" class="space-y-2.5">
         <input type="hidden" id="docId" value="" />
         
-        <!-- Row 1: Side, Relation, Name, Place, Phone -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-1.5">
-          <div class="md:col-span-2">
-            <select id="side" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs font-semibold text-slate-700 focus:outline-none focus:border-indigo-500">
-              <option value="Paternal">Paternal Side</option>
-              <option value="Maternal">Maternal Side</option>
-            </select>
+        <!-- Level 1: Primary Family Info -->
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-1">
+            <span class="text-[11px] font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1">
+              <span class="w-4 h-4 bg-indigo-600 text-white rounded-full inline-flex items-center justify-center text-[10px]">1</span> 
+              Family & Adult Details
+            </span>
           </div>
 
-          <div class="md:col-span-3">
-            <div class="flex gap-1">
-              <select id="relationSelect" onchange="checkCustomRelation(this.value)" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs font-semibold text-slate-700 focus:outline-none focus:border-indigo-500">
-                <option value="Babai / Chacha">Babai / Chacha</option>
-                <option value="Peddananna / Tauji">Peddananna / Tauji</option>
-                <option value="Mama / Uncle">Mama / Uncle</option>
-                <option value="Atta / Bua / Mami">Atta / Bua / Mami</option>
-                <option value="Annaya / Bhaiya">Annaya / Bhaiya</option>
-                <option value="Thammudu / Younger Bro">Thammudu / Bro</option>
-                <option value="Akka / Didi">Akka / Didi</option>
-                <option value="Chelli / Younger Sis">Chelli / Sis</option>
-                <option value="Bava / Jiju">Bava / Jiju</option>
-                <option value="Cousin">Cousin</option>
-                <option value="Friend">Friend</option>
-                <option value="__custom__">+ Custom Relation...</option>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-1.5">
+            <div class="md:col-span-2">
+              <select id="side" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs font-semibold text-slate-700 focus:outline-none focus:border-indigo-500">
+                <option value="Paternal">Paternal Side</option>
+                <option value="Maternal">Maternal Side</option>
               </select>
-              <input type="text" id="customRelationInput" placeholder="Enter Relation" class="hidden w-full bg-white border border-indigo-400 rounded px-2 py-1 text-xs font-semibold focus:outline-none" />
+            </div>
+
+            <div class="md:col-span-3">
+              <div class="flex gap-1">
+                <select id="relationSelect" onchange="checkCustomRelation(this.value)" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs font-semibold text-slate-700 focus:outline-none focus:border-indigo-500">
+                  <option value="Babai / Chacha">Babai / Chacha</option>
+                  <option value="Peddananna / Tauji">Peddananna / Tauji</option>
+                  <option value="Mama / Uncle">Mama / Uncle</option>
+                  <option value="Atta / Bua / Mami">Atta / Bua / Mami</option>
+                  <option value="Annaya / Bhaiya">Annaya / Bhaiya</option>
+                  <option value="Thammudu / Younger Bro">Thammudu / Bro</option>
+                  <option value="Akka / Didi">Akka / Didi</option>
+                  <option value="Chelli / Younger Sis">Chelli / Sis</option>
+                  <option value="Bava / Jiju">Bava / Jiju</option>
+                  <option value="Cousin">Cousin</option>
+                  <option value="Friend">Friend</option>
+                  <option value="__custom__">+ Custom Relation...</option>
+                </select>
+                <input type="text" id="customRelationInput" placeholder="Enter Relation" class="hidden w-full bg-white border border-indigo-400 rounded px-2 py-1 text-xs font-semibold focus:outline-none" />
+              </div>
+            </div>
+
+            <div class="md:col-span-3">
+              <input type="text" id="familyName" required placeholder="Family / Head Name *" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs focus:outline-none focus:border-indigo-500" />
+            </div>
+
+            <div class="md:col-span-2">
+              <input type="text" id="familyPlace" placeholder="Place (e.g. Hyderabad)" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs focus:outline-none focus:border-indigo-500" />
+            </div>
+
+            <div class="md:col-span-2">
+              <input type="tel" id="familyPhone" placeholder="Phone Number" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs focus:outline-none focus:border-indigo-500" />
             </div>
           </div>
 
-          <div class="md:col-span-3">
-            <input type="text" id="familyName" required placeholder="Family / Head Name *" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs focus:outline-none focus:border-indigo-500" />
-          </div>
+          <div class="grid grid-cols-2 md:grid-cols-12 gap-1.5 items-center">
+            <div class="col-span-1 md:col-span-2 flex items-center gap-1 bg-slate-50 border border-slate-300 rounded px-1.5 py-0.5">
+              <span class="text-[10px] font-bold text-blue-700">Gents:</span>
+              <input type="number" id="gentsCount" min="0" value="1" required class="w-full text-center bg-transparent text-xs font-bold focus:outline-none" />
+            </div>
 
-          <div class="md:col-span-2">
-            <input type="text" id="familyPlace" placeholder="Place (e.g. Hyd)" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs focus:outline-none focus:border-indigo-500" />
-          </div>
+            <div class="col-span-1 md:col-span-2 flex items-center gap-1 bg-slate-50 border border-slate-300 rounded px-1.5 py-0.5">
+              <span class="text-[10px] font-bold text-pink-700">Ladies:</span>
+              <input type="number" id="ladiesCount" min="0" value="1" required class="w-full text-center bg-transparent text-xs font-bold focus:outline-none" />
+            </div>
 
-          <div class="md:col-span-2">
-            <input type="tel" id="familyPhone" placeholder="Phone Number" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs focus:outline-none focus:border-indigo-500" />
+            <div class="col-span-2 md:col-span-8">
+              <input type="text" id="notes" placeholder="Remarks / Accommodation / Travel Notes" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs focus:outline-none focus:border-indigo-500" />
+            </div>
           </div>
         </div>
 
-        <!-- Row 2: Counts, Remarks, Add Button -->
-        <div class="grid grid-cols-2 md:grid-cols-12 gap-1.5 items-center">
-          <div class="col-span-1 md:col-span-2 flex items-center gap-1 bg-slate-50 border border-slate-300 rounded px-1.5 py-0.5">
-            <span class="text-[10px] font-bold text-blue-700">G:</span>
-            <input type="number" id="gentsCount" min="0" value="1" required class="w-full text-center bg-transparent text-xs font-bold focus:outline-none" />
-          </div>
-
-          <div class="col-span-1 md:col-span-2 flex items-center gap-1 bg-slate-50 border border-slate-300 rounded px-1.5 py-0.5">
-            <span class="text-[10px] font-bold text-pink-700">L:</span>
-            <input type="number" id="ladiesCount" min="0" value="1" required class="w-full text-center bg-transparent text-xs font-bold focus:outline-none" />
-          </div>
-
-          <div class="col-span-1 md:col-span-2 flex items-center gap-1 bg-slate-50 border border-slate-300 rounded px-1.5 py-0.5">
-            <span class="text-[10px] font-bold text-amber-700">K:</span>
-            <input type="number" id="kidsCount" min="0" value="0" required class="w-full text-center bg-transparent text-xs font-bold focus:outline-none" />
-          </div>
-
-          <div class="col-span-1 md:col-span-4">
-            <input type="text" id="notes" placeholder="Remarks / Notes" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs focus:outline-none focus:border-indigo-500" />
-          </div>
-
-          <div class="col-span-2 md:col-span-2 flex gap-1">
-            <button type="submit" id="saveBtn" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-1 rounded transition shadow-sm">
-              Add
-            </button>
-            <button type="button" id="cancelBtn" onclick="resetForm()" class="hidden px-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold py-1 rounded transition">
-              ✕
+        <!-- Level 2: Kids Section (Names, Gender, Age) -->
+        <div class="bg-amber-50/40 border border-amber-200/70 p-2.5 rounded-lg space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-bold text-amber-900 uppercase tracking-wider flex items-center gap-1">
+              <span class="w-4 h-4 bg-amber-600 text-white rounded-full inline-flex items-center justify-center text-[10px]">2</span> 
+              Level 2: Kids Breakdown (<span id="kidsCounter">0</span>)
+            </span>
+            <button type="button" onclick="addKidRow()" class="bg-amber-600 hover:bg-amber-700 text-white text-[10px] font-bold px-2 py-0.5 rounded transition flex items-center gap-1">
+              <i class="fa-solid fa-plus"></i> Add Kid
             </button>
           </div>
+
+          <div id="kidsContainer" class="space-y-1.5">
+            <!-- Dynamic Kid Rows -->
+          </div>
+          <p id="noKidsText" class="text-[11px] text-amber-700/70 italic text-center py-1">No kids added for this family. Click "+ Add Kid" if applicable.</p>
+        </div>
+
+        <!-- Submit Buttons -->
+        <div class="flex justify-end gap-1.5 pt-1">
+          <button type="button" id="cancelBtn" onclick="resetForm()" class="hidden px-3 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold py-1.5 rounded transition">
+            Cancel
+          </button>
+          <button type="submit" id="saveBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-5 py-1.5 rounded transition shadow-sm">
+            Save Family
+          </button>
         </div>
       </form>
     </div>
 
-    <!-- Search & Search Filter -->
+    <!-- Search Filter & Entry Count -->
     <div class="flex items-center justify-between gap-2 px-0.5">
       <span id="tableCountLabel" class="text-xs font-bold text-slate-600">Showing 0 entries</span>
-      <input type="text" id="searchInput" oninput="renderTable()" placeholder="Search name, relation, place..." class="bg-white border border-slate-300 text-xs px-2 py-1 rounded-lg w-48 md:w-64 focus:outline-none" />
+      <input type="text" id="searchInput" oninput="renderTable()" placeholder="Search family, place, kid name..." class="bg-white border border-slate-300 text-xs px-2.5 py-1 rounded-lg w-52 md:w-72 focus:outline-none" />
     </div>
 
-    <!-- Table -->
+    <!-- Table with Level 2 Nested Display -->
     <div class="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full text-left text-xs border-collapse">
@@ -164,7 +186,7 @@
             <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase text-[11px]">
               <th class="py-2 px-2.5">Side</th>
               <th class="py-2 px-2.5">Relation</th>
-              <th class="py-2 px-2.5">Family Name & Place</th>
+              <th class="py-2 px-2.5">Family & Place</th>
               <th class="py-2 px-1.5 text-center text-blue-700">G</th>
               <th class="py-2 px-1.5 text-center text-pink-700">L</th>
               <th class="py-2 px-1.5 text-center text-amber-700">K</th>
@@ -227,6 +249,65 @@
       }
     }
 
+    // --- Dynamic Level 2 Kids Rows ---
+    function addKidRow(name = '', gender = 'Boy', age = '') {
+      const container = document.getElementById('kidsContainer');
+      const rowId = 'kid_row_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
+
+      const div = document.createElement('div');
+      div.id = rowId;
+      div.className = 'kid-item grid grid-cols-12 gap-1.5 items-center bg-white p-1.5 rounded border border-amber-200';
+      div.innerHTML = `
+        <div class="col-span-5 md:col-span-6">
+          <input type="text" placeholder="Kid Name" value="${name}" class="kid-name w-full bg-slate-50 border border-slate-300 rounded px-2 py-0.5 text-xs focus:outline-none focus:border-amber-500" />
+        </div>
+        <div class="col-span-3 md:col-span-3">
+          <select class="kid-gender w-full bg-slate-50 border border-slate-300 rounded px-1 py-0.5 text-xs font-semibold text-slate-700 focus:outline-none">
+            <option value="Boy" ${gender === 'Boy' ? 'selected' : ''}>👦 Boy</option>
+            <option value="Girl" ${gender === 'Girl' ? 'selected' : ''}>👧 Girl</option>
+          </select>
+        </div>
+        <div class="col-span-3 md:col-span-2">
+          <input type="number" min="0" max="25" placeholder="Age" value="${age}" class="kid-age w-full text-center bg-slate-50 border border-slate-300 rounded px-1 py-0.5 text-xs focus:outline-none" />
+        </div>
+        <div class="col-span-1 md:col-span-1 text-right">
+          <button type="button" onclick="removeKidRow('${rowId}')" class="text-rose-500 hover:text-rose-700 text-xs px-1" title="Remove"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      `;
+      container.appendChild(div);
+      updateKidsCountLabel();
+    }
+
+    function removeKidRow(rowId) {
+      const el = document.getElementById(rowId);
+      if (el) el.remove();
+      updateKidsCountLabel();
+    }
+
+    function updateKidsCountLabel() {
+      const count = document.querySelectorAll('.kid-item').length;
+      document.getElementById('kidsCounter').textContent = count;
+      const emptyNotice = document.getElementById('noKidsText');
+      if (count === 0) {
+        emptyNotice.classList.remove('hidden');
+      } else {
+        emptyNotice.classList.add('hidden');
+      }
+    }
+
+    function collectKidsData() {
+      const kids = [];
+      document.querySelectorAll('.kid-item').forEach(row => {
+        const name = row.querySelector('.kid-name').value.trim();
+        const gender = row.querySelector('.kid-gender').value;
+        const age = row.querySelector('.kid-age').value.trim();
+        if (name || age) {
+          kids.push({ name: name || 'Unnamed Kid', gender, age: age || '—' });
+        }
+      });
+      return kids;
+    }
+
     async function handleFormSubmit(e) {
       e.preventDefault();
       const docId = document.getElementById('docId').value;
@@ -239,7 +320,8 @@
 
       const gents = parseInt(document.getElementById('gentsCount').value) || 0;
       const ladies = parseInt(document.getElementById('ladiesCount').value) || 0;
-      const kids = parseInt(document.getElementById('kidsCount').value) || 0;
+      const kidsList = collectKidsData();
+      const kidsCount = kidsList.length;
 
       const record = {
         side: document.getElementById('side').value,
@@ -249,7 +331,8 @@
         phone: document.getElementById('familyPhone').value.trim(),
         gents: gents,
         ladies: ladies,
-        kids: kids,
+        kids: kidsCount,
+        kidsDetails: kidsList,
         notes: document.getElementById('notes').value.trim(),
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       };
@@ -327,11 +410,24 @@
       document.getElementById('familyPhone').value = item.phone || '';
       document.getElementById('gentsCount').value = item.gents;
       document.getElementById('ladiesCount').value = item.ladies;
-      document.getElementById('kidsCount').value = item.kids;
       document.getElementById('notes').value = item.notes || '';
 
-      document.getElementById('saveBtn').textContent = 'Update';
+      // Populate Level 2 Kids
+      document.getElementById('kidsContainer').innerHTML = '';
+      if (item.kidsDetails && Array.isArray(item.kidsDetails) && item.kidsDetails.length > 0) {
+        item.kidsDetails.forEach(k => addKidRow(k.name, k.gender, k.age));
+      } else if (item.kids > 0) {
+        // Fallback for legacy records without names
+        for (let i = 0; i < item.kids; i++) {
+          addKidRow(`Kid ${i+1}`, 'Boy', '');
+        }
+      } else {
+        updateKidsCountLabel();
+      }
+
+      document.getElementById('saveBtn').textContent = 'Update Family';
       document.getElementById('cancelBtn').classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     async function deleteEntry(id) {
@@ -346,7 +442,8 @@
       document.getElementById('docId').value = '';
       document.getElementById('gentsCount').value = 1;
       document.getElementById('ladiesCount').value = 1;
-      document.getElementById('kidsCount').value = 0;
+      document.getElementById('kidsContainer').innerHTML = '';
+      updateKidsCountLabel();
       
       const select = document.getElementById('relationSelect');
       const customInput = document.getElementById('customRelationInput');
@@ -355,7 +452,7 @@
       customInput.classList.add('hidden');
       customInput.value = '';
 
-      document.getElementById('saveBtn').textContent = 'Add';
+      document.getElementById('saveBtn').textContent = 'Save Family';
       document.getElementById('cancelBtn').classList.add('hidden');
     }
 
@@ -369,7 +466,7 @@
       targetFamilies.forEach(f => {
         const g = f.gents || 0;
         const l = f.ladies || 0;
-        const k = f.kids || 0;
+        const k = f.kids || (f.kidsDetails ? f.kidsDetails.length : 0);
         const coming = parseInt(f.comingCount) || 0;
 
         gCount += g;
@@ -395,11 +492,15 @@
 
       const filtered = families.filter(f => {
         const matchesSide = (currentSideFilter === 'All') || (f.side === currentSideFilter);
+        
+        // Search across family level and kid names
+        const kidsString = f.kidsDetails ? f.kidsDetails.map(k => `${k.name} ${k.age}`).join(' ') : '';
         const matchesSearch = (f.name && f.name.toLowerCase().includes(search)) || 
                               (f.relation && f.relation.toLowerCase().includes(search)) || 
                               (f.place && f.place.toLowerCase().includes(search)) || 
                               (f.phone && f.phone.includes(search)) || 
-                              (f.notes && f.notes.toLowerCase().includes(search));
+                              (f.notes && f.notes.toLowerCase().includes(search)) ||
+                              kidsString.toLowerCase().includes(search);
         return matchesSide && matchesSearch;
       });
 
@@ -412,10 +513,25 @@
       }
 
       filtered.forEach(item => {
-        const total = (item.gents || 0) + (item.ladies || 0) + (item.kids || 0);
+        const kidsCount = (item.kidsDetails && item.kidsDetails.length > 0) ? item.kidsDetails.length : (item.kids || 0);
+        const total = (item.gents || 0) + (item.ladies || 0) + kidsCount;
         const isPat = (item.side !== 'Maternal');
         const isInvited = (item.invitation === 'Invited');
         const comingCount = (item.comingCount !== undefined) ? item.comingCount : 0;
+
+        // Render Kids tag list if Level 2 details exist
+        let kidsListHtml = '';
+        if (item.kidsDetails && item.kidsDetails.length > 0) {
+          kidsListHtml = `
+            <div class="mt-1 flex flex-wrap gap-1">
+              ${item.kidsDetails.map(k => `
+                <span class="inline-flex items-center gap-0.5 bg-amber-50 text-amber-800 border border-amber-200 px-1.5 py-0.2 rounded text-[10px]">
+                  ${k.gender === 'Girl' ? '👧' : '👦'} <b>${k.name}</b> ${k.age ? `(${k.age}y)` : ''}
+                </span>
+              `).join('')}
+            </div>
+          `;
+        }
 
         const inviteSelect = `
           <select onchange="updateInvitation('${item.id}', this.value)" class="text-[11px] font-semibold px-1.5 py-0.5 rounded border focus:outline-none ${
@@ -440,27 +556,28 @@
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-slate-50 transition';
         tr.innerHTML = `
-          <td class="py-1.5 px-2.5">
+          <td class="py-2 px-2.5 align-top">
             <span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${isPat ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}">
               ${isPat ? 'Paternal' : 'Maternal'}
             </span>
           </td>
-          <td class="py-1.5 px-2.5 font-medium text-slate-700 text-xs">${item.relation || '—'}</td>
-          <td class="py-1.5 px-2.5">
+          <td class="py-2 px-2.5 font-medium text-slate-700 text-xs align-top">${item.relation || '—'}</td>
+          <td class="py-2 px-2.5 align-top">
             <div class="font-semibold text-slate-800 text-xs leading-tight">${item.name}</div>
-            <div class="text-[10px] text-slate-400 flex items-center gap-2">
+            <div class="text-[10px] text-slate-400 flex items-center gap-2 mt-0.5">
               ${item.place ? `<span><i class="fa-solid fa-location-dot mr-0.5"></i>${item.place}</span>` : ''}
               ${item.phone ? `<span><i class="fa-solid fa-phone mr-0.5"></i>${item.phone}</span>` : ''}
             </div>
-            ${item.notes ? `<div class="text-[10px] text-indigo-500 italic">${item.notes}</div>` : ''}
+            ${kidsListHtml}
+            ${item.notes ? `<div class="text-[10px] text-indigo-500 italic mt-0.5">${item.notes}</div>` : ''}
           </td>
-          <td class="py-1.5 px-1.5 text-center text-slate-700 font-medium">${item.gents || 0}</td>
-          <td class="py-1.5 px-1.5 text-center text-slate-700 font-medium">${item.ladies || 0}</td>
-          <td class="py-1.5 px-1.5 text-center text-slate-700 font-medium">${item.kids || 0}</td>
-          <td class="py-1.5 px-1.5 text-center font-bold text-slate-500">${total}</td>
-          <td class="py-1.5 px-2.5 text-center">${inviteSelect}</td>
-          <td class="py-1.5 px-2.5 text-center bg-emerald-50/20">${comingInput}</td>
-          <td class="py-1.5 px-2 text-right">
+          <td class="py-2 px-1.5 text-center text-slate-700 font-medium align-top">${item.gents || 0}</td>
+          <td class="py-2 px-1.5 text-center text-slate-700 font-medium align-top">${item.ladies || 0}</td>
+          <td class="py-2 px-1.5 text-center text-amber-700 font-bold align-top">${kidsCount}</td>
+          <td class="py-2 px-1.5 text-center font-bold text-slate-700 align-top">${total}</td>
+          <td class="py-2 px-2.5 text-center align-top">${inviteSelect}</td>
+          <td class="py-2 px-2.5 text-center bg-emerald-50/20 align-top">${comingInput}</td>
+          <td class="py-2 px-2 text-right align-top">
             <button onclick="editEntry('${item.id}')" class="text-slate-400 hover:text-indigo-600 px-1" title="Edit"><i class="fa-solid fa-pen"></i></button>
             <button onclick="deleteEntry('${item.id}')" class="text-slate-400 hover:text-rose-600 px-1" title="Delete"><i class="fa-solid fa-trash"></i></button>
           </td>
