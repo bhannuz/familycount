@@ -124,7 +124,7 @@
       </div>
     </header>
 
-    <!-- Side-by-Side Summary Chips (Updated to Show Invited / Coming) -->
+    <!-- Side-by-Side Summary Chips (Invited / Coming) -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
       <!-- Chip 1: Invited / Coming Combined Ratio Summary -->
       <div class="bg-indigo-900 text-white p-2.5 rounded-xl shadow-sm flex items-center justify-between">
@@ -192,7 +192,7 @@
       </div>
     </div>
 
-    <!-- 1. Collapsible Entry Form Card (Collapsed by Default) -->
+    <!-- 1. Collapsible Entry Form Card -->
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
       <button type="button" onclick="toggleAccordion('entryContainer', 'entryChevron', 'entryActionText')" class="w-full flex items-center justify-between px-3 py-2.5 bg-slate-50 hover:bg-slate-100 border-b border-slate-200 transition text-left">
         <div class="flex items-center gap-2">
@@ -618,6 +618,8 @@
         snapshot.forEach((doc) => {
           families.push({ id: doc.id, ...doc.data() });
         });
+        
+        // Ensure dropdown options are populated before anything else
         syncCodeScopedDropdowns();
         renderDashboard();
         if (isAdmin) {
@@ -795,7 +797,6 @@
       document.getElementById('customGroupWrapper').classList.add('hidden');
       const selectWrapper = document.getElementById('groupSelectWrapper');
       selectWrapper.classList.remove('hidden');
-      document.getElementById('groupSelect').selectedIndex = 0;
       document.getElementById('customGroupInput').value = '';
     }
 
@@ -814,12 +815,21 @@
       document.getElementById('customRelWrapper').classList.add('hidden');
       const selectWrapper = document.getElementById('relationSelectWrapper');
       selectWrapper.classList.remove('hidden');
-      document.getElementById('relationSelect').selectedIndex = 0;
       document.getElementById('customRelationInput').value = '';
     }
 
+    // Fully matching option normalizer
+    function canonicalCategory(cat) {
+      if (!cat) return '';
+      const c = cat.trim();
+      const lower = c.toLowerCase();
+      if (lower === 'paternal' || lower === 'paternal side') return 'Paternal Side';
+      if (lower === 'maternal' || lower === 'maternal side') return 'Maternal Side';
+      return c;
+    }
+
     function syncCodeScopedDropdowns() {
-      const defaultCategories = ['Paternal', 'Maternal', 'Friends', 'Office Friends', 'School Friends', 'College Friends', 'Neighbours'];
+      const defaultCategories = ['Paternal Side', 'Maternal Side', 'Friends', 'Office Friends', 'School Friends', 'College Friends', 'Neighbours'];
       const defaultRelations = ['Friend', 'Colleague', 'Babai / Chacha', 'Peddananna / Tauji', 'Mama / Uncle', 'Atta / Bua / Mami', 'Annaya / Bhaiya', 'Thammudu / Younger Bro', 'Akka / Didi', 'Chelli / Younger Sis', 'Bava / Jiju', 'Cousin'];
 
       const scopedCategories = new Set(defaultCategories);
@@ -828,12 +838,12 @@
 
       const targetFamilies = getVisibleFamilies();
       targetFamilies.forEach(f => {
-        if (f.side && f.side.trim()) scopedCategories.add(f.side.trim());
+        if (f.side && f.side.trim()) scopedCategories.add(canonicalCategory(f.side));
         if (f.relation && f.relation.trim()) scopedRelations.add(f.relation.trim());
         if (f.code && f.code.trim()) allCodes.add(f.code.trim().toUpperCase());
       });
 
-      // Admin Code Filter Dropdown
+      // 1. Admin Code Filter Dropdown
       if (isAdmin) {
         const codeFilterSelect = document.getElementById('histCodeFilter');
         const currentCodeVal = codeFilterSelect.value;
@@ -847,26 +857,26 @@
         codeFilterSelect.value = allCodes.has(currentCodeVal) ? currentCodeVal : 'All';
       }
 
-      // Filter Panel Category
+      // 2. Filter Panel Category Dropdown
       const filterSelect = document.getElementById('histGroupFilter');
       const currentFilterVal = filterSelect.value;
       filterSelect.innerHTML = '<option value="All">All Categories</option>';
       scopedCategories.forEach(grp => {
         const opt = document.createElement('option');
         opt.value = grp;
-        opt.textContent = grp.includes('Side') || grp.includes('Friends') || grp.includes('Neighbours') ? grp : `${grp} Group`;
+        opt.textContent = grp;
         filterSelect.appendChild(opt);
       });
       filterSelect.value = scopedCategories.has(currentFilterVal) ? currentFilterVal : 'All';
 
-      // Entry Form Category
+      // 3. Entry Form Category Dropdown
       const formGroupSelect = document.getElementById('groupSelect');
       const currentFormGroupVal = formGroupSelect.value;
       formGroupSelect.innerHTML = '';
       scopedCategories.forEach(grp => {
         const opt = document.createElement('option');
         opt.value = grp;
-        opt.textContent = grp === 'Paternal' ? 'Paternal Side' : (grp === 'Maternal' ? 'Maternal Side' : grp);
+        opt.textContent = grp;
         formGroupSelect.appendChild(opt);
       });
       const customCatOpt = document.createElement('option');
@@ -878,7 +888,7 @@
         formGroupSelect.value = currentFormGroupVal;
       }
 
-      // Entry Form Relation
+      // 4. Entry Form Relation Dropdown
       const formRelSelect = document.getElementById('relationSelect');
       const currentFormRelVal = formRelSelect.value;
       formRelSelect.innerHTML = '<option value="">— None / Optional —</option>';
@@ -928,7 +938,7 @@
 
       const record = {
         code: loggedCode || "A2KU",
-        side: finalGroup,
+        side: canonicalCategory(finalGroup),
         relation: finalRelation || '',
         name: document.getElementById('familyName').value.trim(),
         place: document.getElementById('familyPlace').value.trim(),
@@ -981,84 +991,96 @@
       });
     }
 
-    // Fixed & Robust editEntry function: dynamically verifies and binds options
+    // Precise and Guaranteed Edit Binding
     function editEntry(id) {
       const item = families.find(f => f.id === id);
       if (!item) return;
 
+      // Expand Entry form if collapsed
       const entryContainer = document.getElementById('entryContainer');
       if (entryContainer.classList.contains('hidden')) {
         toggleAccordion('entryContainer', 'entryChevron', 'entryActionText');
       }
 
+      // 1. Populate Basic Fields
       document.getElementById('docId').value = item.id;
-      
-      // 1. Populate Category / Side
-      const groupSelect = document.getElementById('groupSelect');
-      const targetSide = (item.side || '').trim();
-      let groupOptionFound = false;
-
-      for (let opt of groupSelect.options) {
-        if (opt.value.trim().toLowerCase() === targetSide.toLowerCase()) {
-          opt.selected = true;
-          groupOptionFound = true;
-          break;
-        }
-      }
-
-      if (groupOptionFound) {
-        groupSelect.value = targetSide;
-        cancelCustomGroup();
-      } else if (targetSide) {
-        const customOpt = document.createElement('option');
-        customOpt.value = targetSide;
-        customOpt.textContent = targetSide;
-        groupSelect.insertBefore(customOpt, groupSelect.lastElementChild);
-        groupSelect.value = targetSide;
-        cancelCustomGroup();
-      } else {
-        cancelCustomGroup();
-      }
-
-      // 2. Populate Relation
-      const relSelect = document.getElementById('relationSelect');
-      const targetRel = (item.relation || '').trim();
-      let relOptionFound = false;
-
-      for (let opt of relSelect.options) {
-        if (opt.value.trim().toLowerCase() === targetRel.toLowerCase()) {
-          opt.selected = true;
-          relOptionFound = true;
-          break;
-        }
-      }
-
-      if (relOptionFound) {
-        relSelect.value = targetRel;
-        cancelCustomRelation();
-      } else if (targetRel) {
-        const customOpt = document.createElement('option');
-        customOpt.value = targetRel;
-        customOpt.textContent = targetRel;
-        relSelect.insertBefore(customOpt, relSelect.lastElementChild);
-        relSelect.value = targetRel;
-        cancelCustomRelation();
-      } else {
-        relSelect.value = '';
-        cancelCustomRelation();
-      }
-
       document.getElementById('familyName').value = item.name || '';
       document.getElementById('familyPlace').value = item.place || '';
       document.getElementById('familyPhone').value = item.phone || '';
-      document.getElementById('gentsCount').value = item.gents || 0;
-      document.getElementById('ladiesCount').value = item.ladies || 0;
-      document.getElementById('kidsCount').value = item.kids || 0;
+      document.getElementById('gentsCount').value = (item.gents !== undefined) ? item.gents : 1;
+      document.getElementById('ladiesCount').value = (item.ladies !== undefined) ? item.ladies : 1;
+      document.getElementById('kidsCount').value = (item.kids !== undefined) ? item.kids : 0;
       document.getElementById('kidNames').value = item.kidNames || '';
 
+      // 2. Populate Category / Group precisely
+      const rawSide = item.side ? item.side.trim() : '';
+      const sideVal = canonicalCategory(rawSide);
+      const groupSelect = document.getElementById('groupSelect');
+      
+      let sideFoundIndex = -1;
+      for (let i = 0; i < groupSelect.options.length; i++) {
+        const optVal = groupSelect.options[i].value;
+        if (optVal !== '__custom_group__' && (
+            optVal.toLowerCase() === sideVal.toLowerCase() ||
+            optVal.toLowerCase() === rawSide.toLowerCase() ||
+            canonicalCategory(optVal).toLowerCase() === sideVal.toLowerCase()
+        )) {
+          sideFoundIndex = i;
+          break;
+        }
+      }
+
+      if (sideFoundIndex !== -1) {
+        groupSelect.selectedIndex = sideFoundIndex;
+        cancelCustomGroup();
+      } else if (sideVal) {
+        // Add dynamically and select
+        const newOpt = document.createElement('option');
+        newOpt.value = sideVal;
+        newOpt.textContent = sideVal;
+        groupSelect.insertBefore(newOpt, groupSelect.lastElementChild);
+        groupSelect.value = sideVal;
+        cancelCustomGroup();
+      } else {
+        groupSelect.selectedIndex = 0;
+        cancelCustomGroup();
+      }
+
+      // 3. Populate Relation precisely
+      const relVal = item.relation ? item.relation.trim() : '';
+      const relSelect = document.getElementById('relationSelect');
+      
+      let relFoundIndex = -1;
+      for (let i = 0; i < relSelect.options.length; i++) {
+        const optVal = relSelect.options[i].value;
+        if (optVal.toLowerCase() === relVal.toLowerCase()) {
+          relFoundIndex = i;
+          break;
+        }
+      }
+
+      if (relFoundIndex !== -1) {
+        relSelect.selectedIndex = relFoundIndex;
+        cancelCustomRelation();
+      } else if (relVal) {
+        // Add dynamically and select
+        const newRelOpt = document.createElement('option');
+        newRelOpt.value = relVal;
+        newRelOpt.textContent = relVal;
+        relSelect.insertBefore(newRelOpt, relSelect.lastElementChild);
+        relSelect.value = relVal;
+        cancelCustomRelation();
+      } else {
+        relSelect.selectedIndex = 0;
+        cancelCustomRelation();
+      }
+
+      // 4. Update Button State
       document.getElementById('saveBtn').textContent = 'Update Entry';
       document.getElementById('cancelBtn').classList.remove('hidden');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      // Scroll smoothly to form
+      entryContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
     async function deleteEntry(id) {
@@ -1110,14 +1132,15 @@
     }
 
     function getGroupBadge(group) {
-      if (!group) return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-100 text-slate-700">General</span>`;
-      if (group === 'Paternal') return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-100 text-blue-800">Paternal</span>`;
-      if (group === 'Maternal') return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-purple-100 text-purple-800">Maternal</span>`;
-      if (group.includes('Office')) return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-cyan-100 text-cyan-800">Office</span>`;
-      if (group.includes('School')) return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-100 text-emerald-800">School</span>`;
-      if (group.includes('College')) return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-800">College</span>`;
-      if (group.includes('Friend')) return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-teal-100 text-teal-800">Friends</span>`;
-      return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">${group}</span>`;
+      const canonical = canonicalCategory(group);
+      if (!canonical) return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-100 text-slate-700">General</span>`;
+      if (canonical === 'Paternal Side') return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-100 text-blue-800">Paternal Side</span>`;
+      if (canonical === 'Maternal Side') return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-purple-100 text-purple-800">Maternal Side</span>`;
+      if (canonical.includes('Office')) return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-cyan-100 text-cyan-800">Office</span>`;
+      if (canonical.includes('School')) return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-100 text-emerald-800">School</span>`;
+      if (canonical.includes('College')) return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-800">College</span>`;
+      if (canonical.includes('Friend')) return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-teal-100 text-teal-800">Friends</span>`;
+      return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">${canonical}</span>`;
     }
 
     function renderFilteredHistory() {
@@ -1138,11 +1161,7 @@
 
         let matchesGroup = (groupFilter === 'All');
         if (!matchesGroup) {
-          if (groupFilter === 'Friends') {
-            matchesGroup = (f.side && f.side.toLowerCase().includes('friend'));
-          } else {
-            matchesGroup = (f.side === groupFilter);
-          }
+          matchesGroup = (canonicalCategory(f.side).toLowerCase() === groupFilter.toLowerCase()) || (f.side === groupFilter);
         }
 
         let matchesMember = true;
@@ -1270,7 +1289,7 @@
 
       const headers = ['Category', 'Relation', 'Guest Name', 'Place', 'Phone', 'Gents', 'Ladies', 'Kids', 'Kid Names', 'Total Invited', 'Invitation Status', 'Coming Count', 'Access Code'];
       const rows = target.map(f => [
-        `"${f.side || ''}"`,
+        `"${canonicalCategory(f.side) || ''}"`,
         `"${f.relation || ''}"`,
         `"${f.name || ''}"`,
         `"${f.place || ''}"`,
@@ -1317,7 +1336,7 @@
           if (row.length < 3 || !row[2]) continue;
 
           const record = {
-            side: row[0] || 'General',
+            side: canonicalCategory(row[0]) || 'General',
             relation: row[1] || '',
             name: row[2].trim(),
             place: row[3] || '',
