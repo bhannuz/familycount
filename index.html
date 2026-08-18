@@ -124,19 +124,21 @@
       </div>
     </header>
 
-    <!-- Side-by-Side Summary Chips (Invited / Coming) -->
+    <!-- Side-by-Side Summary Chips (Invited / Confirmed / Total Count) -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-      <!-- Chip 1: Invited / Coming Combined Ratio Summary -->
+      <!-- Chip 1: Invited / Confirmed / Total Count Summary -->
       <div class="bg-indigo-900 text-white p-2.5 rounded-xl shadow-sm flex items-center justify-between">
         <div>
-          <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-200 block">Invited / Coming</span>
-          <div class="flex items-baseline gap-1.5 mt-0.5">
-            <span class="text-xl sm:text-2xl font-bold text-white"><span id="statTotal">0</span> <span class="text-[10px] font-normal text-indigo-300">Invited</span></span>
-            <span class="text-indigo-400 font-light text-xl">/</span>
-            <span class="text-xl sm:text-2xl font-black text-emerald-300"><span id="statComing">0</span> <span class="text-[10px] font-normal text-emerald-200">Coming</span></span>
+          <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-200 block">Invited / Confirmed / Total Count</span>
+          <div class="flex items-baseline gap-2 mt-1">
+            <span class="text-base sm:text-lg font-bold text-indigo-200"><span id="statInvited" class="font-black text-white">0</span> <span class="text-[9px] font-medium text-indigo-300">Inv</span></span>
+            <span class="text-indigo-400 font-light">/</span>
+            <span class="text-base sm:text-lg font-bold text-amber-300"><span id="statConfirmed" class="font-black text-amber-300">0</span> <span class="text-[9px] font-medium text-amber-200">Conf</span></span>
+            <span class="text-indigo-400 font-light">/</span>
+            <span class="text-lg sm:text-xl font-black text-emerald-300"><span id="statTotalCount">0</span> <span class="text-[9px] font-medium text-emerald-200">Total Headcount</span></span>
           </div>
         </div>
-        <i class="fa-solid fa-circle-check text-emerald-400 text-xl sm:text-2xl opacity-80 shrink-0"></i>
+        <i class="fa-solid fa-users text-emerald-400 text-xl sm:text-2xl opacity-80 shrink-0"></i>
       </div>
 
       <!-- Chip 2: Gents / Ladies / Kids Breakdown -->
@@ -212,8 +214,8 @@
               <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Category / Group *</label>
               <div id="groupSelectWrapper">
                 <select id="groupSelect" onchange="checkCustomGroup(this.value)" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs font-semibold text-slate-700 focus:outline-none focus:border-indigo-500">
-                  <option value="Paternal">Paternal Side</option>
-                  <option value="Maternal">Maternal Side</option>
+                  <option value="Paternal Side">Paternal Side</option>
+                  <option value="Maternal Side">Maternal Side</option>
                   <option value="Friends">Friends</option>
                   <option value="Office Friends">Office Friends</option>
                   <option value="School Friends">School Friends</option>
@@ -349,13 +351,14 @@
           </div>
 
           <div>
-            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Coming Status:</label>
+            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Invitation / Status:</label>
             <select id="histRsvpFilter" onchange="renderFilteredHistory()" class="w-full bg-white border border-slate-300 text-xs font-semibold text-slate-700 px-2 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500">
               <option value="All">All Statuses</option>
-              <option value="Coming">Coming (Count > 0)</option>
-              <option value="Not Coming">Not Coming (Count = 0)</option>
+              <option value="Confirmed">Confirmed</option>
               <option value="Invited">Marked as Invited</option>
               <option value="Not Invited">Pending / Not Invited</option>
+              <option value="Coming">Coming (Count > 0)</option>
+              <option value="Not Coming">Not Coming (Count = 0)</option>
             </select>
           </div>
 
@@ -377,7 +380,7 @@
       </div>
     </div>
 
-    <!-- 3. Collapsible Showing Entries / Guest List (Attendance Table Column Renamed to 'Coming') -->
+    <!-- 3. Collapsible Showing Entries / Guest List -->
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
       <button type="button" onclick="toggleAccordion('historyContainer', 'historyChevron', 'historyActionText')" class="w-full flex items-center justify-between px-3 py-2.5 bg-slate-50 hover:bg-slate-100 border-b border-slate-200 transition text-left">
         <div class="flex items-center gap-2">
@@ -619,7 +622,6 @@
           families.push({ id: doc.id, ...doc.data() });
         });
         
-        // Ensure dropdown options are populated before anything else
         syncCodeScopedDropdowns();
         renderDashboard();
         if (isAdmin) {
@@ -818,7 +820,6 @@
       document.getElementById('customRelationInput').value = '';
     }
 
-    // Fully matching option normalizer
     function canonicalCategory(cat) {
       if (!cat) return '';
       const c = cat.trim();
@@ -974,7 +975,7 @@
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       };
 
-      if (val === 'Invited' && (!item.comingCount || item.comingCount === 0)) {
+      if ((val === 'Invited' || val === 'Confirmed') && (!item.comingCount || item.comingCount === 0)) {
         updatePayload.comingCount = totalFamily;
       } else if (val === 'Not Invited') {
         updatePayload.comingCount = 0;
@@ -983,26 +984,30 @@
       await collectionRef.doc(id).update(updatePayload);
     }
 
-    async function updateComingCount(id, val) {
-      const count = parseInt(val) || 0;
+    // Step adjustment for Coming Count via +/- buttons
+    async function adjustComingCount(id, delta) {
+      const item = families.find(f => f.id === id);
+      if (!item) return;
+
+      const totalFamily = (item.gents || 0) + (item.ladies || 0) + (item.kids || 0);
+      let current = (item.comingCount !== undefined) ? parseInt(item.comingCount) : 0;
+      let updated = Math.max(0, Math.min(totalFamily, current + delta));
+
       await collectionRef.doc(id).update({
-        comingCount: count,
+        comingCount: updated,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       });
     }
 
-    // Precise and Guaranteed Edit Binding
     function editEntry(id) {
       const item = families.find(f => f.id === id);
       if (!item) return;
 
-      // Expand Entry form if collapsed
       const entryContainer = document.getElementById('entryContainer');
       if (entryContainer.classList.contains('hidden')) {
         toggleAccordion('entryContainer', 'entryChevron', 'entryActionText');
       }
 
-      // 1. Populate Basic Fields
       document.getElementById('docId').value = item.id;
       document.getElementById('familyName').value = item.name || '';
       document.getElementById('familyPlace').value = item.place || '';
@@ -1012,7 +1017,6 @@
       document.getElementById('kidsCount').value = (item.kids !== undefined) ? item.kids : 0;
       document.getElementById('kidNames').value = item.kidNames || '';
 
-      // 2. Populate Category / Group precisely
       const rawSide = item.side ? item.side.trim() : '';
       const sideVal = canonicalCategory(rawSide);
       const groupSelect = document.getElementById('groupSelect');
@@ -1034,7 +1038,6 @@
         groupSelect.selectedIndex = sideFoundIndex;
         cancelCustomGroup();
       } else if (sideVal) {
-        // Add dynamically and select
         const newOpt = document.createElement('option');
         newOpt.value = sideVal;
         newOpt.textContent = sideVal;
@@ -1046,7 +1049,6 @@
         cancelCustomGroup();
       }
 
-      // 3. Populate Relation precisely
       const relVal = item.relation ? item.relation.trim() : '';
       const relSelect = document.getElementById('relationSelect');
       
@@ -1063,7 +1065,6 @@
         relSelect.selectedIndex = relFoundIndex;
         cancelCustomRelation();
       } else if (relVal) {
-        // Add dynamically and select
         const newRelOpt = document.createElement('option');
         newRelOpt.value = relVal;
         newRelOpt.textContent = relVal;
@@ -1075,11 +1076,9 @@
         cancelCustomRelation();
       }
 
-      // 4. Update Button State
       document.getElementById('saveBtn').textContent = 'Update Entry';
       document.getElementById('cancelBtn').classList.remove('hidden');
 
-      // Scroll smoothly to form
       entryContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
@@ -1115,16 +1114,24 @@
     function renderDashboard() {
       const target = getVisibleFamilies();
       let gCount = 0, lCount = 0, kCount = 0, comingCount = 0;
+      let invitedCount = 0, confirmedCount = 0;
 
       target.forEach(f => {
         gCount += f.gents || 0;
         lCount += f.ladies || 0;
         kCount += f.kids || 0;
         comingCount += parseInt(f.comingCount) || 0;
+
+        if (f.invitation === 'Invited') invitedCount++;
+        if (f.invitation === 'Confirmed') confirmedCount++;
       });
 
-      document.getElementById('statComing').textContent = comingCount;
-      document.getElementById('statTotal').textContent = gCount + lCount + kCount;
+      const totalHeadcount = gCount + lCount + kCount;
+
+      document.getElementById('statInvited').textContent = invitedCount;
+      document.getElementById('statConfirmed').textContent = confirmedCount;
+      document.getElementById('statTotalCount').textContent = `${comingCount} / ${totalHeadcount}`;
+
       document.getElementById('statGents').textContent = gCount;
       document.getElementById('statLadies').textContent = lCount;
       document.getElementById('statKids').textContent = kCount;
@@ -1177,14 +1184,16 @@
 
         let matchesRsvp = true;
         const coming = parseInt(f.comingCount) || 0;
-        if (rsvpFilter === 'Coming') {
-          matchesRsvp = (coming > 0);
-        } else if (rsvpFilter === 'Not Coming') {
-          matchesRsvp = (coming === 0);
+        if (rsvpFilter === 'Confirmed') {
+          matchesRsvp = (f.invitation === 'Confirmed');
         } else if (rsvpFilter === 'Invited') {
           matchesRsvp = (f.invitation === 'Invited');
         } else if (rsvpFilter === 'Not Invited') {
           matchesRsvp = (f.invitation === 'Not Invited');
+        } else if (rsvpFilter === 'Coming') {
+          matchesRsvp = (coming > 0);
+        } else if (rsvpFilter === 'Not Coming') {
+          matchesRsvp = (coming === 0);
         }
 
         const matchesSearch = (f.name && f.name.toLowerCase().includes(search)) || 
@@ -1220,25 +1229,35 @@
 
       filtered.forEach(item => {
         const total = (item.gents || 0) + (item.ladies || 0) + (item.kids || 0);
-        const isInvited = (item.invitation === 'Invited');
+        const status = item.invitation || 'Invited';
         const comingCount = (item.comingCount !== undefined) ? item.comingCount : 0;
 
+        let statusStyle = 'bg-slate-50 text-slate-600 border-slate-300';
+        if (status === 'Confirmed') statusStyle = 'bg-amber-50 text-amber-800 border-amber-300 font-bold';
+        else if (status === 'Invited') statusStyle = 'bg-emerald-50 text-emerald-800 border-emerald-300';
+
         const inviteSelect = `
-          <select onchange="updateInvitation('${item.id}', this.value)" class="text-[10px] font-semibold px-1 py-0.5 rounded border focus:outline-none ${
-            isInvited ? 'bg-emerald-50 text-emerald-800 border-emerald-300' : 'bg-slate-50 text-slate-600 border-slate-300'
-          }">
-            <option value="Not Invited" ${!isInvited ? 'selected' : ''}>⏳ Pending</option>
-            <option value="Invited" ${isInvited ? 'selected' : ''}>📩 Invited</option>
+          <select onchange="updateInvitation('${item.id}', this.value)" class="text-[10px] font-semibold px-1 py-0.5 rounded border focus:outline-none ${statusStyle}">
+            <option value="Not Invited" ${status === 'Not Invited' ? 'selected' : ''}>⏳ Pending</option>
+            <option value="Invited" ${status === 'Invited' ? 'selected' : ''}>📩 Invited</option>
+            <option value="Confirmed" ${status === 'Confirmed' ? 'selected' : ''}>✅ Confirmed</option>
           </select>
         `;
 
-        const comingInput = `
+        // Arrow-based stepper for Coming count
+        const comingStepper = `
           <div class="flex items-center justify-center gap-1">
-            <input type="number" min="0" max="${total}" value="${comingCount}" 
-              onchange="updateComingCount('${item.id}', this.value)"
-              class="w-10 text-center text-xs font-black py-0.5 rounded border ${
-                comingCount > 0 ? 'bg-emerald-100 text-emerald-900 border-emerald-500' : 'bg-slate-50 text-slate-400 border-slate-300'
-              } focus:outline-none" />
+            <button onclick="adjustComingCount('${item.id}', -1)" class="w-5 h-5 rounded bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center text-[10px] font-black transition">
+              <i class="fa-solid fa-chevron-left text-[8px]"></i>
+            </button>
+            <div class="w-10 text-center text-xs font-black py-0.5 rounded border ${
+              comingCount > 0 ? 'bg-emerald-100 text-emerald-900 border-emerald-500' : 'bg-slate-50 text-slate-400 border-slate-300'
+            }">
+              ${comingCount}
+            </div>
+            <button onclick="adjustComingCount('${item.id}', 1)" class="w-5 h-5 rounded bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center text-[10px] font-black transition">
+              <i class="fa-solid fa-chevron-right text-[8px]"></i>
+            </button>
             <span class="text-[9px] text-slate-400 font-semibold">/${total}</span>
           </div>
         `;
@@ -1270,7 +1289,7 @@
           <td class="py-1.5 px-1 text-center text-amber-700 font-bold">${item.kids || 0}</td>
           <td class="py-1.5 px-1.5 text-center font-bold text-slate-600">${total}</td>
           <td class="py-1.5 px-2 text-center bg-indigo-50/20">${inviteSelect}</td>
-          <td class="py-1.5 px-2 text-center bg-emerald-50/30">${comingInput}</td>
+          <td class="py-1.5 px-2 text-center bg-emerald-50/30">${comingStepper}</td>
           <td class="py-1.5 px-2 text-right">
             <button onclick="editEntry('${item.id}')" class="text-slate-400 hover:text-indigo-600 px-1" title="Edit"><i class="fa-solid fa-pen"></i></button>
             <button onclick="deleteEntry('${item.id}')" class="text-slate-400 hover:text-rose-600 px-1" title="Delete"><i class="fa-solid fa-trash"></i></button>
