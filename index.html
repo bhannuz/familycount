@@ -124,33 +124,25 @@
       </div>
     </header>
 
-    <!-- Side-by-Side Summary Chips -->
-    <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
-      <div class="bg-indigo-900 text-white p-2.5 rounded-xl shadow-sm flex items-center justify-between col-span-1">
+    <!-- Side-by-Side Summary Chips (Updated to Show Invited / Coming) -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+      <!-- Chip 1: Invited / Coming Combined Ratio Summary -->
+      <div class="bg-indigo-900 text-white p-2.5 rounded-xl shadow-sm flex items-center justify-between">
         <div>
-          <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-indigo-200 block" id="summaryTitle">Coming</span>
-          <div class="flex items-baseline gap-1 mt-0.5">
-            <span id="statComing" class="text-xl sm:text-2xl font-black text-emerald-300">0</span>
-            <span class="text-[9px] text-indigo-200">attending</span>
+          <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-200 block">Invited / Coming</span>
+          <div class="flex items-baseline gap-1.5 mt-0.5">
+            <span class="text-xl sm:text-2xl font-bold text-white"><span id="statTotal">0</span> <span class="text-[10px] font-normal text-indigo-300">Invited</span></span>
+            <span class="text-indigo-400 font-light text-xl">/</span>
+            <span class="text-xl sm:text-2xl font-black text-emerald-300"><span id="statComing">0</span> <span class="text-[10px] font-normal text-emerald-200">Coming</span></span>
           </div>
         </div>
-        <i class="fa-solid fa-circle-check text-emerald-400 text-lg sm:text-xl opacity-80 shrink-0"></i>
+        <i class="fa-solid fa-circle-check text-emerald-400 text-xl sm:text-2xl opacity-80 shrink-0"></i>
       </div>
 
-      <div class="bg-white border border-slate-200 p-2.5 rounded-xl shadow-sm flex items-center justify-between col-span-1">
-        <div>
-          <span class="text-[9px] sm:text-[10px] font-bold uppercase text-slate-400 block">Total Invited</span>
-          <div class="flex items-baseline gap-1 mt-0.5">
-            <span id="statTotal" class="text-xl sm:text-2xl font-bold text-slate-800">0</span>
-            <span class="text-[9px] text-slate-400">members</span>
-          </div>
-        </div>
-        <i class="fa-solid fa-user-group text-slate-300 text-lg sm:text-xl shrink-0"></i>
-      </div>
-
-      <div class="bg-white border border-slate-200 p-2.5 rounded-xl shadow-sm col-span-2 md:col-span-1 flex flex-col justify-center">
+      <!-- Chip 2: Gents / Ladies / Kids Breakdown -->
+      <div class="bg-white border border-slate-200 p-2.5 rounded-xl shadow-sm flex flex-col justify-center">
         <span class="text-[9px] sm:text-[10px] font-bold uppercase text-slate-500 block mb-1">Breakdown (G / L / K)</span>
-        <div class="flex items-center justify-around text-xs font-bold text-slate-800 bg-slate-50 py-1 px-2 rounded-lg border border-slate-100">
+        <div class="flex items-center justify-around text-xs font-bold text-slate-800 bg-slate-50 py-1.5 px-2 rounded-lg border border-slate-100">
           <span class="text-blue-700">G: <span id="statGents" class="text-xs sm:text-sm font-black">0</span></span>
           <span class="text-slate-300 font-normal">|</span>
           <span class="text-pink-700">L: <span id="statLadies" class="text-xs sm:text-sm font-black">0</span></span>
@@ -160,7 +152,7 @@
       </div>
     </div>
 
-    <!-- ADMIN EXCLUSIVE: Code-Wise Family Breakdown & Access Control Panel -->
+    <!-- ADMIN EXCLUSIVE: Code-Wise Family Breakdown Panel -->
     <div id="adminCodeBreakdownSection" class="hidden bg-white rounded-xl border border-amber-200 shadow-sm overflow-hidden">
       <button type="button" onclick="toggleAccordion('codeBreakdownContainer', 'codeBreakdownChevron', 'codeBreakdownActionText')" class="w-full flex items-center justify-between px-3 py-2.5 bg-amber-50/70 hover:bg-amber-100/70 border-b border-amber-200 transition text-left">
         <div class="flex items-center gap-2">
@@ -175,7 +167,7 @@
 
       <div id="codeBreakdownContainer" class="hidden p-2.5 sm:p-3 space-y-2.5">
         <div class="text-[11px] text-slate-500">
-          Showing summary aggregated by each registered 4-digit code. Click <b>"Filter List"</b> to isolate entries or manage login status.
+          Summary grouped by registered 4-digit code.
         </div>
 
         <div class="overflow-x-auto border border-slate-200 rounded-lg">
@@ -189,7 +181,7 @@
                 <th class="py-2 px-1 text-center text-pink-700">L</th>
                 <th class="py-2 px-1 text-center text-amber-700">K</th>
                 <th class="py-2 px-1.5 text-center font-bold text-slate-600">Total Inv.</th>
-                <th class="py-2 px-2 text-center bg-emerald-50 text-emerald-900 font-bold">Attending</th>
+                <th class="py-2 px-2 text-center bg-emerald-50 text-emerald-800 font-bold">Coming</th>
                 <th class="py-2 px-2 text-center">Status</th>
                 <th class="py-2 px-2.5 text-right">Actions</th>
               </tr>
@@ -357,11 +349,11 @@
           </div>
 
           <div>
-            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">RSVP Status:</label>
+            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Coming Status:</label>
             <select id="histRsvpFilter" onchange="renderFilteredHistory()" class="w-full bg-white border border-slate-300 text-xs font-semibold text-slate-700 px-2 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500">
-              <option value="All">All RSVP Statuses</option>
-              <option value="Coming">Attending / Coming (Count > 0)</option>
-              <option value="Not Coming">Not Attending (Count = 0)</option>
+              <option value="All">All Statuses</option>
+              <option value="Coming">Coming (Count > 0)</option>
+              <option value="Not Coming">Not Coming (Count = 0)</option>
               <option value="Invited">Marked as Invited</option>
               <option value="Not Invited">Pending / Not Invited</option>
             </select>
@@ -385,7 +377,7 @@
       </div>
     </div>
 
-    <!-- 3. Collapsible Showing Entries / Guest List (Collapsed by Default) -->
+    <!-- 3. Collapsible Showing Entries / Guest List (Attendance Table Column Renamed to 'Coming') -->
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
       <button type="button" onclick="toggleAccordion('historyContainer', 'historyChevron', 'historyActionText')" class="w-full flex items-center justify-between px-3 py-2.5 bg-slate-50 hover:bg-slate-100 border-b border-slate-200 transition text-left">
         <div class="flex items-center gap-2">
@@ -409,8 +401,8 @@
                 <th class="py-2 px-1 text-center text-pink-700">L</th>
                 <th class="py-2 px-1 text-center text-amber-700">K</th>
                 <th class="py-2 px-1.5 text-center font-bold text-slate-500">Total</th>
-                <th class="py-2 px-2 text-center">RSVP</th>
-                <th class="py-2 px-2 text-center bg-emerald-50/60 text-emerald-900 font-bold">Attending</th>
+                <th class="py-2 px-2 text-center bg-indigo-50/60 text-indigo-900 font-bold">Invitation</th>
+                <th class="py-2 px-2 text-center bg-emerald-50/60 text-emerald-900 font-bold">Coming</th>
                 <th class="py-2 px-2 text-right">Actions</th>
               </tr>
             </thead>
@@ -635,12 +627,10 @@
       });
     }
 
-    // --- Admin: Render Code-Wise Aggregated Summary Table ---
     function renderCodeWiseBreakdown() {
       const tbody = document.getElementById('codeBreakdownTableBody');
       tbody.innerHTML = '';
 
-      // Aggregate data by unique 4-digit codes
       const codeMap = {};
 
       families.forEach(item => {
@@ -656,8 +646,7 @@
             total: 0,
             coming: 0,
             isBlocked: (item.isBlocked === true),
-            entriesCount: 0,
-            docIds: []
+            entriesCount: 0
           };
         }
         
@@ -672,7 +661,6 @@
         codeMap[code].total += (g + l + k);
         codeMap[code].coming += c;
         codeMap[code].entriesCount += 1;
-        codeMap[code].docIds.push(item.id);
 
         if (item.isBlocked === true) {
           codeMap[code].isBlocked = true;
@@ -734,7 +722,6 @@
     }
 
     function filterByCodeDirect(code) {
-      // Open Filter accordion & History Accordion
       const filterContainer = document.getElementById('filterContainer');
       if (filterContainer.classList.contains('hidden')) {
         toggleAccordion('filterContainer', 'filterChevron', 'filterActionText');
@@ -749,7 +736,6 @@
       codeFilterSelect.value = code;
       renderFilteredHistory();
 
-      // Smooth scroll to history
       historyContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
@@ -783,7 +769,7 @@
     }
 
     async function deleteCodeBatch(code, name) {
-      if (confirm(`Are you sure you want to completely delete all guest entries for code ${code} (${name})?`)) {
+      if (confirm(`Are you sure you want to delete all entries for code ${code} (${name})?`)) {
         const batch = db.batch();
         const targetDocs = families.filter(f => f.code && f.code.toUpperCase() === code);
         targetDocs.forEach(item => {
@@ -995,6 +981,7 @@
       });
     }
 
+    // Fixed & Robust editEntry function: dynamically verifies and binds options
     function editEntry(id) {
       const item = families.find(f => f.id === id);
       if (!item) return;
@@ -1006,41 +993,62 @@
 
       document.getElementById('docId').value = item.id;
       
+      // 1. Populate Category / Side
       const groupSelect = document.getElementById('groupSelect');
-      let groupExists = false;
+      const targetSide = (item.side || '').trim();
+      let groupOptionFound = false;
+
       for (let opt of groupSelect.options) {
-        if (opt.value === item.side) {
-          groupExists = true;
+        if (opt.value.trim().toLowerCase() === targetSide.toLowerCase()) {
+          opt.selected = true;
+          groupOptionFound = true;
           break;
         }
       }
-      if (groupExists) {
-        groupSelect.value = item.side;
+
+      if (groupOptionFound) {
+        groupSelect.value = targetSide;
+        cancelCustomGroup();
+      } else if (targetSide) {
+        const customOpt = document.createElement('option');
+        customOpt.value = targetSide;
+        customOpt.textContent = targetSide;
+        groupSelect.insertBefore(customOpt, groupSelect.lastElementChild);
+        groupSelect.value = targetSide;
         cancelCustomGroup();
       } else {
-        document.getElementById('groupSelectWrapper').classList.add('hidden');
-        document.getElementById('customGroupWrapper').classList.remove('hidden');
-        document.getElementById('customGroupInput').value = item.side || '';
+        cancelCustomGroup();
       }
 
+      // 2. Populate Relation
       const relSelect = document.getElementById('relationSelect');
-      let relExists = false;
+      const targetRel = (item.relation || '').trim();
+      let relOptionFound = false;
+
       for (let opt of relSelect.options) {
-        if (opt.value === item.relation) {
-          relExists = true;
+        if (opt.value.trim().toLowerCase() === targetRel.toLowerCase()) {
+          opt.selected = true;
+          relOptionFound = true;
           break;
         }
       }
-      if (relExists) {
-        relSelect.value = item.relation || '';
+
+      if (relOptionFound) {
+        relSelect.value = targetRel;
+        cancelCustomRelation();
+      } else if (targetRel) {
+        const customOpt = document.createElement('option');
+        customOpt.value = targetRel;
+        customOpt.textContent = targetRel;
+        relSelect.insertBefore(customOpt, relSelect.lastElementChild);
+        relSelect.value = targetRel;
         cancelCustomRelation();
       } else {
-        document.getElementById('relationSelectWrapper').classList.add('hidden');
-        document.getElementById('customRelWrapper').classList.remove('hidden');
-        document.getElementById('customRelationInput').value = item.relation || '';
+        relSelect.value = '';
+        cancelCustomRelation();
       }
 
-      document.getElementById('familyName').value = item.name;
+      document.getElementById('familyName').value = item.name || '';
       document.getElementById('familyPlace').value = item.place || '';
       document.getElementById('familyPhone').value = item.phone || '';
       document.getElementById('gentsCount').value = item.gents || 0;
@@ -1126,10 +1134,8 @@
       const target = getVisibleFamilies();
 
       const filtered = target.filter(f => {
-        // Admin Code Filter
         let matchesCode = (codeFilter === 'All') || (f.code && f.code.toUpperCase() === codeFilter);
 
-        // Group / Category Filter
         let matchesGroup = (groupFilter === 'All');
         if (!matchesGroup) {
           if (groupFilter === 'Friends') {
@@ -1139,7 +1145,6 @@
           }
         }
 
-        // Member Type Filter
         let matchesMember = true;
         if (memberFilter === 'has_kids') {
           matchesMember = (f.kids > 0 || (f.kidNames && f.kidNames.trim().length > 0));
@@ -1151,7 +1156,6 @@
           matchesMember = (f.ladies > 0);
         }
 
-        // RSVP Filter
         let matchesRsvp = true;
         const coming = parseInt(f.comingCount) || 0;
         if (rsvpFilter === 'Coming') {
@@ -1164,7 +1168,6 @@
           matchesRsvp = (f.invitation === 'Not Invited');
         }
 
-        // Search Filter
         const matchesSearch = (f.name && f.name.toLowerCase().includes(search)) || 
                               (f.code && f.code.toLowerCase().includes(search)) || 
                               (f.side && f.side.toLowerCase().includes(search)) || 
@@ -1247,7 +1250,7 @@
           <td class="py-1.5 px-1 text-center text-slate-700 font-medium">${item.ladies || 0}</td>
           <td class="py-1.5 px-1 text-center text-amber-700 font-bold">${item.kids || 0}</td>
           <td class="py-1.5 px-1.5 text-center font-bold text-slate-600">${total}</td>
-          <td class="py-1.5 px-2 text-center">${inviteSelect}</td>
+          <td class="py-1.5 px-2 text-center bg-indigo-50/20">${inviteSelect}</td>
           <td class="py-1.5 px-2 text-center bg-emerald-50/30">${comingInput}</td>
           <td class="py-1.5 px-2 text-right">
             <button onclick="editEntry('${item.id}')" class="text-slate-400 hover:text-indigo-600 px-1" title="Edit"><i class="fa-solid fa-pen"></i></button>
@@ -1265,7 +1268,7 @@
         return;
       }
 
-      const headers = ['Category', 'Relation', 'Guest Name', 'Place', 'Phone', 'Gents', 'Ladies', 'Kids', 'Kid Names', 'Total Invited', 'RSVP Status', 'Attending Count', 'Access Code'];
+      const headers = ['Category', 'Relation', 'Guest Name', 'Place', 'Phone', 'Gents', 'Ladies', 'Kids', 'Kid Names', 'Total Invited', 'Invitation Status', 'Coming Count', 'Access Code'];
       const rows = target.map(f => [
         `"${f.side || ''}"`,
         `"${f.relation || ''}"`,
