@@ -13,7 +13,7 @@
 </head>
 <body class="bg-slate-100 text-slate-800 antialiased p-2 sm:p-3 md:p-4 min-h-screen">
 
-  <!-- Authentication Modal (Login / Create New Family) -->
+  <!-- Authentication Modal -->
   <div id="loginScreen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4">
     <div class="bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full space-y-4">
       
@@ -124,26 +124,26 @@
       </div>
     </header>
 
-    <!-- Side-by-Side Summary Chips -->
+    <!-- Side-by-Side Summary Chips (Individual Count Aggregation for All Headcount) -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-      <!-- Chip 1: Invited / Confirmed / Total Count Summary -->
+      <!-- Chip 1: Individual Headcount (Invited / Confirmed / Total Count) -->
       <div class="bg-indigo-900 text-white p-2.5 rounded-xl shadow-sm flex items-center justify-between">
         <div>
           <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-200 block">Invited / Confirmed / Total Count</span>
           <div class="flex items-baseline gap-2 mt-1">
-            <span class="text-base sm:text-lg font-bold text-indigo-200"><span id="statInvited" class="font-black text-white">0</span> <span class="text-[9px] font-medium text-indigo-300">Inv</span></span>
+            <span class="text-base sm:text-lg font-bold text-indigo-200"><span id="statInvited" class="font-black text-white">0</span> <span class="text-[9px] font-medium text-indigo-300">Invited</span></span>
             <span class="text-indigo-400 font-light">/</span>
-            <span class="text-base sm:text-lg font-bold text-amber-300"><span id="statConfirmed" class="font-black text-amber-300">0</span> <span class="text-[9px] font-medium text-amber-200">Conf</span></span>
+            <span class="text-base sm:text-lg font-bold text-amber-300"><span id="statConfirmed" class="font-black text-amber-300">0</span> <span class="text-[9px] font-medium text-amber-200">Confirmed</span></span>
             <span class="text-indigo-400 font-light">/</span>
-            <span class="text-lg sm:text-xl font-black text-emerald-300"><span id="statTotalCount">0</span> <span class="text-[9px] font-medium text-emerald-200">Total Headcount</span></span>
+            <span class="text-lg sm:text-xl font-black text-emerald-300"><span id="statTotalCount">0</span> <span class="text-[9px] font-medium text-emerald-200">Total Count</span></span>
           </div>
         </div>
         <i class="fa-solid fa-users text-emerald-400 text-xl sm:text-2xl opacity-80 shrink-0"></i>
       </div>
 
-      <!-- Chip 2: Breakdown Chip with Full Text (Gents, Ladies, Kids) -->
+      <!-- Chip 2: Breakdown Chip (Header without Gents / Ladies / Kids label) -->
       <div class="bg-white border border-slate-200 p-2.5 rounded-xl shadow-sm flex flex-col justify-center">
-        <span class="text-[9px] sm:text-[10px] font-bold uppercase text-slate-500 block mb-1">Breakdown (Gents / Ladies / Kids)</span>
+        <span class="text-[9px] sm:text-[10px] font-bold uppercase text-slate-500 block mb-1">Breakdown</span>
         <div class="flex items-center justify-around text-xs font-bold text-slate-800 bg-slate-50 py-1.5 px-2 rounded-lg border border-slate-100">
           <span class="text-blue-700">Gents: <span id="statGents" class="text-xs sm:text-sm font-black">0</span></span>
           <span class="text-slate-300 font-normal">|</span>
@@ -1113,24 +1113,36 @@
     function renderDashboard() {
       const target = getVisibleFamilies();
       let gCount = 0, lCount = 0, kCount = 0, comingCount = 0;
-      let invitedCount = 0, confirmedCount = 0;
+      let invitedIndividualCount = 0, confirmedIndividualCount = 0;
 
       target.forEach(f => {
-        gCount += f.gents || 0;
-        lCount += f.ladies || 0;
-        kCount += f.kids || 0;
-        comingCount += parseInt(f.comingCount) || 0;
+        const g = f.gents || 0;
+        const l = f.ladies || 0;
+        const k = f.kids || 0;
+        const totalFamilyMembers = g + l + k;
+        const coming = parseInt(f.comingCount) || 0;
 
-        if (f.invitation === 'Invited') invitedCount++;
-        if (f.invitation === 'Confirmed') confirmedCount++;
+        gCount += g;
+        lCount += l;
+        kCount += k;
+        comingCount += coming;
+
+        // Count all individual members of each entry for Invited and Confirmed
+        if (f.invitation === 'Invited') {
+          invitedIndividualCount += totalFamilyMembers;
+        } else if (f.invitation === 'Confirmed') {
+          confirmedIndividualCount += totalFamilyMembers;
+        }
       });
 
       const totalHeadcount = gCount + lCount + kCount;
 
-      document.getElementById('statInvited').textContent = invitedCount;
-      document.getElementById('statConfirmed').textContent = confirmedCount;
+      // Update Individual Counts in Chip 1
+      document.getElementById('statInvited').textContent = invitedIndividualCount;
+      document.getElementById('statConfirmed').textContent = confirmedIndividualCount;
       document.getElementById('statTotalCount').textContent = `${comingCount} / ${totalHeadcount}`;
 
+      // Update Individual Counts in Chip 2 (Breakdown)
       document.getElementById('statGents').textContent = gCount;
       document.getElementById('statLadies').textContent = lCount;
       document.getElementById('statKids').textContent = kCount;
