@@ -124,7 +124,7 @@
       </div>
     </header>
 
-    <!-- Side-by-Side Summary Chips (Invited / Confirmed / Total Count) -->
+    <!-- Side-by-Side Summary Chips -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
       <!-- Chip 1: Invited / Confirmed / Total Count Summary -->
       <div class="bg-indigo-900 text-white p-2.5 rounded-xl shadow-sm flex items-center justify-between">
@@ -141,15 +141,15 @@
         <i class="fa-solid fa-users text-emerald-400 text-xl sm:text-2xl opacity-80 shrink-0"></i>
       </div>
 
-      <!-- Chip 2: Gents / Ladies / Kids Breakdown -->
+      <!-- Chip 2: Gents / Ladies / Kids Breakdown (Full Labels) -->
       <div class="bg-white border border-slate-200 p-2.5 rounded-xl shadow-sm flex flex-col justify-center">
-        <span class="text-[9px] sm:text-[10px] font-bold uppercase text-slate-500 block mb-1">Breakdown (G / L / K)</span>
+        <span class="text-[9px] sm:text-[10px] font-bold uppercase text-slate-500 block mb-1">Breakdown (Gents / Ladies / Kids)</span>
         <div class="flex items-center justify-around text-xs font-bold text-slate-800 bg-slate-50 py-1.5 px-2 rounded-lg border border-slate-100">
-          <span class="text-blue-700">G: <span id="statGents" class="text-xs sm:text-sm font-black">0</span></span>
+          <span class="text-blue-700">Gents: <span id="statGents" class="text-xs sm:text-sm font-black">0</span></span>
           <span class="text-slate-300 font-normal">|</span>
-          <span class="text-pink-700">L: <span id="statLadies" class="text-xs sm:text-sm font-black">0</span></span>
+          <span class="text-pink-700">Ladies: <span id="statLadies" class="text-xs sm:text-sm font-black">0</span></span>
           <span class="text-slate-300 font-normal">|</span>
-          <span class="text-amber-700">K: <span id="statKids" class="text-xs sm:text-sm font-black">0</span></span>
+          <span class="text-amber-700">Kids: <span id="statKids" class="text-xs sm:text-sm font-black">0</span></span>
         </div>
       </div>
     </div>
@@ -371,9 +371,9 @@
         <div class="flex flex-wrap items-center justify-between gap-1.5 text-xs bg-indigo-50/60 border border-indigo-100 p-2 rounded-lg text-indigo-900 font-semibold">
           <span id="filteredResultsLabel">Showing 0 entries</span>
           <div class="flex items-center gap-2 text-[11px]">
-            <span class="text-blue-700">G: <b id="filtGents">0</b></span>
-            <span class="text-pink-700">L: <b id="filtLadies">0</b></span>
-            <span class="text-amber-700">K: <b id="filtKids">0</b></span>
+            <span class="text-blue-700">Gents: <b id="filtGents">0</b></span>
+            <span class="text-pink-700">Ladies: <b id="filtLadies">0</b></span>
+            <span class="text-amber-700">Kids: <b id="filtKids">0</b></span>
             <span class="text-emerald-700">Coming: <b id="filtComing">0</b></span>
           </div>
         </div>
@@ -984,7 +984,6 @@
       await collectionRef.doc(id).update(updatePayload);
     }
 
-    // Step adjustment for Coming Count via +/- buttons
     async function adjustComingCount(id, delta) {
       const item = families.find(f => f.id === id);
       if (!item) return;
@@ -1244,7 +1243,6 @@
           </select>
         `;
 
-        // Arrow-based stepper for Coming count
         const comingStepper = `
           <div class="flex items-center justify-center gap-1">
             <button onclick="adjustComingCount('${item.id}', -1)" class="w-5 h-5 rounded bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center text-[10px] font-black transition">
