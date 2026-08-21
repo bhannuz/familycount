@@ -13,60 +13,136 @@
 </head>
 <body class="bg-slate-100 text-slate-800 antialiased p-2 sm:p-3 md:p-4 min-h-screen">
 
-  <!-- Authentication Modal -->
-  <div id="loginScreen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4">
-    <div class="bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full space-y-4">
-      
+  <!-- Interactive Royal Scroll & Authentication Modal -->
+  <div id="loginScreen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/90 backdrop-blur-md p-4 overflow-y-auto">
+    <div class="max-w-md w-full flex flex-col items-center my-auto space-y-4">
+
+      <!-- Instructions Header -->
       <div class="text-center space-y-1">
-        <div class="w-12 h-12 bg-indigo-600 text-white rounded-full flex items-center justify-center mx-auto text-xl font-bold">
-          <i class="fa-solid fa-lock"></i>
-        </div>
-        <h2 class="text-lg font-bold text-slate-900">Event Invitation RSVP</h2>
-        <p class="text-xs text-slate-500">Enter your 4-digit code or create a new family entry</p>
+        <h3 id="scrollInstructionHeader" class="text-amber-300 font-serif font-bold text-lg tracking-wide drop-shadow">
+          📜 Touch the Royal Scroll to Unroll
+        </h3>
+        <p id="scrollInstructionSub" class="text-xs text-amber-100/70">
+          Tap below to unseal your official invitation & passcode
+        </p>
       </div>
 
-      <div class="grid grid-cols-2 gap-1 bg-slate-100 p-1 rounded-lg">
-        <button type="button" onclick="switchAuthTab('login')" id="tabBtnLogin" class="text-xs font-bold py-1.5 rounded-md transition bg-white text-indigo-700 shadow-sm">
-          Existing / Admin
-        </button>
-        <button type="button" onclick="switchAuthTab('register')" id="tabBtnRegister" class="text-xs font-bold py-1.5 rounded-md transition text-slate-500 hover:text-slate-700">
-          + New Family
-        </button>
+      <!-- Royal Scroll Component -->
+      <div id="scrollContainer" onclick="unrollScroll()" class="relative w-full cursor-pointer transition-all duration-700 ease-out flex flex-col items-center">
+        
+        <!-- Top Wooden Handle/Rod -->
+        <div class="w-[105%] h-7 sm:h-8 bg-gradient-to-r from-amber-950 via-amber-700 to-amber-950 rounded-full shadow-2xl border-y border-amber-400/50 flex items-center justify-between px-3 z-30 transform hover:scale-[1.01] transition-transform">
+          <div class="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-amber-400 border border-amber-200 shadow-inner"></div>
+          <div class="h-1 w-2/3 bg-amber-300/30 rounded-full"></div>
+          <div class="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-amber-400 border border-amber-200 shadow-inner"></div>
+        </div>
+
+        <!-- Scroll Rolled Banner (Visible before unrolling) -->
+        <div id="rolledBanner" class="w-full bg-amber-100 border-x-8 border-amber-800 py-6 text-center shadow-inner flex flex-col items-center justify-center gap-2">
+          <div class="w-12 h-12 rounded-full bg-amber-600 text-amber-100 flex items-center justify-center text-xl shadow-md animate-bounce">
+            <i class="fa-solid fa-scroll"></i>
+          </div>
+          <span class="text-xs font-serif font-bold text-amber-900 uppercase tracking-widest">
+            Tap to Open Family Invitation
+          </span>
+        </div>
+
+        <!-- Unrolled Scroll Body -->
+        <div id="scrollPaper" class="w-full bg-[#fdf8ee] border-x-4 border-amber-700/40 shadow-2xl transition-all duration-1000 ease-in-out max-h-0 opacity-0 overflow-hidden relative">
+          <div class="p-5 text-center space-y-4">
+            
+            <!-- Event Header Inside Scroll -->
+            <div class="border-b-2 border-amber-200/80 pb-3">
+              <span class="text-[10px] uppercase font-bold text-amber-800 tracking-widest">Exclusive Event Access</span>
+              <h2 class="font-serif text-2xl font-bold text-amber-950 mt-0.5">Mudhelli Family Event</h2>
+              <p class="text-xs text-amber-800 font-medium mt-0.5">September 12, 2026 • 11:30 PM</p>
+            </div>
+
+            <!-- Scratch Card Overlay Container -->
+            <div class="relative w-full h-48 rounded-xl overflow-hidden shadow-inner border-2 border-amber-300/80 bg-amber-50 flex items-center justify-center">
+              
+              <!-- Hidden Content (Under Scratch Layer) -->
+              <div class="absolute inset-0 p-4 flex flex-col items-center justify-center bg-gradient-to-br from-amber-50 to-orange-50 text-center space-y-2">
+                <div class="w-9 h-9 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-base">
+                  <i class="fa-solid fa-circle-check"></i>
+                </div>
+                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Passcode Revealed</span>
+                <div id="revealedAccessCode" class="font-mono text-2xl font-black tracking-widest text-indigo-700 bg-white px-4 py-1.5 rounded-lg border border-indigo-200 shadow-sm">
+                  4821
+                </div>
+                <p class="text-[11px] text-slate-600 font-semibold max-w-[200px]">
+                  Use this key to sign in or register below.
+                </p>
+              </div>
+
+              <!-- HTML5 Scratch Canvas Overlay -->
+              <canvas id="scratchCanvas" class="absolute inset-0 w-full h-full cursor-pointer touch-none z-10"></canvas>
+
+            </div>
+
+            <p class="text-[10px] text-amber-800/70 font-serif italic">
+              ✨ Drag finger or mouse across gold coating to scratch off
+            </p>
+
+          </div>
+        </div>
+
+        <!-- Bottom Wooden Handle/Rod -->
+        <div class="w-[105%] h-7 sm:h-8 bg-gradient-to-r from-amber-950 via-amber-700 to-amber-950 rounded-full shadow-2xl border-y border-amber-400/50 flex items-center justify-between px-3 z-30 transform hover:scale-[1.01] transition-transform">
+          <div class="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-amber-400 border border-amber-200 shadow-inner"></div>
+          <div class="h-1 w-2/3 bg-amber-300/30 rounded-full"></div>
+          <div class="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-amber-400 border border-amber-200 shadow-inner"></div>
+        </div>
+
       </div>
 
-      <!-- Tab 1: Login Form -->
-      <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-3">
-        <div>
-          <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">4-Digit Family Code / Passcode *</label>
-          <input type="text" id="accessCodeInput" maxlength="6" required placeholder="ENTER 4-DIGIT CODE (E.G. 1234)" class="w-full text-center tracking-widest uppercase font-bold text-sm bg-slate-50 border border-slate-300 rounded-lg px-3 py-2.5 focus:outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100" />
+      <!-- Authentication Form Card -->
+      <div id="authFormCard" class="bg-white p-5 rounded-2xl shadow-xl w-full space-y-3 transition-all duration-500">
+        
+        <div class="grid grid-cols-2 gap-1 bg-slate-100 p-1 rounded-lg">
+          <button type="button" onclick="switchAuthTab('login')" id="tabBtnLogin" class="text-xs font-bold py-1.5 rounded-md transition bg-white text-indigo-700 shadow-sm">
+            Existing / Admin
+          </button>
+          <button type="button" onclick="switchAuthTab('register')" id="tabBtnRegister" class="text-xs font-bold py-1.5 rounded-md transition text-slate-500 hover:text-slate-700">
+            + New Family
+          </button>
         </div>
-        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2.5 rounded-lg transition shadow-sm">
-          Login
-        </button>
-      </form>
 
-      <!-- Tab 2: Register Form -->
-      <form id="registerForm" onsubmit="handleRegister(event)" class="space-y-2.5 hidden">
-        <div>
-          <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Mobile Number *</label>
-          <input type="tel" id="regPhone" required placeholder="10-digit Mobile Number" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-indigo-600" />
-        </div>
-        <div>
-          <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Create 4-Digit Security Code *</label>
-          <input type="text" id="regCode" maxlength="4" required placeholder="e.g. 4821" class="w-full text-center font-bold tracking-widest bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-indigo-600" />
-        </div>
-        <div>
-          <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Family / Head Name *</label>
-          <input type="text" id="regFamilyName" required placeholder="e.g. Ramesh Kumar & Family" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-indigo-600" />
-        </div>
-        <div>
-          <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">City / Place</label>
-          <input type="text" id="regPlace" placeholder="e.g. Hyderabad" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none" />
-        </div>
-        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2.5 rounded-lg transition shadow-sm">
-          Create & Login
-        </button>
-      </form>
+        <!-- Tab 1: Login Form -->
+        <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-3">
+          <div>
+            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">4-Digit Family Code / Passcode *</label>
+            <input type="text" id="accessCodeInput" maxlength="6" required placeholder="ENTER 4-DIGIT CODE (E.G. 1234)" class="w-full text-center tracking-widest uppercase font-bold text-sm bg-slate-50 border border-slate-300 rounded-lg px-3 py-2.5 focus:outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100" />
+          </div>
+          <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2.5 rounded-lg transition shadow-sm">
+            Login to RSVP Tracker
+          </button>
+        </form>
+
+        <!-- Tab 2: Register Form -->
+        <form id="registerForm" onsubmit="handleRegister(event)" class="space-y-2.5 hidden">
+          <div>
+            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Mobile Number *</label>
+            <input type="tel" id="regPhone" required placeholder="10-digit Mobile Number" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-indigo-600" />
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Create 4-Digit Security Code *</label>
+            <input type="text" id="regCode" maxlength="4" required placeholder="e.g. 4821" class="w-full text-center font-bold tracking-widest bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-indigo-600" />
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Family / Head Name *</label>
+            <input type="text" id="regFamilyName" required placeholder="e.g. Ramesh Kumar & Family" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-indigo-600" />
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">City / Place</label>
+            <input type="text" id="regPlace" placeholder="e.g. Hyderabad" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none" />
+          </div>
+          <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2.5 rounded-lg transition shadow-sm">
+            Create & Login
+          </button>
+        </form>
+
+      </div>
 
     </div>
   </div>
@@ -124,9 +200,9 @@
       </div>
     </header>
 
-    <!-- Side-by-Side Summary Chips (Individual Count Aggregation for All Headcount) -->
+    <!-- Side-by-Side Summary Chips -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-      <!-- Chip 1: Individual Headcount (Invited / Confirmed / Total Count) -->
+      <!-- Chip 1: Individual Headcount -->
       <div class="bg-indigo-900 text-white p-2.5 rounded-xl shadow-sm flex items-center justify-between">
         <div>
           <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-200 block">Invited / Confirmed / Total Count</span>
@@ -141,7 +217,7 @@
         <i class="fa-solid fa-users text-emerald-400 text-xl sm:text-2xl opacity-80 shrink-0"></i>
       </div>
 
-      <!-- Chip 2: Breakdown Chip (Header without Gents / Ladies / Kids label) -->
+      <!-- Chip 2: Breakdown Chip -->
       <div class="bg-white border border-slate-200 p-2.5 rounded-xl shadow-sm flex flex-col justify-center">
         <span class="text-[9px] sm:text-[10px] font-bold uppercase text-slate-500 block mb-1">Breakdown</span>
         <div class="flex items-center justify-around text-xs font-bold text-slate-800 bg-slate-50 py-1.5 px-2 rounded-lg border border-slate-100">
@@ -311,7 +387,7 @@
       </div>
     </div>
 
-    <!-- 2. Collapsible Filters Panel (Collapsed by Default) -->
+    <!-- 2. Collapsible Filters Panel -->
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
       <button type="button" onclick="toggleAccordion('filterContainer', 'filterChevron', 'filterActionText')" class="w-full flex items-center justify-between px-3 py-2.5 bg-slate-50 hover:bg-slate-100 border-b border-slate-200 transition text-left">
         <div class="flex items-center gap-2">
@@ -440,11 +516,118 @@
     let loggedCode = localStorage.getItem('fc_user_code') || '';
     let isAdmin = (loggedCode.toUpperCase() === ADMIN_CODE);
 
+    let isUnrolled = false;
+    let isScratchDrawing = false;
+
     if (loggedCode) {
       showApp();
     } else {
       document.getElementById('loginScreen').classList.remove('hidden');
       document.getElementById('appScreen').classList.add('hidden');
+    }
+
+    // Scroll Unroll Interactive Mechanics
+    function unrollScroll() {
+      if (isUnrolled) return;
+      isUnrolled = true;
+
+      const paper = document.getElementById('scrollPaper');
+      const rolledBanner = document.getElementById('rolledBanner');
+      const header = document.getElementById('scrollInstructionHeader');
+      const sub = document.getElementById('scrollInstructionSub');
+
+      rolledBanner.style.display = 'none';
+      paper.classList.remove('max-h-0', 'opacity-0');
+      paper.classList.add('max-h-[600px]', 'opacity-100');
+
+      header.textContent = "✨ Scratch the Gold Seal";
+      sub.textContent = "Rub your finger across the coating to reveal your code";
+
+      setTimeout(initScratchCard, 350);
+    }
+
+    // Scratch Card Canvas Implementation
+    function initScratchCard() {
+      const canvas = document.getElementById('scratchCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+
+      // Draw Gold Coating
+      const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+      grad.addColorStop(0, '#D4AF37');
+      grad.addColorStop(0.3, '#FFF3A8');
+      grad.addColorStop(0.5, '#AA771C');
+      grad.addColorStop(0.8, '#FFDF00');
+      grad.addColorStop(1, '#8B6508');
+
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.12)';
+      for (let i = 0; i < canvas.width; i += 18) {
+        ctx.fillRect(i, 0, 8, canvas.height);
+      }
+
+      ctx.font = 'bold 13px sans-serif';
+      ctx.fillStyle = '#3a2503';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('✨ SCRATCH HERE TO REVEAL CODE ✨', canvas.width / 2, canvas.height / 2);
+
+      ctx.globalCompositeOperation = 'destination-out';
+
+      function scratch(e) {
+        if (!isScratchDrawing) return;
+        e.preventDefault();
+
+        const bCr = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+        const x = clientX - bCr.left;
+        const y = clientY - bCr.top;
+
+        ctx.beginPath();
+        ctx.arc(x, y, 22, 0, Math.PI * 2);
+        ctx.fill();
+
+        checkScratchPercentage(canvas, ctx);
+      }
+
+      canvas.addEventListener('mousedown', (e) => { isScratchDrawing = true; scratch(e); });
+      canvas.addEventListener('mousemove', scratch);
+      window.addEventListener('mouseup', () => { isScratchDrawing = false; });
+
+      canvas.addEventListener('touchstart', (e) => { isScratchDrawing = true; scratch(e); }, { passive: false });
+      canvas.addEventListener('touchmove', scratch, { passive: false });
+      canvas.addEventListener('touchend', () => { isScratchDrawing = false; });
+    }
+
+    function checkScratchPercentage(canvas, ctx) {
+      const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      let clearedPixels = 0;
+
+      for (let i = 3; i < imgData.data.length; i += 16) {
+        if (imgData.data[i] === 0) clearedPixels++;
+      }
+
+      const totalSampled = imgData.data.length / 16;
+      const clearedPercent = (clearedPixels / totalSampled) * 100;
+
+      if (clearedPercent > 35) {
+        canvas.style.transition = 'opacity 0.5s ease';
+        canvas.style.opacity = '0';
+        setTimeout(() => { canvas.style.display = 'none'; }, 500);
+
+        // Autofill revealed code into input field
+        const revealedCode = document.getElementById('revealedAccessCode').textContent.trim();
+        const accessInput = document.getElementById('accessCodeInput');
+        if (accessInput) accessInput.value = revealedCode;
+      }
     }
 
     function toggleAccordion(containerId, chevronId, textId) {
@@ -844,7 +1027,6 @@
         if (f.code && f.code.trim()) allCodes.add(f.code.trim().toUpperCase());
       });
 
-      // 1. Admin Code Filter Dropdown
       if (isAdmin) {
         const codeFilterSelect = document.getElementById('histCodeFilter');
         const currentCodeVal = codeFilterSelect.value;
@@ -858,7 +1040,6 @@
         codeFilterSelect.value = allCodes.has(currentCodeVal) ? currentCodeVal : 'All';
       }
 
-      // 2. Filter Panel Category Dropdown
       const filterSelect = document.getElementById('histGroupFilter');
       const currentFilterVal = filterSelect.value;
       filterSelect.innerHTML = '<option value="All">All Categories</option>';
@@ -870,7 +1051,6 @@
       });
       filterSelect.value = scopedCategories.has(currentFilterVal) ? currentFilterVal : 'All';
 
-      // 3. Entry Form Category Dropdown
       const formGroupSelect = document.getElementById('groupSelect');
       const currentFormGroupVal = formGroupSelect.value;
       formGroupSelect.innerHTML = '';
@@ -889,7 +1069,6 @@
         formGroupSelect.value = currentFormGroupVal;
       }
 
-      // 4. Entry Form Relation Dropdown
       const formRelSelect = document.getElementById('relationSelect');
       const currentFormRelVal = formRelSelect.value;
       formRelSelect.innerHTML = '<option value="">— None / Optional —</option>';
@@ -1127,7 +1306,6 @@
         kCount += k;
         comingCount += coming;
 
-        // Count all individual members of each entry for Invited and Confirmed
         if (f.invitation === 'Invited') {
           invitedIndividualCount += totalFamilyMembers;
         } else if (f.invitation === 'Confirmed') {
@@ -1137,12 +1315,10 @@
 
       const totalHeadcount = gCount + lCount + kCount;
 
-      // Update Individual Counts in Chip 1
       document.getElementById('statInvited').textContent = invitedIndividualCount;
       document.getElementById('statConfirmed').textContent = confirmedIndividualCount;
       document.getElementById('statTotalCount').textContent = `${comingCount} / ${totalHeadcount}`;
 
-      // Update Individual Counts in Chip 2 (Breakdown)
       document.getElementById('statGents').textContent = gCount;
       document.getElementById('statLadies').textContent = lCount;
       document.getElementById('statKids').textContent = kCount;
