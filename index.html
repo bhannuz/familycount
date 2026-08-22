@@ -73,7 +73,7 @@
     </div>
   </div>
 
-  <!-- Manage Functions, Categories & Relations Modal -->
+  <!-- Manage Category & Relation Modal -->
   <div id="metaManagerModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-3">
     <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full max-h-[90vh] flex flex-col overflow-hidden">
       <div class="px-4 py-3 bg-slate-800 text-white flex items-center justify-between">
@@ -88,7 +88,7 @@
         <!-- Functions Management -->
         <div class="space-y-2">
           <h4 class="text-xs font-bold uppercase text-indigo-700 flex items-center justify-between">
-            <span>🎉 Event Functions (For Your Code)</span>
+            <span>🎉 Event Functions</span>
             <span class="text-[10px] text-slate-400 lowercase font-normal">(e.g. Reception, Sangeet, Pooja)</span>
           </h4>
           <div id="functionManageList" class="space-y-1.5"></div>
@@ -191,7 +191,7 @@
       </div>
     </header>
 
-    <!-- 3-Chip Summary Dashboard (Invited/Confirmed/Total Headcount, G/L/K Breakdown, and Total Cash/Gifts) -->
+    <!-- 3-Chip Summary Dashboard -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
       <!-- Chip 1: Headcount Ratio -->
       <div class="bg-indigo-900 text-white p-2.5 rounded-xl shadow-sm flex items-center justify-between">
@@ -234,7 +234,7 @@
       </div>
     </div>
 
-    <!-- 1. Collapsible Entry Form Card with Function & Gift Fields -->
+    <!-- 1. Collapsible Entry Form Card -->
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
       <button type="button" onclick="toggleAccordion('entryContainer', 'entryChevron', 'entryActionText')" class="w-full flex items-center justify-between px-3 py-2.5 bg-slate-50 hover:bg-slate-100 border-b border-slate-200 transition text-left">
         <div class="flex items-center gap-2">
@@ -248,7 +248,6 @@
         <form id="familyForm" onsubmit="handleFormSubmit(event)" class="space-y-2">
           <input type="hidden" id="docId" value="" />
           
-          <!-- Row 1: Function -> Category -> Relation -> Guest Name -> Place -> Phone -->
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-1.5">
             <!-- Function Parameter -->
             <div class="md:col-span-2">
@@ -374,7 +373,7 @@
       </div>
     </div>
 
-    <!-- 2. Collapsible Filters Panel with Function Filter -->
+    <!-- 2. Collapsible Filters Panel with Relation Type Filter -->
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
       <button type="button" onclick="toggleAccordion('filterContainer', 'filterChevron', 'filterActionText')" class="w-full flex items-center justify-between px-3 py-2.5 bg-slate-50 hover:bg-slate-100 border-b border-slate-200 transition text-left">
         <div class="flex items-center gap-2">
@@ -408,15 +407,11 @@
             </select>
           </div>
 
+          <!-- Relation Type Filter (Updated in place of Member Type) -->
           <div>
-            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Member Type:</label>
-            <select id="histMemberFilter" onchange="renderFilteredHistory()" class="w-full bg-white border border-slate-300 text-xs font-semibold text-slate-700 px-2 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500">
-              <option value="All">All Families</option>
-              <option value="has_kids">Has Kids (👶 > 0)</option>
-              <option value="no_kids">No Kids (Adults Only)</option>
-              <option value="has_gents">Has Gents (👨 > 0)</option>
-              <option value="has_ladies">Has Ladies (👩 > 0)</option>
-              <option value="has_gift">Has Gift / Cash Given</option>
+            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Relation Type:</label>
+            <select id="histRelationFilter" onchange="renderFilteredHistory()" class="w-full bg-white border border-slate-300 text-xs font-semibold text-slate-700 px-2 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500">
+              <option value="All">All Relations</option>
             </select>
           </div>
 
@@ -452,7 +447,7 @@
       </div>
     </div>
 
-    <!-- 3. Collapsible Showing Entries / Guest List with View Switcher -->
+    <!-- 3. Collapsible Showing Entries / Guest List with View Switcher & Column Customizer -->
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
       <div class="w-full flex flex-wrap items-center justify-between px-3 py-2.5 bg-slate-50 border-b border-slate-200 gap-2">
         <button type="button" onclick="toggleAccordion('historyContainer', 'historyChevron', 'historyActionText')" class="flex items-center gap-2 hover:opacity-80 transition text-left">
@@ -462,19 +457,61 @@
           <span id="historyActionText" class="text-[11px] font-semibold text-indigo-600 ml-2">Tap to Expand</span>
         </button>
 
-        <div class="flex items-center bg-white border border-slate-200 rounded-lg p-0.5 text-xs font-semibold">
-          <button type="button" onclick="setViewMode('table')" id="btnViewTable" class="px-2 py-1 rounded transition text-indigo-600 bg-indigo-50 font-bold flex items-center gap-1" title="Table View">
-            <i class="fa-solid fa-table"></i> <span class="hidden sm:inline">Table</span>
-          </button>
-          <button type="button" onclick="setViewMode('compact')" id="btnViewCompact" class="px-2 py-1 rounded transition text-slate-500 hover:text-slate-800 flex items-center gap-1" title="Compact View">
-            <i class="fa-solid fa-table-cells"></i> <span class="hidden sm:inline">Compact</span>
-          </button>
-          <button type="button" onclick="setViewMode('tiles')" id="btnViewTiles" class="px-2 py-1 rounded transition text-slate-500 hover:text-slate-800 flex items-center gap-1" title="Tiles View">
-            <i class="fa-solid fa-grip"></i> <span class="hidden sm:inline">Tiles</span>
-          </button>
-          <button type="button" onclick="setViewMode('list')" id="btnViewList" class="px-2 py-1 rounded transition text-slate-500 hover:text-slate-800 flex items-center gap-1" title="List View">
-            <i class="fa-solid fa-list-ul"></i> <span class="hidden sm:inline">List</span>
-          </button>
+        <div class="flex items-center gap-2 flex-wrap">
+          <!-- Column Customizer Dropdown -->
+          <div class="relative">
+            <button type="button" onclick="toggleColumnPicker(event)" class="px-2.5 py-1 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-1.5 shadow-2xs">
+              <i class="fa-solid fa-sliders text-indigo-600 text-[11px]"></i>
+              <span>Columns</span>
+              <i class="fa-solid fa-chevron-down text-[9px] text-slate-400"></i>
+            </button>
+            <div id="columnPickerDropdown" class="hidden absolute right-0 mt-1.5 w-48 bg-white border border-slate-200 rounded-xl shadow-xl p-2.5 z-30 space-y-1.5 text-xs">
+              <div class="text-[10px] font-bold uppercase text-slate-400 pb-1 border-b border-slate-100">Toggle Visible Columns</div>
+              <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600">
+                <input type="checkbox" onchange="toggleColSetting('func')" id="colChk_func" class="rounded text-indigo-600 focus:ring-0" /> Function
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600">
+                <input type="checkbox" onchange="toggleColSetting('cat')" id="colChk_cat" class="rounded text-indigo-600 focus:ring-0" /> Category
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600">
+                <input type="checkbox" onchange="toggleColSetting('rel')" id="colChk_rel" class="rounded text-indigo-600 focus:ring-0" /> Relation
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600">
+                <input type="checkbox" onchange="toggleColSetting('guest')" id="colChk_guest" class="rounded text-indigo-600 focus:ring-0" /> Guest & Place
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600">
+                <input type="checkbox" onchange="toggleColSetting('glk')" id="colChk_glk" class="rounded text-indigo-600 focus:ring-0" /> G / L / K Counts
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600">
+                <input type="checkbox" onchange="toggleColSetting('total')" id="colChk_total" class="rounded text-indigo-600 focus:ring-0" /> Total Inv.
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600">
+                <input type="checkbox" onchange="toggleColSetting('inv')" id="colChk_inv" class="rounded text-indigo-600 focus:ring-0" /> Invitation
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600">
+                <input type="checkbox" onchange="toggleColSetting('coming')" id="colChk_coming" class="rounded text-indigo-600 focus:ring-0" /> Coming
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600">
+                <input type="checkbox" onchange="toggleColSetting('gifts')" id="colChk_gifts" class="rounded text-indigo-600 focus:ring-0" /> Gifts / Cash
+              </label>
+            </div>
+          </div>
+
+          <!-- View Switcher Controls (Table, Compact, Tiles, List) -->
+          <div class="flex items-center bg-white border border-slate-200 rounded-lg p-0.5 text-xs font-semibold">
+            <button type="button" onclick="setViewMode('table')" id="btnViewTable" class="px-2 py-1 rounded transition text-indigo-600 bg-indigo-50 font-bold flex items-center gap-1" title="Table View">
+              <i class="fa-solid fa-table"></i> <span class="hidden sm:inline">Table</span>
+            </button>
+            <button type="button" onclick="setViewMode('compact')" id="btnViewCompact" class="px-2 py-1 rounded transition text-slate-500 hover:text-slate-800 flex items-center gap-1" title="Compact View">
+              <i class="fa-solid fa-table-cells"></i> <span class="hidden sm:inline">Compact</span>
+            </button>
+            <button type="button" onclick="setViewMode('tiles')" id="btnViewTiles" class="px-2 py-1 rounded transition text-slate-500 hover:text-slate-800 flex items-center gap-1" title="Tiles View">
+              <i class="fa-solid fa-grip"></i> <span class="hidden sm:inline">Tiles</span>
+            </button>
+            <button type="button" onclick="setViewMode('list')" id="btnViewList" class="px-2 py-1 rounded transition text-slate-500 hover:text-slate-800 flex items-center gap-1" title="List View">
+              <i class="fa-solid fa-list-ul"></i> <span class="hidden sm:inline">List</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -508,6 +545,59 @@
     let loggedCode = localStorage.getItem('fc_user_code') || '';
     let isAdmin = (loggedCode.toUpperCase() === ADMIN_CODE);
     let currentViewMode = localStorage.getItem('fc_view_mode') || 'table';
+
+    // Configurable Column Visibility Settings (Stored per device)
+    let colSettings = getStoredColSettings();
+
+    function getStoredColSettings() {
+      const stored = localStorage.getItem('fc_col_settings');
+      if (stored) {
+        try { return JSON.parse(stored); } catch (e) {}
+      }
+      return {
+        func: true,
+        cat: true,
+        rel: true,
+        guest: true,
+        glk: true,
+        total: true,
+        inv: true,
+        coming: true,
+        gifts: true
+      };
+    }
+
+    function saveColSettings(settings) {
+      colSettings = settings;
+      localStorage.setItem('fc_col_settings', JSON.stringify(colSettings));
+      updateColumnPickerCheckboxes();
+      renderFilteredHistory();
+    }
+
+    function toggleColSetting(key) {
+      colSettings[key] = !colSettings[key];
+      saveColSettings(colSettings);
+    }
+
+    function updateColumnPickerCheckboxes() {
+      Object.keys(colSettings).forEach(key => {
+        const chk = document.getElementById(`colChk_${key}`);
+        if (chk) chk.checked = !!colSettings[key];
+      });
+    }
+
+    function toggleColumnPicker(e) {
+      e.stopPropagation();
+      const menu = document.getElementById('columnPickerDropdown');
+      menu.classList.toggle('hidden');
+    }
+
+    document.addEventListener('click', (e) => {
+      const picker = document.getElementById('columnPickerDropdown');
+      if (picker && !picker.contains(e.target)) {
+        picker.classList.add('hidden');
+      }
+    });
 
     document.getElementById('spreadsheetFileInput').addEventListener('change', handleSpreadsheetImport);
 
@@ -694,6 +784,7 @@
         adminCodeFilterCol.classList.add('hidden');
       }
 
+      updateColumnPickerCheckboxes();
       setViewMode(currentViewMode);
       listenData();
     }
@@ -819,7 +910,6 @@
       const allCategories = Array.from(new Set([...meta.categories, ...Object.keys(catCountMap)]));
       const allRelations = Array.from(new Set([...meta.relations, ...Object.keys(relCountMap)]));
 
-      // 1. Render Functions
       funcList.innerHTML = '';
       allFunctions.forEach(fn => {
         const count = funcCountMap[fn] || 0;
@@ -846,7 +936,6 @@
         funcList.appendChild(row);
       });
 
-      // 2. Render Categories
       catList.innerHTML = '';
       allCategories.forEach(cat => {
         const count = catCountMap[cat] || 0;
@@ -873,7 +962,6 @@
         catList.appendChild(row);
       });
 
-      // 3. Render Relations
       relList.innerHTML = '';
       allRelations.forEach(rel => {
         const count = relCountMap[rel] || 0;
@@ -1004,7 +1092,6 @@
       renderMetaManagerLists();
     }
 
-    // Function Dropdown Custom Switchers
     function checkCustomFunc(val) {
       if (val === '__custom_func__') {
         document.getElementById('funcSelectWrapper').classList.add('hidden');
@@ -1096,7 +1183,7 @@
         codeFilterSelect.value = allCodes.has(currentCodeVal) ? currentCodeVal : 'All';
       }
 
-      // 1. Sync Functions in Filter & Form
+      // Sync Functions in Filter & Form
       const histFuncFilter = document.getElementById('histFuncFilter');
       const curHistFnVal = histFuncFilter.value;
       histFuncFilter.innerHTML = '<option value="All">All Functions</option>';
@@ -1123,7 +1210,7 @@
       formFuncSelect.appendChild(customFnOpt);
       if (scopedFunctions.has(curFormFnVal)) formFuncSelect.value = curFormFnVal;
 
-      // 2. Sync Categories
+      // Sync Categories in Filter & Form
       const filterSelect = document.getElementById('histGroupFilter');
       const currentFilterVal = filterSelect.value;
       filterSelect.innerHTML = '<option value="All">All Categories</option>';
@@ -1150,7 +1237,18 @@
       formGroupSelect.appendChild(customCatOpt);
       if (scopedCategories.has(currentFormGroupVal)) formGroupSelect.value = currentFormGroupVal;
 
-      // 3. Sync Relations
+      // Sync Relation Type Filter & Form
+      const histRelFilter = document.getElementById('histRelationFilter');
+      const curHistRelVal = histRelFilter.value;
+      histRelFilter.innerHTML = '<option value="All">All Relations</option>';
+      scopedRelations.forEach(rel => {
+        const opt = document.createElement('option');
+        opt.value = rel;
+        opt.textContent = rel;
+        histRelFilter.appendChild(opt);
+      });
+      histRelFilter.value = scopedRelations.has(curHistRelVal) ? curHistRelVal : 'All';
+
       const formRelSelect = document.getElementById('relationSelect');
       const currentFormRelVal = formRelSelect.value;
       formRelSelect.innerHTML = '<option value="">— None / Optional —</option>';
@@ -1171,7 +1269,6 @@
       e.preventDefault();
       const docId = document.getElementById('docId').value;
       
-      // Resolve Function
       const customFuncWrapper = document.getElementById('customFuncWrapper');
       let finalFunction = '';
       if (!customFuncWrapper.classList.contains('hidden')) {
@@ -1188,7 +1285,6 @@
       }
       if (!finalFunction) finalFunction = "Main Reception";
 
-      // Resolve Category
       const customGroupWrapper = document.getElementById('customGroupWrapper');
       let finalGroup = '';
       if (!customGroupWrapper.classList.contains('hidden')) {
@@ -1206,7 +1302,6 @@
         finalGroup = document.getElementById('groupSelect').value;
       }
 
-      // Resolve Relation
       const customRelWrapper = document.getElementById('customRelWrapper');
       let finalRelation = '';
       if (!customRelWrapper.classList.contains('hidden')) {
@@ -1225,7 +1320,6 @@
       const guestName = document.getElementById('familyName').value.trim();
       const finalSideCanonical = canonicalCategory(finalGroup);
 
-      // Duplicate Check: Function + Category + Relation + Guest Name must be unique
       const isDuplicate = families.some(f => {
         if (docId && f.id === docId) return false;
         const sameFunc = (f.eventFunction || 'Main Reception').toLowerCase() === finalFunction.toLowerCase();
@@ -1330,7 +1424,6 @@
       document.getElementById('giftAmount').value = item.giftAmount || '';
       document.getElementById('giftDescription').value = item.giftDescription || '';
 
-      // Populate Function
       const formFuncSelect = document.getElementById('funcSelect');
       const targetFn = item.eventFunction || 'Main Reception';
       let fnFound = false;
@@ -1350,7 +1443,6 @@
       }
       cancelCustomFunc();
 
-      // Populate Category
       const rawSide = item.side ? item.side.trim() : '';
       const sideVal = canonicalCategory(rawSide);
       const groupSelect = document.getElementById('groupSelect');
@@ -1376,7 +1468,6 @@
       }
       cancelCustomGroup();
 
-      // Populate Relation
       const relVal = item.relation ? item.relation.trim() : '';
       const relSelect = document.getElementById('relationSelect');
       let relFoundIndex = -1;
@@ -1497,14 +1588,13 @@
       const codeFilter = isAdmin ? document.getElementById('histCodeFilter').value : 'All';
       const funcFilter = document.getElementById('histFuncFilter').value;
       const groupFilter = document.getElementById('histGroupFilter').value;
-      const memberFilter = document.getElementById('histMemberFilter').value;
+      const relationFilter = document.getElementById('histRelationFilter').value;
       const rsvpFilter = document.getElementById('histRsvpFilter').value;
 
       const target = getVisibleFamilies();
 
       const filtered = target.filter(f => {
         let matchesCode = (codeFilter === 'All') || (f.code && f.code.toUpperCase() === codeFilter);
-
         let matchesFunc = (funcFilter === 'All') || ((f.eventFunction || 'Main Reception').toLowerCase() === funcFilter.toLowerCase());
 
         let matchesGroup = (groupFilter === 'All');
@@ -1512,17 +1602,10 @@
           matchesGroup = (canonicalCategory(f.side).toLowerCase() === groupFilter.toLowerCase()) || (f.side === groupFilter);
         }
 
-        let matchesMember = true;
-        if (memberFilter === 'has_kids') {
-          matchesMember = (f.kids > 0 || (f.kidNames && f.kidNames.trim().length > 0));
-        } else if (memberFilter === 'no_kids') {
-          matchesMember = (!f.kids || f.kids === 0) && (!f.kidNames || f.kidNames.trim().length === 0);
-        } else if (memberFilter === 'has_gents') {
-          matchesMember = (f.gents > 0);
-        } else if (memberFilter === 'has_ladies') {
-          matchesMember = (f.ladies > 0);
-        } else if (memberFilter === 'has_gift') {
-          matchesMember = (f.giftAmount > 0) || (f.giftDescription && f.giftDescription.trim().length > 0);
+        // Filter by Relation Type
+        let matchesRelation = (relationFilter === 'All');
+        if (!matchesRelation) {
+          matchesRelation = ((f.relation || '').trim().toLowerCase() === relationFilter.toLowerCase());
         }
 
         let matchesRsvp = true;
@@ -1542,7 +1625,7 @@
                               (f.phone && f.phone.includes(search)) || 
                               (f.giftDescription && f.giftDescription.toLowerCase().includes(search));
 
-        return matchesCode && matchesFunc && matchesGroup && matchesMember && matchesRsvp && matchesSearch;
+        return matchesCode && matchesFunc && matchesGroup && matchesRelation && matchesRsvp && matchesSearch;
       });
 
       let filtG = 0, filtL = 0, filtK = 0, filtC = 0, filtCash = 0, filtGiftsCount = 0;
@@ -1583,6 +1666,7 @@
       }
     }
 
+    // 1. Table & Compact View with Configurable Dynamic Column Visibility
     function renderTableView(items, container, isCompact) {
       const codeTh = isAdmin ? `<th class="py-2 px-2">Code</th>` : '';
       const padding = isCompact ? 'py-1 px-1.5 text-[11px]' : 'py-1.5 px-2 text-xs';
@@ -1593,17 +1677,19 @@
             <thead>
               <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase text-[10px]">
                 ${codeTh}
-                <th class="py-2 px-2">Function</th>
-                <th class="py-2 px-2">Category</th>
-                <th class="py-2 px-2">Relation</th>
-                <th class="py-2 px-2.5">Guest & Details</th>
-                <th class="py-2 px-1 text-center text-blue-700">G</th>
-                <th class="py-2 px-1 text-center text-pink-700">L</th>
-                <th class="py-2 px-1 text-center text-amber-700">K</th>
-                <th class="py-2 px-1.5 text-center font-bold text-slate-500">Total</th>
-                <th class="py-2 px-2 text-center bg-indigo-50/60 text-indigo-900 font-bold">Invitation</th>
-                <th class="py-2 px-2 text-center bg-emerald-50/60 text-emerald-900 font-bold">Coming</th>
-                <th class="py-2 px-2 text-center bg-amber-50 text-amber-900 font-bold">Gifts / Cash</th>
+                ${colSettings.func ? `<th class="py-2 px-2">Function</th>` : ''}
+                ${colSettings.cat ? `<th class="py-2 px-2">Category</th>` : ''}
+                ${colSettings.rel ? `<th class="py-2 px-2">Relation</th>` : ''}
+                ${colSettings.guest ? `<th class="py-2 px-2.5">Guest & Details</th>` : ''}
+                ${colSettings.glk ? `
+                  <th class="py-2 px-1 text-center text-blue-700">G</th>
+                  <th class="py-2 px-1 text-center text-pink-700">L</th>
+                  <th class="py-2 px-1 text-center text-amber-700">K</th>
+                ` : ''}
+                ${colSettings.total ? `<th class="py-2 px-1.5 text-center font-bold text-slate-500">Total</th>` : ''}
+                ${colSettings.inv ? `<th class="py-2 px-2 text-center bg-indigo-50/60 text-indigo-900 font-bold">Invitation</th>` : ''}
+                ${colSettings.coming ? `<th class="py-2 px-2 text-center bg-emerald-50/60 text-emerald-900 font-bold">Coming</th>` : ''}
+                ${colSettings.gifts ? `<th class="py-2 px-2 text-center bg-amber-50 text-amber-900 font-bold">Gifts / Cash</th>` : ''}
                 <th class="py-2 px-2 text-right">Actions</th>
               </tr>
             </thead>
@@ -1662,23 +1748,27 @@
         html += `
           <tr class="hover:bg-slate-50 transition ${isCorrupt ? 'bg-rose-50/50' : ''}">
             ${codeCell}
-            <td class="py-1.5 px-2 font-bold text-indigo-800 text-[11px]">${item.eventFunction || 'Main Reception'}</td>
-            <td class="py-1.5 px-2">${getGroupBadge(item.side)}</td>
-            <td class="py-1.5 px-2 font-medium text-slate-700 text-xs">${item.relation || '—'}</td>
-            <td class="py-1.5 px-2.5">
-              <div class="font-semibold text-slate-800 text-xs leading-tight">${item.name}</div>
-              <div class="text-[10px] text-slate-400 flex items-center gap-2 mt-0.5">
-                ${item.place ? `<span><i class="fa-solid fa-location-dot mr-0.5"></i>${item.place}</span>` : ''}
-                ${item.phone ? `<span><i class="fa-solid fa-phone mr-0.5"></i>${item.phone}</span>` : ''}
-              </div>
-            </td>
-            <td class="py-1.5 px-1 text-center text-slate-700 font-medium">${item.gents || 0}</td>
-            <td class="py-1.5 px-1 text-center text-slate-700 font-medium">${item.ladies || 0}</td>
-            <td class="py-1.5 px-1 text-center text-amber-700 font-bold">${item.kids || 0}</td>
-            <td class="py-1.5 px-1.5 text-center font-bold text-slate-600">${total}</td>
-            <td class="py-1.5 px-2 text-center bg-indigo-50/20">${inviteSelect}</td>
-            <td class="py-1.5 px-2 text-center bg-emerald-50/30">${comingStepper}</td>
-            <td class="py-1.5 px-2 text-center bg-amber-50/40">${giftDisplay}</td>
+            ${colSettings.func ? `<td class="py-1.5 px-2 font-bold text-indigo-800 text-[11px]">${item.eventFunction || 'Main Reception'}</td>` : ''}
+            ${colSettings.cat ? `<td class="py-1.5 px-2">${getGroupBadge(item.side)}</td>` : ''}
+            ${colSettings.rel ? `<td class="py-1.5 px-2 font-medium text-slate-700 text-xs">${item.relation || '—'}</td>` : ''}
+            ${colSettings.guest ? `
+              <td class="py-1.5 px-2.5">
+                <div class="font-semibold text-slate-800 text-xs leading-tight">${item.name}</div>
+                <div class="text-[10px] text-slate-400 flex items-center gap-2 mt-0.5">
+                  ${item.place ? `<span><i class="fa-solid fa-location-dot mr-0.5"></i>${item.place}</span>` : ''}
+                  ${item.phone ? `<span><i class="fa-solid fa-phone mr-0.5"></i>${item.phone}</span>` : ''}
+                </div>
+              </td>
+            ` : ''}
+            ${colSettings.glk ? `
+              <td class="py-1.5 px-1 text-center text-slate-700 font-medium">${item.gents || 0}</td>
+              <td class="py-1.5 px-1 text-center text-slate-700 font-medium">${item.ladies || 0}</td>
+              <td class="py-1.5 px-1 text-center text-amber-700 font-bold">${item.kids || 0}</td>
+            ` : ''}
+            ${colSettings.total ? `<td class="py-1.5 px-1.5 text-center font-bold text-slate-600">${total}</td>` : ''}
+            ${colSettings.inv ? `<td class="py-1.5 px-2 text-center bg-indigo-50/20">${inviteSelect}</td>` : ''}
+            ${colSettings.coming ? `<td class="py-1.5 px-2 text-center bg-emerald-50/30">${comingStepper}</td>` : ''}
+            ${colSettings.gifts ? `<td class="py-1.5 px-2 text-center bg-amber-50/40">${giftDisplay}</td>` : ''}
             <td class="py-1.5 px-2 text-right whitespace-nowrap">
               <button onclick="editEntry('${item.id}')" class="text-slate-400 hover:text-indigo-600 px-1" title="Edit"><i class="fa-solid fa-pen"></i></button>
               <button onclick="deleteEntry('${item.id}')" class="text-slate-400 hover:text-rose-600 px-1" title="Delete"><i class="fa-solid fa-trash"></i></button>
@@ -1724,7 +1814,6 @@
               ${isAdmin ? `<span class="font-mono font-bold text-indigo-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 text-[10px]">${item.code || '—'}</span>` : ''}
             </div>
 
-            <!-- Headcount & Gifts Summary Strip -->
             <div class="grid grid-cols-2 gap-1 text-xs">
               <div class="bg-slate-50 p-1.5 rounded-lg border border-slate-100 flex items-center justify-around font-bold">
                 <span class="text-blue-700">G:${item.gents || 0}</span>
@@ -1737,7 +1826,6 @@
               </div>
             </div>
 
-            <!-- Controls -->
             <div class="flex items-center justify-between pt-1 border-t border-slate-100">
               <select onchange="updateInvitation('${item.id}', this.value)" class="text-[10px] font-semibold px-1.5 py-1 rounded border focus:outline-none ${statusStyle}">
                 <option value="Not Invited" ${status === 'Not Invited' ? 'selected' : ''}>⏳ Pending</option>
