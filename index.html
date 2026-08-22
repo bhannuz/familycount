@@ -7,6 +7,9 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
+  <!-- SheetJS (xlsx) for parsing native .numbers, .xlsx, .xls, and CSV files reliably -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -84,7 +87,7 @@
         <!-- Categories Management -->
         <div class="space-y-2">
           <h4 class="text-xs font-bold uppercase text-slate-600 flex items-center justify-between">
-            <span>Categories / Groups (Your Code)</span>
+            <span>Categories / Groups</span>
             <span class="text-[10px] text-slate-400 lowercase font-normal">(deletable if 0 entries)</span>
           </h4>
           <div id="categoryManageList" class="space-y-1.5"></div>
@@ -95,7 +98,7 @@
         <!-- Relations Management -->
         <div class="space-y-2">
           <h4 class="text-xs font-bold uppercase text-slate-600 flex items-center justify-between">
-            <span>Relations (Your Code)</span>
+            <span>Relations</span>
             <span class="text-[10px] text-slate-400 lowercase font-normal">(deletable if 0 entries)</span>
           </h4>
           <div id="relationManageList" class="space-y-1.5"></div>
@@ -110,8 +113,8 @@
     </div>
   </div>
 
-  <!-- Hidden File Input for CSV Import (Triggered Programmatically) -->
-  <input type="file" id="csvFileInput" accept="*/*" class="hidden" />
+  <!-- Hidden File Input for All Spreadsheet Types -->
+  <input type="file" id="spreadsheetFileInput" accept=".csv,.numbers,.xlsx,.xls,.tsv,text/csv,text/plain" class="hidden" />
 
   <!-- Main App Screen -->
   <div id="appScreen" class="hidden max-w-6xl mx-auto space-y-2.5">
@@ -146,6 +149,11 @@
             <i class="fa-solid fa-pen-ruler text-amber-600 w-4"></i> Manage Categories & Relations
           </button>
 
+          <!-- Purge Corrupted Garbage Entries Cleanup Utility -->
+          <button onclick="closeActionMenu(); purgeCorruptedEntries();" class="w-full text-left px-3 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-50 flex items-center gap-2 transition">
+            <i class="fa-solid fa-broom text-rose-600 w-4"></i> Clean Corrupted Entries
+          </button>
+
           <button onclick="closeActionMenu(); exportCSV();" class="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 flex items-center gap-2 transition">
             <i class="fa-solid fa-file-arrow-down text-emerald-600 w-4"></i> Export to CSV
           </button>
@@ -169,6 +177,7 @@
 
     <!-- Side-by-Side Summary Chips -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+      <!-- Chip 1: Individual Headcount (Invited / Confirmed / Total Count) -->
       <div class="bg-indigo-900 text-white p-2.5 rounded-xl shadow-sm flex items-center justify-between">
         <div>
           <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-200 block">Invited / Confirmed / Total Count</span>
@@ -183,6 +192,7 @@
         <i class="fa-solid fa-users text-emerald-400 text-xl sm:text-2xl opacity-80 shrink-0"></i>
       </div>
 
+      <!-- Chip 2: Breakdown Chip -->
       <div class="bg-white border border-slate-200 p-2.5 rounded-xl shadow-sm flex flex-col justify-center">
         <span class="text-[9px] sm:text-[10px] font-bold uppercase text-slate-500 block mb-1">Breakdown</span>
         <div class="flex items-center justify-around text-xs font-bold text-slate-800 bg-slate-50 py-1.5 px-2 rounded-lg border border-slate-100">
@@ -413,12 +423,11 @@
     let isAdmin = (loggedCode.toUpperCase() === ADMIN_CODE);
     let currentViewMode = localStorage.getItem('fc_view_mode') || 'table';
 
-    // Global file input event listener attachment
-    document.getElementById('csvFileInput').addEventListener('change', handleCSVImport);
+    document.getElementById('spreadsheetFileInput').addEventListener('change', handleSpreadsheetImport);
 
     function triggerImport() {
       closeActionMenu();
-      const input = document.getElementById('csvFileInput');
+      const input = document.getElementById('spreadsheetFileInput');
       input.value = '';
       input.click();
     }
@@ -609,6 +618,30 @@
       });
     }
 
+    // Binary Garbage Cleaner Utility (Auto-deletes invalid corrupted binary imports)
+    async function purgeCorruptedEntries() {
+      const target = getVisibleFamilies();
+      const corrupted = target.filter(f => isBinaryGarbage(f.name) || isBinaryGarbage(f.side));
+      
+      if (corrupted.length === 0) {
+        alert('No corrupted or binary records found in your list.');
+        return;
+      }
+
+      if (confirm(`Found ${corrupted.length} corrupted binary record(s). Clean and remove them permanently?`)) {
+        const batch = db.batch();
+        corrupted.forEach(f => batch.delete(collectionRef.doc(f.id)));
+        await batch.commit();
+        alert(`Successfully removed ${corrupted.length} corrupted records.`);
+      }
+    }
+
+    function isBinaryGarbage(str) {
+      if (!str) return false;
+      const nonPrintable = str.replace(/[\x20-\x7E\u00A0-\uFFFF]/g, '');
+      return (nonPrintable.length / str.length > 0.15) || str.includes('dYb') || str.includes('zm') && str.includes('yv');
+    }
+
     // --- Per-Login-Code Meta Storage (Independent Categories & Relations) ---
     function getCodeMetaStorageKey() {
       return `fc_meta_${loggedCode || 'default'}`;
@@ -671,17 +704,16 @@
 
       target.forEach(f => {
         const cat = canonicalCategory(f.side);
-        if (cat) catCountMap[cat] = (catCountMap[cat] || 0) + 1;
+        if (cat && !isBinaryGarbage(cat)) catCountMap[cat] = (catCountMap[cat] || 0) + 1;
 
         const rel = (f.relation || '').trim();
-        if (rel) relCountMap[rel] = (relCountMap[rel] || 0) + 1;
+        if (rel && !isBinaryGarbage(rel)) relCountMap[rel] = (relCountMap[rel] || 0) + 1;
       });
 
       const meta = getCodeMetaData();
       const allCategories = Array.from(new Set([...meta.categories, ...Object.keys(catCountMap)]));
       const allRelations = Array.from(new Set([...meta.relations, ...Object.keys(relCountMap)]));
 
-      // 1. Render Categories (Independent per Code)
       catList.innerHTML = '';
       allCategories.forEach(cat => {
         const count = catCountMap[cat] || 0;
@@ -708,7 +740,6 @@
         catList.appendChild(row);
       });
 
-      // 2. Render Relations (Independent per Code)
       relList.innerHTML = '';
       allRelations.forEach(rel => {
         const count = relCountMap[rel] || 0;
@@ -742,13 +773,11 @@
 
       const trimmedNew = canonicalCategory(newCat.trim());
 
-      // Update meta in localStorage for this code
       const meta = getCodeMetaData();
       meta.categories = meta.categories.map(c => c.toLowerCase() === oldCat.toLowerCase() ? trimmedNew : c);
       if (!meta.categories.includes(trimmedNew)) meta.categories.push(trimmedNew);
       saveCodeMetaData(meta);
 
-      // Update firestore records
       const batch = db.batch();
       const target = getVisibleFamilies().filter(f => canonicalCategory(f.side).toLowerCase() === oldCat.toLowerCase());
       target.forEach(item => {
@@ -863,8 +892,8 @@
 
       const targetFamilies = getVisibleFamilies();
       targetFamilies.forEach(f => {
-        if (f.side && f.side.trim()) scopedCategories.add(canonicalCategory(f.side));
-        if (f.relation && f.relation.trim()) scopedRelations.add(f.relation.trim());
+        if (f.side && f.side.trim() && !isBinaryGarbage(f.side)) scopedCategories.add(canonicalCategory(f.side));
+        if (f.relation && f.relation.trim() && !isBinaryGarbage(f.relation)) scopedRelations.add(f.relation.trim());
         if (f.code && f.code.trim()) allCodes.add(f.code.trim().toUpperCase());
       });
 
@@ -945,7 +974,6 @@
           alert('Please enter a custom category name.');
           return;
         }
-        // Save to this code's meta list
         const meta = getCodeMetaData();
         if (!meta.categories.includes(finalGroup)) {
           meta.categories.push(finalGroup);
@@ -973,7 +1001,6 @@
       const guestName = document.getElementById('familyName').value.trim();
       const finalSideCanonical = canonicalCategory(finalGroup);
 
-      // Duplicate Check: Category + Relation + Guest Name
       const isDuplicate = families.some(f => {
         if (docId && f.id === docId) return false;
         const sameSide = canonicalCategory(f.side).toLowerCase() === finalSideCanonical.toLowerCase();
@@ -1202,7 +1229,7 @@
 
     function getGroupBadge(group) {
       const canonical = canonicalCategory(group);
-      if (!canonical) return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-100 text-slate-700">General</span>`;
+      if (!canonical || isBinaryGarbage(canonical)) return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-100 text-slate-700">General</span>`;
       if (canonical === 'Paternal Side') return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-100 text-blue-800">Paternal Side</span>`;
       if (canonical === 'Maternal Side') return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-purple-100 text-purple-800">Maternal Side</span>`;
       if (canonical.includes('Office')) return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-cyan-100 text-cyan-800">Office</span>`;
@@ -1574,26 +1601,37 @@
       URL.revokeObjectURL(url);
     }
 
-    // Comprehensive File Importer for CSV / TSV / Numbers Export
-    function handleCSVImport(event) {
+    // Binary-safe, multi-format (Apple Numbers, XLSX, CSV) sheet importer using SheetJS
+    function handleSpreadsheetImport(event) {
       const file = event.target.files && event.target.files[0];
       if (!file) return;
 
       const reader = new FileReader();
       reader.onload = async function(e) {
         try {
-          let text = e.target.result;
-          if (text.charCodeAt(0) === 0xFEFF) {
-            text = text.substr(1);
+          const data = new Uint8Array(e.target.result);
+          let parsedRows = [];
+
+          try {
+            // Read workbook via XLSX (supports Numbers exports, Excel .xlsx, .xls, and clean CSVs)
+            const workbook = XLSX.read(data, { type: 'array' });
+            const firstSheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[firstSheetName];
+            parsedRows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
+          } catch (xlsxErr) {
+            // Fallback to text decoding
+            const decoder = new TextDecoder('utf-8');
+            const text = decoder.decode(data);
+            parsedRows = parseTextCSV(text);
           }
 
-          const parsedRows = parseFullCSV(text);
-          if (parsedRows.length <= 1) {
-            alert('File is empty or format is unsupported.');
+          if (!parsedRows || parsedRows.length <= 1) {
+            alert('File is empty or format could not be parsed.');
             return;
           }
 
-          const headers = parsedRows[0].map(h => h.trim().toLowerCase());
+          // Header Index Discovery
+          const headers = parsedRows[0].map(h => String(h || '').trim().toLowerCase());
           const getIdx = (candidates) => headers.findIndex(h => candidates.some(c => h.includes(c)));
 
           const catIdx = getIdx(['category', 'group', 'side']);
@@ -1616,15 +1654,20 @@
             const row = parsedRows[i];
             if (!row || row.length === 0) continue;
 
-            const nameVal = nameIdx !== -1 && row[nameIdx] ? row[nameIdx].trim() : (row[2] ? row[2].trim() : '');
-            if (!nameVal) continue;
+            const nameVal = String(nameIdx !== -1 && row[nameIdx] !== undefined ? row[nameIdx] : (row[2] || '')).trim();
+            
+            // Strictly skip empty names or binary junk lines
+            if (!nameVal || isBinaryGarbage(nameVal)) continue;
+
+            const sideVal = String(catIdx !== -1 && row[catIdx] !== undefined ? row[catIdx] : (row[0] || 'General')).trim();
+            if (isBinaryGarbage(sideVal)) continue;
 
             const g = parseInt(gentsIdx !== -1 ? row[gentsIdx] : row[5]) || 0;
             const l = parseInt(ladiesIdx !== -1 ? row[ladiesIdx] : row[6]) || 0;
             const k = parseInt(kidsIdx !== -1 ? row[kidsIdx] : row[7]) || 0;
             const totalHead = g + l + k;
 
-            const rawStatus = (statusIdx !== -1 && row[statusIdx]) ? row[statusIdx].trim() : (row[10] || 'Invited');
+            const rawStatus = String(statusIdx !== -1 && row[statusIdx] !== undefined ? row[statusIdx] : (row[10] || 'Invited')).trim();
             let parsedStatus = 'Invited';
             if (rawStatus.toLowerCase().includes('confirm')) parsedStatus = 'Confirmed';
             else if (rawStatus.toLowerCase().includes('not') || rawStatus.toLowerCase().includes('pend')) parsedStatus = 'Not Invited';
@@ -1635,18 +1678,18 @@
             }
 
             const record = {
-              side: canonicalCategory(catIdx !== -1 ? row[catIdx] : row[0]) || 'General',
-              relation: (relIdx !== -1 ? row[relIdx] : row[1]) || '',
+              side: canonicalCategory(sideVal),
+              relation: String(relIdx !== -1 && row[relIdx] !== undefined ? row[relIdx] : (row[1] || '')).trim(),
               name: nameVal,
-              place: (placeIdx !== -1 ? row[placeIdx] : row[3]) || '',
-              phone: (phoneIdx !== -1 ? row[phoneIdx] : row[4]) || '',
+              place: String(placeIdx !== -1 && row[placeIdx] !== undefined ? row[placeIdx] : (row[3] || '')).trim(),
+              phone: String(phoneIdx !== -1 && row[phoneIdx] !== undefined ? row[phoneIdx] : (row[4] || '')).trim(),
               gents: g,
               ladies: l,
               kids: k,
-              kidNames: (kidNamesIdx !== -1 ? row[kidNamesIdx] : row[8]) || '',
+              kidNames: String(kidNamesIdx !== -1 && row[kidNamesIdx] !== undefined ? row[kidNamesIdx] : (row[8] || '')).trim(),
               invitation: parsedStatus,
               comingCount: parsedComing,
-              code: (codeIdx !== -1 && row[codeIdx] ? row[codeIdx].trim().toUpperCase() : (loggedCode || 'A2KU')),
+              code: String(codeIdx !== -1 && row[codeIdx] !== undefined ? row[codeIdx] : (loggedCode || 'A2KU')).trim().toUpperCase(),
               isBlocked: false,
               updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             };
@@ -1658,21 +1701,21 @@
 
           if (count > 0) {
             await batch.commit();
-            alert(`Successfully imported ${count} guest records!`);
+            alert(`Successfully imported ${count} guest records cleanly!`);
           } else {
-            alert('No valid records found in the uploaded file. Please ensure guest names are present.');
+            alert('No valid readable records found. If exporting from Numbers, please choose File -> Export To -> CSV.');
           }
         } catch (err) {
           console.error(err);
-          alert('Error parsing uploaded file. Please verify CSV/Numbers file formatting.');
+          alert('Error reading spreadsheet file. Please export the Numbers file as CSV (File -> Export To -> CSV) and try again.');
         } finally {
           event.target.value = '';
         }
       };
-      reader.readAsText(file);
+      reader.readAsArrayBuffer(file);
     }
 
-    function parseFullCSV(text) {
+    function parseTextCSV(text) {
       const rows = [];
       let row = [];
       let cell = '';
