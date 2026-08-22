@@ -75,7 +75,7 @@
 
   <!-- POPUP MODAL: Add / Edit Guest Entry Window -->
   <div id="guestEntryModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-3">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full max-h-[95vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[92vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
       
       <!-- Modal Header -->
       <div class="px-4 py-3 bg-gradient-to-r from-indigo-900 to-indigo-800 text-white flex items-center justify-between shadow-sm">
@@ -286,7 +286,7 @@
   <!-- Main App Screen -->
   <div id="appScreen" class="hidden max-w-6xl mx-auto space-y-2.5">
     
-    <!-- Top Header Bar with Top Function Filter & New Entry Trigger Button -->
+    <!-- Top Header Bar with Top Function Filter & Add Guest Button -->
     <header class="bg-white p-2.5 sm:p-3 rounded-xl border border-slate-200 shadow-sm space-y-2 relative">
       <div class="flex items-center justify-between gap-2">
         <div class="flex items-center gap-2">
@@ -299,12 +299,11 @@
           </div>
         </div>
 
-        <!-- Header Right: Add Guest Entry Button + Action Menu -->
+        <!-- Top Right Actions: Prominent Add Guest Button + Action Menu -->
         <div class="flex items-center gap-1.5">
           <button type="button" onclick="openAddGuestModal()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1.5 transition">
             <i class="fa-solid fa-plus text-[10px]"></i>
-            <span class="hidden sm:inline">Add Guest</span>
-            <span class="sm:hidden">Add</span>
+            <span class="inline">Add Guest</span>
           </button>
 
           <button onclick="toggleActionMenu(event)" id="actionMenuBtn" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition border border-slate-200">
@@ -365,7 +364,7 @@
       </div>
     </header>
 
-    <!-- 3-Chip Summary Dashboard -->
+    <!-- 3-Chip Summary Dashboard (Invited / Confirmed, G/L/K Breakdown, Cash & Gifts) -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
       <!-- Chip 1: Headcount Ratio -->
       <div class="bg-indigo-900 text-white p-2.5 rounded-xl shadow-sm flex items-center justify-between">
@@ -408,7 +407,7 @@
       </div>
     </div>
 
-    <!-- 2. Collapsible Filters Panel (Compact 2-Column Side-by-Side Mobile Layout) -->
+    <!-- 2. Collapsible Filters Panel (Clean 2-Column Grid on Mobile) -->
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
       <button type="button" onclick="toggleAccordion('filterContainer', 'filterChevron', 'filterActionText')" class="w-full flex items-center justify-between px-3 py-2.5 bg-slate-50 hover:bg-slate-100 border-b border-slate-200 transition text-left">
         <div class="flex items-center gap-2">
@@ -467,7 +466,6 @@
             <span class="text-blue-700">G: <b id="filtGents" class="text-xs">0</b></span>
             <span class="text-pink-700">L: <b id="filtLadies" class="text-xs">0</b></span>
             <span class="text-amber-700">K: <b id="filtKids" class="text-xs">0</b></span>
-            <span class="text-emerald-700">Coming: <b id="filtComing" class="text-xs">0</b></span>
             <span class="text-emerald-900 font-bold border-l pl-2 border-indigo-200">Cash: ₹<b id="filtCash">0</b></span>
             <span class="text-indigo-900 font-bold">Gifts: <b id="filtGiftsCount">0</b></span>
           </div>
@@ -475,57 +473,53 @@
       </div>
     </div>
 
-    <!-- 3. Showing Entries / Guest List (Mobile-Optimized Layout Without Any Overflow Clipping) -->
-    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+    <!-- 3. Showing Entries / Guest List (Robust Positioned Dropdown, Fixed Layout for Mobile Screens) -->
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-visible">
       <div class="w-full flex flex-col sm:flex-row sm:items-center justify-between p-2.5 sm:p-3 bg-slate-50 border-b border-slate-200 gap-2">
-        <div class="flex items-center justify-between sm:justify-start gap-2">
-          <div class="flex items-center gap-2">
-            <span class="text-xs sm:text-sm font-bold text-slate-800 flex items-center gap-1.5">
-              <i class="fa-solid fa-list-check text-indigo-600"></i> Showing Entries
-            </span>
-            <span id="historyBadgeCount" class="text-[10px] font-bold bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full">0 Entries</span>
-          </div>
+        <div class="flex items-center gap-2">
+          <span class="text-xs sm:text-sm font-bold text-slate-800 flex items-center gap-1.5">
+            <i class="fa-solid fa-list-check text-indigo-600"></i> Showing Entries
+          </span>
+          <span id="historyBadgeCount" class="text-[10px] font-bold bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full">0 Entries</span>
         </div>
 
-        <!-- Mobile Toolstrip (Columns Customizer & Responsive View Modes) -->
-        <div class="flex items-center justify-between sm:justify-end gap-1.5 flex-nowrap overflow-x-auto pb-0.5 sm:pb-0">
+        <!-- Toolstrip (Columns Customizer with Left-Anchored Dropdown & View Mode Switcher) -->
+        <div class="flex items-center justify-between sm:justify-end gap-1.5 flex-nowrap">
           
-          <!-- Column Customizer Button & Dropdown -->
-          <div class="relative shrink-0">
-            <button type="button" onclick="toggleColumnPicker(event)" class="px-2 py-1 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-1 shadow-2xs">
+          <!-- Column Customizer Dropdown -->
+          <div class="relative inline-block">
+            <button type="button" onclick="toggleColumnPicker(event)" class="px-2.5 py-1 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-1.5 shadow-2xs">
               <i class="fa-solid fa-sliders text-indigo-600 text-[11px]"></i>
               <span class="text-[11px]">Columns</span>
               <i class="fa-solid fa-chevron-down text-[8px] text-slate-400"></i>
             </button>
 
-            <div id="columnPickerDropdown" class="hidden absolute right-0 mt-1.5 w-48 bg-white border border-slate-200 rounded-xl shadow-xl p-2.5 z-40 space-y-1.5 text-xs">
-              <div class="text-[10px] font-bold uppercase text-slate-400 pb-1 border-b border-slate-100">Toggle Visible Columns</div>
-              <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600">
-                <input type="checkbox" onchange="toggleColSetting('func')" id="colChk_func" class="rounded text-indigo-600 focus:ring-0" /> Function
+            <!-- Correctly Left/Right Bound Dropdown -->
+            <div id="columnPickerDropdown" class="hidden absolute left-0 sm:left-auto sm:right-0 mt-1 w-52 bg-white border border-slate-300 rounded-xl shadow-2xl p-3 z-50 space-y-2 text-xs">
+              <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 pb-1 border-b border-slate-100">Toggle Visible Columns</div>
+              <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600 py-0.5">
+                <input type="checkbox" onchange="toggleColSetting('func')" id="colChk_func" class="w-3.5 h-3.5 rounded text-indigo-600 focus:ring-0" /> Function
               </label>
-              <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600">
-                <input type="checkbox" onchange="toggleColSetting('cat')" id="colChk_cat" class="rounded text-indigo-600 focus:ring-0" /> Category
+              <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600 py-0.5">
+                <input type="checkbox" onchange="toggleColSetting('cat')" id="colChk_cat" class="w-3.5 h-3.5 rounded text-indigo-600 focus:ring-0" /> Category
               </label>
-              <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600">
-                <input type="checkbox" onchange="toggleColSetting('rel')" id="colChk_rel" class="rounded text-indigo-600 focus:ring-0" /> Relation
+              <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600 py-0.5">
+                <input type="checkbox" onchange="toggleColSetting('rel')" id="colChk_rel" class="w-3.5 h-3.5 rounded text-indigo-600 focus:ring-0" /> Relation
               </label>
-              <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600">
-                <input type="checkbox" onchange="toggleColSetting('guest')" id="colChk_guest" class="rounded text-indigo-600 focus:ring-0" /> Guest & Place
+              <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600 py-0.5">
+                <input type="checkbox" onchange="toggleColSetting('guest')" id="colChk_guest" class="w-3.5 h-3.5 rounded text-indigo-600 focus:ring-0" /> Guest & Place
               </label>
-              <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600">
-                <input type="checkbox" onchange="toggleColSetting('glk')" id="colChk_glk" class="rounded text-indigo-600 focus:ring-0" /> G / L / K Counts
+              <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600 py-0.5">
+                <input type="checkbox" onchange="toggleColSetting('glk')" id="colChk_glk" class="w-3.5 h-3.5 rounded text-indigo-600 focus:ring-0" /> G / L / K Counts
               </label>
-              <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600">
-                <input type="checkbox" onchange="toggleColSetting('total')" id="colChk_total" class="rounded text-indigo-600 focus:ring-0" /> Total Inv.
+              <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600 py-0.5">
+                <input type="checkbox" onchange="toggleColSetting('total')" id="colChk_total" class="w-3.5 h-3.5 rounded text-indigo-600 focus:ring-0" /> Total Inv.
               </label>
-              <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600">
-                <input type="checkbox" onchange="toggleColSetting('inv')" id="colChk_inv" class="rounded text-indigo-600 focus:ring-0" /> Invitation
+              <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600 py-0.5">
+                <input type="checkbox" onchange="toggleColSetting('inv')" id="colChk_inv" class="w-3.5 h-3.5 rounded text-indigo-600 focus:ring-0" /> Invitation
               </label>
-              <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600">
-                <input type="checkbox" onchange="toggleColSetting('coming')" id="colChk_coming" class="rounded text-indigo-600 focus:ring-0" /> Coming
-              </label>
-              <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600">
-                <input type="checkbox" onchange="toggleColSetting('gifts')" id="colChk_gifts" class="rounded text-indigo-600 focus:ring-0" /> Gifts / Cash
+              <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600 py-0.5">
+                <input type="checkbox" onchange="toggleColSetting('gifts')" id="colChk_gifts" class="w-3.5 h-3.5 rounded text-indigo-600 focus:ring-0" /> Gifts / Cash
               </label>
             </div>
           </div>
@@ -548,7 +542,7 @@
         </div>
       </div>
 
-      <div id="historyContainer" class="p-2 sm:p-3">
+      <div id="historyContainer" class="p-2 sm:p-3 overflow-hidden">
         <div id="viewDisplayContainer"></div>
         <p id="emptyMessage" class="hidden text-center py-6 text-slate-400 text-xs">No matching entries found for this filter selection.</p>
       </div>
@@ -595,7 +589,6 @@
         glk: true,
         total: true,
         inv: true,
-        coming: true,
         gifts: true
       };
     }
@@ -1459,20 +1452,6 @@
       await collectionRef.doc(id).update(updatePayload);
     }
 
-    async function adjustComingCount(id, delta) {
-      const item = families.find(f => f.id === id);
-      if (!item) return;
-
-      const totalFamily = (item.gents || 0) + (item.ladies || 0) + (item.kids || 0);
-      let current = (item.comingCount !== undefined) ? parseInt(item.comingCount) : 0;
-      let updated = Math.max(0, Math.min(totalFamily, current + delta));
-
-      await collectionRef.doc(id).update({
-        comingCount: updated,
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
-    }
-
     function editEntry(id) {
       const item = families.find(f => f.id === id);
       if (!item) return;
@@ -1702,7 +1681,6 @@
       document.getElementById('filtGents').textContent = filtG;
       document.getElementById('filtLadies').textContent = filtL;
       document.getElementById('filtKids').textContent = filtK;
-      document.getElementById('filtComing').textContent = filtC;
       document.getElementById('filtCash').textContent = filtCash.toLocaleString('en-IN');
       document.getElementById('filtGiftsCount').textContent = filtGiftsCount;
 
@@ -1731,7 +1709,7 @@
 
       let html = `
         <div class="overflow-x-auto border border-slate-200 rounded-lg -mx-0.5">
-          <table class="w-full text-left border-collapse ${padding} min-w-[580px] sm:min-w-full">
+          <table class="w-full text-left border-collapse ${padding} min-w-[500px] sm:min-w-full">
             <thead>
               <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase text-[10px]">
                 ${codeTh}
@@ -1746,7 +1724,6 @@
                 ` : ''}
                 ${colSettings.total ? `<th class="py-2 px-1.5 text-center font-bold text-slate-500">Total</th>` : ''}
                 ${colSettings.inv ? `<th class="py-2 px-2 text-center bg-indigo-50/60 text-indigo-900 font-bold">Invitation</th>` : ''}
-                ${colSettings.coming ? `<th class="py-2 px-2 text-center bg-emerald-50/60 text-emerald-900 font-bold">Coming</th>` : ''}
                 ${colSettings.gifts ? `<th class="py-2 px-2 text-center bg-amber-50 text-amber-900 font-bold">Gifts / Cash</th>` : ''}
                 <th class="py-2 px-2 text-right">Actions</th>
               </tr>
@@ -1757,7 +1734,6 @@
       items.forEach(item => {
         const total = (item.gents || 0) + (item.ladies || 0) + (item.kids || 0);
         const status = item.invitation || 'Invited';
-        const comingCount = (item.comingCount !== undefined) ? item.comingCount : 0;
         const isCorrupt = isBinaryGarbage(item.name) || isBinaryGarbage(item.side);
 
         let statusStyle = 'bg-slate-50 text-slate-600 border-slate-300';
@@ -1770,22 +1746,6 @@
             <option value="Invited" ${status === 'Invited' ? 'selected' : ''}>📩 Invited</option>
             <option value="Confirmed" ${status === 'Confirmed' ? 'selected' : ''}>✅ Confirmed</option>
           </select>
-        `;
-
-        const comingStepper = `
-          <div class="flex items-center justify-center gap-1">
-            <button onclick="adjustComingCount('${item.id}', -1)" class="w-5 h-5 rounded bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center text-[10px] font-black">
-              <i class="fa-solid fa-chevron-left text-[8px]"></i>
-            </button>
-            <div class="w-8 text-center text-xs font-black py-0.5 rounded border ${
-              comingCount > 0 ? 'bg-emerald-100 text-emerald-900 border-emerald-500' : 'bg-slate-50 text-slate-400 border-slate-300'
-            }">
-              ${comingCount}
-            </div>
-            <button onclick="adjustComingCount('${item.id}', 1)" class="w-5 h-5 rounded bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center text-[10px] font-black">
-              <i class="fa-solid fa-chevron-right text-[8px]"></i>
-            </button>
-          </div>
         `;
 
         const giftDisplay = `
@@ -1825,7 +1785,6 @@
             ` : ''}
             ${colSettings.total ? `<td class="py-1.5 px-1.5 text-center font-bold text-slate-600">${total}</td>` : ''}
             ${colSettings.inv ? `<td class="py-1.5 px-2 text-center bg-indigo-50/20">${inviteSelect}</td>` : ''}
-            ${colSettings.coming ? `<td class="py-1.5 px-2 text-center bg-emerald-50/30">${comingStepper}</td>` : ''}
             ${colSettings.gifts ? `<td class="py-1.5 px-2 text-center bg-amber-50/40">${giftDisplay}</td>` : ''}
             <td class="py-1.5 px-2 text-right whitespace-nowrap">
               <button onclick="editEntry('${item.id}')" class="text-slate-400 hover:text-indigo-600 px-1" title="Edit"><i class="fa-solid fa-pen"></i></button>
@@ -1845,7 +1804,6 @@
       items.forEach(item => {
         const total = (item.gents || 0) + (item.ladies || 0) + (item.kids || 0);
         const status = item.invitation || 'Invited';
-        const comingCount = (item.comingCount !== undefined) ? item.comingCount : 0;
 
         let statusStyle = 'bg-slate-50 text-slate-600 border-slate-300';
         if (status === 'Confirmed') statusStyle = 'bg-amber-50 text-amber-800 border-amber-300 font-bold';
@@ -1892,18 +1850,6 @@
               </select>
 
               <div class="flex items-center gap-1">
-                <button onclick="adjustComingCount('${item.id}', -1)" class="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center text-xs font-black">
-                  <i class="fa-solid fa-chevron-left text-[9px]"></i>
-                </button>
-                <span class="w-7 text-center text-xs font-black py-0.5 rounded border ${comingCount > 0 ? 'bg-emerald-100 text-emerald-900 border-emerald-500' : 'bg-slate-50 text-slate-400'}">
-                  ${comingCount}
-                </span>
-                <button onclick="adjustComingCount('${item.id}', 1)" class="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center text-xs font-black">
-                  <i class="fa-solid fa-chevron-right text-[9px]"></i>
-                </button>
-              </div>
-
-              <div class="flex items-center gap-1">
                 <button onclick="editEntry('${item.id}')" class="p-1 text-slate-400 hover:text-indigo-600"><i class="fa-solid fa-pen"></i></button>
                 <button onclick="deleteEntry('${item.id}')" class="p-1 text-slate-400 hover:text-rose-600"><i class="fa-solid fa-trash"></i></button>
               </div>
@@ -1922,7 +1868,6 @@
       items.forEach(item => {
         const total = (item.gents || 0) + (item.ladies || 0) + (item.kids || 0);
         const status = item.invitation || 'Invited';
-        const comingCount = (item.comingCount !== undefined) ? item.comingCount : 0;
 
         html += `
           <div class="bg-white p-2.5 sm:p-3 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-slate-50 transition">
@@ -1960,18 +1905,6 @@
               </select>
 
               <div class="flex items-center gap-1">
-                <button onclick="adjustComingCount('${item.id}', -1)" class="w-5 h-5 rounded bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center text-[10px] font-black">
-                  <i class="fa-solid fa-chevron-left text-[8px]"></i>
-                </button>
-                <span class="w-8 text-center text-xs font-black py-0.5 rounded border ${comingCount > 0 ? 'bg-emerald-100 text-emerald-900 border-emerald-500' : 'bg-slate-50 text-slate-400'}">
-                  ${comingCount}
-                </span>
-                <button onclick="adjustComingCount('${item.id}', 1)" class="w-5 h-5 rounded bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center text-[10px] font-black">
-                  <i class="fa-solid fa-chevron-right text-[8px]"></i>
-                </button>
-              </div>
-
-              <div class="flex items-center gap-1">
                 <button onclick="editEntry('${item.id}')" class="p-1 text-slate-400 hover:text-indigo-600"><i class="fa-solid fa-pen"></i></button>
                 <button onclick="deleteEntry('${item.id}')" class="p-1 text-slate-400 hover:text-rose-600"><i class="fa-solid fa-trash"></i></button>
               </div>
@@ -1991,7 +1924,7 @@
         return;
       }
 
-      const headers = ['Function', 'Category', 'Relation', 'Guest Name', 'Place', 'Phone', 'Gents', 'Ladies', 'Kids', 'Total Invited', 'Invitation Status', 'Coming Count', 'Gift Amount', 'Gift Description', 'Access Code'];
+      const headers = ['Function', 'Category', 'Relation', 'Guest Name', 'Place', 'Phone', 'Gents', 'Ladies', 'Kids', 'Total Invited', 'Invitation Status', 'Gift Amount', 'Gift Description', 'Access Code'];
       const dataRows = target.map(f => [
         f.eventFunction || 'Main Reception',
         canonicalCategory(f.side) || '',
@@ -2004,7 +1937,6 @@
         f.kids || 0,
         (f.gents || 0) + (f.ladies || 0) + (f.kids || 0),
         f.invitation || 'Invited',
-        f.comingCount || 0,
         f.giftAmount || 0,
         f.giftDescription || '',
         f.code || ''
@@ -2084,7 +2016,6 @@
         const ladiesIdx = getIdx(['lad', 'female', 'women', 'females']);
         const kidsIdx = getIdx(['kid', 'child', 'children']);
         const statusIdx = getIdx(['invitation', 'status', 'rsvp']);
-        const comingIdx = getIdx(['coming', 'attending', 'confirmed count']);
         const giftAmtIdx = getIdx(['gift amount', 'amount', 'cash', 'gift cash', 'rupee']);
         const giftDescIdx = getIdx(['gift item', 'gift description', 'gift name', 'gift']);
         const codeIdx = getIdx(['code', 'passcode']);
@@ -2122,11 +2053,8 @@
           if (rawStatus.toLowerCase().includes('confirm')) parsedStatus = 'Confirmed';
           else if (rawStatus.toLowerCase().includes('not') || rawStatus.toLowerCase().includes('pend')) parsedStatus = 'Not Invited';
 
-          let parsedComing = parseInt(comingIdx !== -1 ? row[comingIdx] : row[11]);
-          if (isNaN(parsedComing)) parsedComing = (parsedStatus === 'Not Invited') ? 0 : totalHead;
-
-          const giftAmt = parseFloat(giftAmtIdx !== -1 ? row[giftAmtIdx] : row[12]) || 0;
-          const giftDesc = String(giftDescIdx !== -1 && row[giftDescIdx] !== undefined ? row[giftDescIdx] : (row[13] || '')).trim();
+          const giftAmt = parseFloat(giftAmtIdx !== -1 ? row[giftAmtIdx] : row[11]) || 0;
+          const giftDesc = String(giftDescIdx !== -1 && row[giftDescIdx] !== undefined ? row[giftDescIdx] : (row[12] || '')).trim();
 
           const record = {
             code: targetCode,
@@ -2141,7 +2069,7 @@
             kids: k,
             kidNames: '',
             invitation: parsedStatus,
-            comingCount: parsedComing,
+            comingCount: (parsedStatus === 'Not Invited') ? 0 : totalHead,
             giftAmount: giftAmt,
             giftDescription: giftDesc,
             isBlocked: false,
