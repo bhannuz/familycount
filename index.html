@@ -286,7 +286,7 @@
   <!-- Main App Screen -->
   <div id="appScreen" class="hidden max-w-6xl mx-auto space-y-2.5">
     
-    <!-- Top Header Bar with Top Function Filter & Add Guest Button -->
+    <!-- Top Header Bar with Top Function Filter & Add Guest Button next to it -->
     <header class="bg-white p-2.5 sm:p-3 rounded-xl border border-slate-200 shadow-sm space-y-2 relative">
       <div class="flex items-center justify-between gap-2">
         <div class="flex items-center gap-2">
@@ -299,13 +299,8 @@
           </div>
         </div>
 
-        <!-- Top Right Actions: Prominent Add Guest Button + Action Menu -->
-        <div class="flex items-center gap-1.5">
-          <button type="button" onclick="openAddGuestModal()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1.5 transition">
-            <i class="fa-solid fa-plus text-[10px]"></i>
-            <span class="inline">Add Guest</span>
-          </button>
-
+        <!-- Top Right Action Menu -->
+        <div class="relative">
           <button onclick="toggleActionMenu(event)" id="actionMenuBtn" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition border border-slate-200">
             <i class="fa-solid fa-ellipsis-vertical text-sm"></i>
           </button>
@@ -353,18 +348,25 @@
         </div>
       </div>
 
-      <!-- PRIMARY TOP FUNCTION FILTER -->
+      <!-- PRIMARY FUNCTION FILTER + ADD GUEST BUTTON SIDE-BY-SIDE -->
       <div class="flex items-center gap-2 pt-1 border-t border-slate-100">
         <label class="text-[11px] font-black uppercase tracking-wider text-indigo-700 shrink-0 flex items-center gap-1">
-          <i class="fa-solid fa-calendar-check text-indigo-600 text-xs"></i> Select Function:
+          <i class="fa-solid fa-calendar-check text-indigo-600 text-xs"></i> Function:
         </label>
-        <select id="topFunctionFilter" onchange="onTopFunctionChange(this.value)" class="w-full bg-indigo-50/80 border border-indigo-300 text-xs font-bold text-indigo-950 px-2.5 py-1.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300 transition cursor-pointer shadow-2xs">
+        
+        <select id="topFunctionFilter" onchange="onTopFunctionChange(this.value)" class="flex-1 bg-indigo-50/80 border border-indigo-300 text-xs font-bold text-indigo-950 px-2.5 py-1.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300 transition cursor-pointer shadow-2xs">
           <option value="All">All Functions (Combined Overview)</option>
         </select>
+
+        <!-- Add Guest Button right next to Select Function -->
+        <button type="button" onclick="openAddGuestModal()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1.5 shrink-0 transition">
+          <i class="fa-solid fa-plus text-[10px]"></i>
+          <span>Add Guest</span>
+        </button>
       </div>
     </header>
 
-    <!-- 3-Chip Summary Dashboard (Invited / Confirmed, G/L/K Breakdown, Cash & Gifts) -->
+    <!-- 3-Chip Summary Dashboard -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
       <!-- Chip 1: Headcount Ratio -->
       <div class="bg-indigo-900 text-white p-2.5 rounded-xl shadow-sm flex items-center justify-between">
@@ -407,7 +409,7 @@
       </div>
     </div>
 
-    <!-- 2. Collapsible Filters Panel (Clean 2-Column Grid on Mobile) -->
+    <!-- 2. Collapsible Filters Panel -->
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
       <button type="button" onclick="toggleAccordion('filterContainer', 'filterChevron', 'filterActionText')" class="w-full flex items-center justify-between px-3 py-2.5 bg-slate-50 hover:bg-slate-100 border-b border-slate-200 transition text-left">
         <div class="flex items-center gap-2">
@@ -434,7 +436,6 @@
             </select>
           </div>
 
-          <!-- Relation Type Filter -->
           <div class="col-span-1">
             <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Relation Type:</label>
             <select id="histRelationFilter" onchange="renderFilteredHistory()" class="w-full bg-white border border-slate-300 text-xs font-semibold text-slate-700 px-2 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500">
@@ -473,17 +474,21 @@
       </div>
     </div>
 
-    <!-- 3. Showing Entries / Guest List (Robust Positioned Dropdown, Fixed Layout for Mobile Screens) -->
+    <!-- 3. Showing Entries / Guest List (Working Collapse & Responsive Dropdown) -->
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-visible">
+      
+      <!-- Accordion Header Bar -->
       <div class="w-full flex flex-col sm:flex-row sm:items-center justify-between p-2.5 sm:p-3 bg-slate-50 border-b border-slate-200 gap-2">
-        <div class="flex items-center gap-2">
+        <button type="button" onclick="toggleAccordion('historyContainer', 'historyChevron', 'historyActionText')" class="flex items-center gap-2 hover:opacity-80 transition text-left cursor-pointer">
+          <i id="historyChevron" class="fa-solid fa-chevron-right text-xs text-indigo-600 transition-transform duration-200"></i>
           <span class="text-xs sm:text-sm font-bold text-slate-800 flex items-center gap-1.5">
             <i class="fa-solid fa-list-check text-indigo-600"></i> Showing Entries
           </span>
           <span id="historyBadgeCount" class="text-[10px] font-bold bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full">0 Entries</span>
-        </div>
+          <span id="historyActionText" class="text-[11px] font-semibold text-indigo-600 ml-1">Tap to Expand</span>
+        </button>
 
-        <!-- Toolstrip (Columns Customizer with Left-Anchored Dropdown & View Mode Switcher) -->
+        <!-- Toolstrip (Fixed Positioned Dropdown & View Mode Switcher) -->
         <div class="flex items-center justify-between sm:justify-end gap-1.5 flex-nowrap">
           
           <!-- Column Customizer Dropdown -->
@@ -494,8 +499,8 @@
               <i class="fa-solid fa-chevron-down text-[8px] text-slate-400"></i>
             </button>
 
-            <!-- Correctly Left/Right Bound Dropdown -->
-            <div id="columnPickerDropdown" class="hidden absolute left-0 sm:left-auto sm:right-0 mt-1 w-52 bg-white border border-slate-300 rounded-xl shadow-2xl p-3 z-50 space-y-2 text-xs">
+            <!-- Correctly Left/Right Positioned Dropdown to Prevent Screen Clipping -->
+            <div id="columnPickerDropdown" class="hidden absolute left-0 sm:left-auto sm:right-0 mt-1.5 w-52 bg-white border border-slate-300 rounded-xl shadow-2xl p-3 z-50 space-y-2 text-xs">
               <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 pb-1 border-b border-slate-100">Toggle Visible Columns</div>
               <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600 py-0.5">
                 <input type="checkbox" onchange="toggleColSetting('func')" id="colChk_func" class="w-3.5 h-3.5 rounded text-indigo-600 focus:ring-0" /> Function
@@ -542,7 +547,8 @@
         </div>
       </div>
 
-      <div id="historyContainer" class="p-2 sm:p-3 overflow-hidden">
+      <!-- Collapsible Body Container (Starts collapsed, expands smoothly) -->
+      <div id="historyContainer" class="hidden p-2.5 sm:p-3 overflow-x-auto">
         <div id="viewDisplayContainer"></div>
         <p id="emptyMessage" class="hidden text-center py-6 text-slate-400 text-xs">No matching entries found for this filter selection.</p>
       </div>
@@ -1666,13 +1672,12 @@
         return matchesCode && matchesGroup && matchesRelation && matchesRsvp && matchesSearch;
       });
 
-      let filtG = 0, filtL = 0, filtK = 0, filtC = 0, filtCash = 0, filtGiftsCount = 0;
+      let filtG = 0, filtL = 0, filtK = 0, filtCash = 0, filtGiftsCount = 0;
       filtered.forEach(item => {
         if (isBinaryGarbage(item.name) || isBinaryGarbage(item.side)) return;
         filtG += item.gents || 0;
         filtL += item.ladies || 0;
         filtK += item.kids || 0;
-        filtC += parseInt(item.comingCount) || 0;
         if (item.giftAmount) filtCash += parseFloat(item.giftAmount) || 0;
         if (item.giftDescription && item.giftDescription.trim().length > 0) filtGiftsCount++;
       });
@@ -2053,8 +2058,8 @@
           if (rawStatus.toLowerCase().includes('confirm')) parsedStatus = 'Confirmed';
           else if (rawStatus.toLowerCase().includes('not') || rawStatus.toLowerCase().includes('pend')) parsedStatus = 'Not Invited';
 
-          const giftAmt = parseFloat(giftAmtIdx !== -1 ? row[giftAmtIdx] : row[11]) || 0;
-          const giftDesc = String(giftDescIdx !== -1 && row[giftDescIdx] !== undefined ? row[giftDescIdx] : (row[12] || '')).trim();
+          const giftAmt = parseFloat(giftAmtIdx !== -1 ? row[giftAmtIdx] : row[12]) || 0;
+          const giftDesc = String(giftDescIdx !== -1 && row[giftDescIdx] !== undefined ? row[giftDescIdx] : (row[13] || '')).trim();
 
           const record = {
             code: targetCode,
