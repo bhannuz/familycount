@@ -7,10 +7,10 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
-  <!-- JSZip for extracting zipped XML payloads from native Apple iWork/Numbers & Excel zip archives -->
+  <!-- JSZip for zipped format handling -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
-  <!-- SheetJS with full codepage & iWork parser support -->
+  <!-- SheetJS with full codepage & spreadsheet parser/writer -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <!-- Firebase SDKs -->
@@ -114,7 +114,7 @@
     </div>
   </div>
 
-  <!-- Hidden File Input for All Spreadsheet Types including native Mac/iOS .numbers & MS CSV -->
+  <!-- Hidden File Input for All Spreadsheet Formats -->
   <input type="file" id="spreadsheetFileInput" accept=".numbers,.csv,.xlsx,.xls,.tsv,text/csv,text/plain,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/x-iwork-numbers-sffnumbers" class="hidden" />
 
   <!-- Main App Screen -->
@@ -138,7 +138,7 @@
           <i class="fa-solid fa-ellipsis-vertical text-sm"></i>
         </button>
 
-        <div id="actionMenuDropdown" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-slate-200 py-1 z-40">
+        <div id="actionMenuDropdown" class="hidden absolute right-0 mt-2 w-60 bg-white rounded-xl shadow-xl border border-slate-200 py-1 z-40">
           <div class="px-3 py-2 border-b border-slate-100 bg-amber-50/60 flex items-center justify-between text-xs font-bold text-amber-900">
             <span class="flex items-center gap-1.5">
               <i class="fa-solid fa-key text-[10px] text-amber-600"></i> Code:
@@ -154,8 +154,15 @@
             <i class="fa-solid fa-broom text-rose-600 w-4"></i> Clean Corrupted Data (Auto-Fix)
           </button>
 
-          <button onclick="closeActionMenu(); exportCSV();" class="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 flex items-center gap-2 transition">
-            <i class="fa-solid fa-file-arrow-down text-emerald-600 w-4"></i> Export to CSV
+          <div class="border-t border-slate-100 my-1"></div>
+
+          <!-- Dual Export Options: MS CSV & Mac Numbers Compatible Format -->
+          <button onclick="closeActionMenu(); exportSpreadsheet('csv');" class="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 flex items-center gap-2 transition">
+            <i class="fa-solid fa-file-csv text-emerald-600 w-4"></i> Export MS Excel / Standard CSV
+          </button>
+
+          <button onclick="closeActionMenu(); exportSpreadsheet('numbers');" class="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-teal-50 hover:text-teal-700 flex items-center gap-2 transition">
+            <i class="fa-solid fa-table-cells text-teal-600 w-4"></i> Export Mac / iOS Numbers (.numbers)
           </button>
 
           <button onclick="triggerImport();" class="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-sky-50 hover:text-sky-700 flex items-center gap-2 transition">
@@ -177,6 +184,7 @@
 
     <!-- Side-by-Side Summary Chips -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+      <!-- Chip 1: Individual Headcount (Invited / Confirmed / Total Count) -->
       <div class="bg-indigo-900 text-white p-2.5 rounded-xl shadow-sm flex items-center justify-between">
         <div>
           <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-200 block">Invited / Confirmed / Total Count</span>
@@ -191,6 +199,7 @@
         <i class="fa-solid fa-users text-emerald-400 text-xl sm:text-2xl opacity-80 shrink-0"></i>
       </div>
 
+      <!-- Chip 2: Breakdown Chip -->
       <div class="bg-white border border-slate-200 p-2.5 rounded-xl shadow-sm flex flex-col justify-center">
         <span class="text-[9px] sm:text-[10px] font-bold uppercase text-slate-500 block mb-1">Breakdown</span>
         <div class="flex items-center justify-around text-xs font-bold text-slate-800 bg-slate-50 py-1.5 px-2 rounded-lg border border-slate-100">
@@ -610,7 +619,6 @@
       });
     }
 
-    // Auto-Purge Corrupted/Binary Junk Records
     async function purgeCorruptedEntries() {
       const target = getVisibleFamilies();
       const corrupted = target.filter(f => isBinaryGarbage(f.name) || isBinaryGarbage(f.side) || isBinaryGarbage(f.place) || isBinaryGarbage(f.relation));
@@ -1560,7 +1568,8 @@
       container.innerHTML = html;
     }
 
-    function exportCSV() {
+    // Comprehensive Multi-Format Spreadsheet Exporter (Numbers & MS CSV)
+    function exportSpreadsheet(format) {
       const target = getVisibleFamilies();
       if (target.length === 0) {
         alert('No guest data available to export.');
@@ -1568,32 +1577,48 @@
       }
 
       const headers = ['Category', 'Relation', 'Guest Name', 'Place', 'Phone', 'Gents', 'Ladies', 'Kids', 'Kid Names', 'Total Invited', 'Invitation Status', 'Coming Count', 'Access Code'];
-      const rows = target.map(f => [
-        `"${(canonicalCategory(f.side) || '').replace(/"/g, '""')}"`,
-        `"${(f.relation || '').replace(/"/g, '""')}"`,
-        `"${(f.name || '').replace(/"/g, '""')}"`,
-        `"${(f.place || '').replace(/"/g, '""')}"`,
-        `"${(f.phone || '').replace(/"/g, '""')}"`,
+      const dataRows = target.map(f => [
+        canonicalCategory(f.side) || '',
+        f.relation || '',
+        f.name || '',
+        f.place || '',
+        f.phone || '',
         f.gents || 0,
         f.ladies || 0,
         f.kids || 0,
-        `"${(f.kidNames || '').replace(/"/g, '""')}"`,
+        f.kidNames || '',
         (f.gents || 0) + (f.ladies || 0) + (f.kids || 0),
-        `"${(f.invitation || 'Invited').replace(/"/g, '""')}"`,
+        f.invitation || 'Invited',
         f.comingCount || 0,
-        `"${(f.code || '').replace(/"/g, '""')}"`
+        f.code || ''
       ]);
 
-      const csvString = '\uFEFF' + [headers.join(','), ...rows.map(e => e.join(','))].join('\r\n');
-      const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.setAttribute('href', url);
-      link.setAttribute('download', `Guest_Headcount_Export_${new Date().toISOString().slice(0, 10)}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      const dateStr = new Date().toISOString().slice(0, 10);
+
+      if (format === 'numbers') {
+        // Build binary-safe Workbook for native macOS/iOS Numbers compatibility
+        const ws = XLSX.utils.aoa_to_sheet([headers, ...dataRows]);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Guests");
+        XLSX.writeFile(wb, `Guest_Headcount_${dateStr}.xlsx`);
+      } else {
+        // Clean UTF-8 with BOM MS Excel CSV
+        const csvRows = dataRows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(','));
+        const csvString = '\uFEFF' + [headers.join(','), ...csvRows].join('\r\n');
+        const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', `Guest_Headcount_MS_Excel_${dateStr}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }
+    }
+
+    function exportCSV() {
+      exportSpreadsheet('csv');
     }
 
     // Comprehensive Mac Numbers, iOS iWork, Excel and MS CSV Native Importer (Overwrite Mode)
@@ -1605,32 +1630,29 @@
         const buffer = await file.arrayBuffer();
         let parsedRows = [];
 
-        // 1. Try Native Mac/iOS Numbers Unzipping (iWork package parser)
+        // 1. Native Mac/iOS Numbers Archive Inspection (.numbers is a zip container)
         if (file.name.endsWith('.numbers')) {
           try {
             const zip = await JSZip.loadAsync(buffer);
-            // Check for QuickLook preview or exported tabular XML inside .numbers bundle
-            const previewEntry = zip.file('QuickLook/Preview.pdf') || zip.file('Index/Document.iwa');
-            const dataTableCSV = zip.file(/.*\.csv/i)[0];
-            
-            if (dataTableCSV) {
-              const text = await dataTableCSV.async('text');
-              parsedRows = parseTextCSV(text);
+            const csvFile = zip.file(/.*\.csv/i)[0];
+            if (csvFile) {
+              const csvText = await csvFile.async('text');
+              parsedRows = parseTextCSV(csvText);
             }
           } catch (zipErr) {
-            console.warn('Direct zip parse on .numbers file:', zipErr);
+            console.warn('Zip stream check on .numbers:', zipErr);
           }
         }
 
-        // 2. Fallback to XLSX engine (supports Sheets, Excel, CSV, TSV and converted iWork files)
+        // 2. Parse via XLSX engine
         if (!parsedRows || parsedRows.length === 0) {
           try {
             const workbook = XLSX.read(new Uint8Array(buffer), { type: 'array', codepage: 65001, raw: false });
             const firstSheetName = workbook.SheetNames[0];
             const worksheet = workbook.Sheets[firstSheetName];
-            parsedRows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
+            parsedRows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '', raw: false });
           } catch (xlsxErr) {
-            // 3. Fallback to Text Decoding
+            // 3. Fallback text reader
             const decoder = new TextDecoder('utf-8');
             const text = decoder.decode(buffer);
             parsedRows = parseTextCSV(text);
@@ -1638,7 +1660,7 @@
         }
 
         if (!parsedRows || parsedRows.length <= 1) {
-          alert('Could not extract readable table rows. If using Apple Numbers on Mac/iPhone, please export as CSV (File → Export To → CSV) and import.');
+          alert('Could not extract readable records. If using Apple Numbers on Mac/iPhone, you can also export as CSV (File → Export To → CSV).');
           return;
         }
 
@@ -1677,7 +1699,7 @@
           const sideVal = String(catIdx !== -1 && row[catIdx] !== undefined ? row[catIdx] : (row[0] || 'General')).trim();
           const relVal = String(relIdx !== -1 && row[relIdx] !== undefined ? row[relIdx] : (row[1] || '')).trim();
 
-          // Reject any binary garbage / unparsed protobuf junk
+          // Reject empty lines and binary junk
           if (!nameVal || isBinaryGarbage(nameVal) || isBinaryGarbage(sideVal) || isBinaryGarbage(relVal)) {
             skippedCorruptCount++;
             continue;
@@ -1739,13 +1761,13 @@
 
         if (overwrittenCount > 0 || newInsertedCount > 0) {
           await batch.commit();
-          alert(`Import complete in Overwrite Mode!\n• Updated/Overwritten: ${overwrittenCount}\n• Newly Added: ${newInsertedCount}${skippedCorruptCount > 0 ? `\n• Safely blocked ${skippedCorruptCount} unreadable binary row(s).` : ''}`);
+          alert(`Import complete in Overwrite Mode!\n• Updated/Overwritten: ${overwrittenCount}\n• Newly Added: ${newInsertedCount}${skippedCorruptCount > 0 ? `\n• Blocked & skipped ${skippedCorruptCount} unreadable row(s).` : ''}`);
         } else {
-          alert('No valid readable rows were parsed. On Mac/iOS Numbers, please choose File → Export To → CSV for direct compatibility.');
+          alert('No valid readable rows were parsed. On Mac/iOS Numbers, please choose File → Export To → CSV.');
         }
       } catch (err) {
         console.error(err);
-        alert('Error processing spreadsheet file. Please ensure it is saved as CSV, XLSX, or exported from Numbers via File → Export To → CSV.');
+        alert('Error processing spreadsheet file. Please verify file formatting.');
       } finally {
         event.target.value = '';
       }
