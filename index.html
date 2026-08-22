@@ -73,7 +73,163 @@
     </div>
   </div>
 
-  <!-- Manage Category & Relation Modal -->
+  <!-- POPUP MODAL: Add / Edit Guest Entry Window -->
+  <div id="guestEntryModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-3">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full max-h-[95vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+      
+      <!-- Modal Header -->
+      <div class="px-4 py-3 bg-gradient-to-r from-indigo-900 to-indigo-800 text-white flex items-center justify-between shadow-sm">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-lg bg-indigo-600/60 flex items-center justify-center text-xs">
+            <i class="fa-solid fa-user-plus text-amber-300" id="modalHeaderIcon"></i>
+          </div>
+          <h3 class="text-xs sm:text-sm font-bold tracking-tight" id="modalHeaderTitle">Add Guest Entry & Gifts</h3>
+        </div>
+        <button type="button" onclick="closeGuestModal()" class="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-xs transition">
+          ✕
+        </button>
+      </div>
+
+      <!-- Modal Body (Form) -->
+      <div class="p-3 sm:p-4 overflow-y-auto space-y-3">
+        <form id="familyForm" onsubmit="handleFormSubmit(event)" class="space-y-3">
+          <input type="hidden" id="docId" value="" />
+
+          <div class="grid grid-cols-2 gap-2">
+            <!-- Function Parameter -->
+            <div class="col-span-1">
+              <label class="block text-[10px] font-bold uppercase text-indigo-700 mb-0.5">Function *</label>
+              <div id="funcSelectWrapper">
+                <select id="funcSelect" onchange="checkCustomFunc(this.value)" class="w-full bg-indigo-50/50 border border-indigo-200 rounded-lg px-2 py-1.5 text-xs font-semibold text-indigo-900 focus:outline-none focus:border-indigo-500"></select>
+              </div>
+              <div id="customFuncWrapper" class="hidden flex gap-1">
+                <input type="text" id="customFuncInput" placeholder="New Func..." class="w-full bg-white border border-indigo-500 rounded-lg px-1.5 py-1 text-xs font-semibold focus:outline-none" />
+                <button type="button" onclick="cancelCustomFunc()" class="px-1.5 py-1 bg-slate-200 hover:bg-slate-300 text-slate-600 rounded-lg text-xs">✕</button>
+              </div>
+            </div>
+
+            <!-- Category / Group -->
+            <div class="col-span-1">
+              <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Category *</label>
+              <div id="groupSelectWrapper">
+                <select id="groupSelect" onchange="checkCustomGroup(this.value)" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs font-semibold text-slate-700 focus:outline-none focus:border-indigo-500"></select>
+              </div>
+              <div id="customGroupWrapper" class="hidden flex gap-1">
+                <input type="text" id="customGroupInput" placeholder="New Cat..." class="w-full bg-white border border-indigo-500 rounded-lg px-1.5 py-1 text-xs font-semibold focus:outline-none" />
+                <button type="button" onclick="cancelCustomGroup()" class="px-1.5 py-1 bg-slate-200 hover:bg-slate-300 text-slate-600 rounded-lg text-xs">✕</button>
+              </div>
+            </div>
+
+            <!-- Relation -->
+            <div class="col-span-1">
+              <label class="block text-[10px] font-bold uppercase text-slate-400 mb-0.5">Relation</label>
+              <div id="relationSelectWrapper">
+                <select id="relationSelect" onchange="checkCustomRelation(this.value)" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs font-semibold text-slate-700 focus:outline-none focus:border-indigo-500"></select>
+              </div>
+              <div id="customRelWrapper" class="hidden flex gap-1">
+                <input type="text" id="customRelationInput" placeholder="New Rel..." class="w-full bg-white border border-indigo-500 rounded-lg px-1.5 py-1 text-xs font-semibold focus:outline-none" />
+                <button type="button" onclick="cancelCustomRelation()" class="px-1.5 py-1 bg-slate-200 hover:bg-slate-300 text-slate-600 rounded-lg text-xs">✕</button>
+              </div>
+            </div>
+
+            <!-- Family / Guest Name -->
+            <div class="col-span-1">
+              <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Guest / Head *</label>
+              <input type="text" id="familyName" required placeholder="e.g. Ramesh & Family" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-indigo-500" />
+            </div>
+
+            <!-- Place -->
+            <div class="col-span-1">
+              <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Place</label>
+              <input type="text" id="familyPlace" placeholder="e.g. Hyderabad" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-indigo-500" />
+            </div>
+
+            <!-- Phone -->
+            <div class="col-span-1">
+              <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Phone Number</label>
+              <input type="tel" id="familyPhone" placeholder="Mobile Number" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-indigo-500" />
+            </div>
+          </div>
+
+          <!-- Stepper Headcount Row -->
+          <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 space-y-1.5">
+            <span class="text-[10px] font-bold uppercase text-slate-500 block">Headcount & Members</span>
+            <div class="grid grid-cols-3 gap-2">
+              <!-- Gents Stepper -->
+              <div>
+                <label class="block text-[10px] font-bold text-blue-700 mb-0.5 text-center">Gents</label>
+                <div class="flex items-center justify-center gap-1 bg-white border border-slate-300 rounded-lg p-0.5 shadow-2xs">
+                  <button type="button" onclick="stepFormField('gentsCount', -1)" class="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center text-xs font-black">
+                    <i class="fa-solid fa-chevron-left text-[8px]"></i>
+                  </button>
+                  <input type="number" id="gentsCount" min="0" value="1" required class="w-full text-center bg-transparent py-1 text-xs font-bold focus:outline-none" />
+                  <button type="button" onclick="stepFormField('gentsCount', 1)" class="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center text-xs font-black">
+                    <i class="fa-solid fa-chevron-right text-[8px]"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Ladies Stepper -->
+              <div>
+                <label class="block text-[10px] font-bold text-pink-700 mb-0.5 text-center">Ladies</label>
+                <div class="flex items-center justify-center gap-1 bg-white border border-slate-300 rounded-lg p-0.5 shadow-2xs">
+                  <button type="button" onclick="stepFormField('ladiesCount', -1)" class="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center text-xs font-black">
+                    <i class="fa-solid fa-chevron-left text-[8px]"></i>
+                  </button>
+                  <input type="number" id="ladiesCount" min="0" value="1" required class="w-full text-center bg-transparent py-1 text-xs font-bold focus:outline-none" />
+                  <button type="button" onclick="stepFormField('ladiesCount', 1)" class="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center text-xs font-black">
+                    <i class="fa-solid fa-chevron-right text-[8px]"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Kids Stepper -->
+              <div>
+                <label class="block text-[10px] font-bold text-amber-700 mb-0.5 text-center">Kids</label>
+                <div class="flex items-center justify-center gap-1 bg-white border border-slate-300 rounded-lg p-0.5 shadow-2xs">
+                  <button type="button" onclick="stepFormField('kidsCount', -1)" class="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center text-xs font-black">
+                    <i class="fa-solid fa-chevron-left text-[8px]"></i>
+                  </button>
+                  <input type="number" id="kidsCount" min="0" value="0" required class="w-full text-center bg-transparent py-1 text-xs font-bold focus:outline-none" />
+                  <button type="button" onclick="stepFormField('kidsCount', 1)" class="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center text-xs font-black">
+                    <i class="fa-solid fa-chevron-right text-[8px]"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Gifts & Cash Section -->
+          <div class="bg-emerald-50/50 p-2.5 rounded-xl border border-emerald-200 space-y-1.5">
+            <span class="text-[10px] font-bold uppercase text-emerald-800 block">Gift / Cash Information</span>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-[10px] font-bold text-emerald-800 mb-0.5">Gift Cash Amount (₹)</label>
+                <input type="number" id="giftAmount" min="0" step="100" placeholder="e.g. 1116" class="w-full bg-white border border-emerald-300 rounded-lg px-2.5 py-1.5 text-xs font-bold text-emerald-900 focus:outline-none focus:border-emerald-500" />
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-emerald-800 mb-0.5">Gift Items / Description</label>
+                <input type="text" id="giftDescription" placeholder="e.g. Gold Chain, Silver Plate" class="w-full bg-white border border-emerald-300 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-emerald-500" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Modal Footer Actions -->
+          <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+            <button type="button" onclick="closeGuestModal()" class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition">
+              Cancel
+            </button>
+            <button type="submit" id="saveBtn" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md transition flex items-center gap-1.5">
+              <i class="fa-solid fa-check"></i>
+              <span id="saveBtnText">Save Guest Entry</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Manage Functions, Categories & Relations Modal -->
   <div id="metaManagerModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-3">
     <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full max-h-[90vh] flex flex-col overflow-hidden">
       <div class="px-4 py-3 bg-slate-800 text-white flex items-center justify-between">
@@ -130,7 +286,7 @@
   <!-- Main App Screen -->
   <div id="appScreen" class="hidden max-w-6xl mx-auto space-y-2.5">
     
-    <!-- Top Header Bar with Top Function Filter directly underneath -->
+    <!-- Top Header Bar with Top Function Filter & New Entry Trigger Button -->
     <header class="bg-white p-2.5 sm:p-3 rounded-xl border border-slate-200 shadow-sm space-y-2 relative">
       <div class="flex items-center justify-between gap-2">
         <div class="flex items-center gap-2">
@@ -143,8 +299,14 @@
           </div>
         </div>
 
-        <!-- Top Right Action Menu -->
-        <div class="relative">
+        <!-- Header Right: Add Guest Entry Button + Action Menu -->
+        <div class="flex items-center gap-1.5">
+          <button type="button" onclick="openAddGuestModal()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1.5 transition">
+            <i class="fa-solid fa-plus text-[10px]"></i>
+            <span class="hidden sm:inline">Add Guest</span>
+            <span class="sm:hidden">Add</span>
+          </button>
+
           <button onclick="toggleActionMenu(event)" id="actionMenuBtn" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition border border-slate-200">
             <i class="fa-solid fa-ellipsis-vertical text-sm"></i>
           </button>
@@ -192,7 +354,7 @@
         </div>
       </div>
 
-      <!-- PRIMARY TOP FUNCTION FILTER (Drives Dashboard, Form & Showing Entries) -->
+      <!-- PRIMARY TOP FUNCTION FILTER -->
       <div class="flex items-center gap-2 pt-1 border-t border-slate-100">
         <label class="text-[11px] font-black uppercase tracking-wider text-indigo-700 shrink-0 flex items-center gap-1">
           <i class="fa-solid fa-calendar-check text-indigo-600 text-xs"></i> Select Function:
@@ -246,148 +408,7 @@
       </div>
     </div>
 
-    <!-- 1. Collapsible Entry Form Card (Compact Mobile Side-by-Side Grid Layout) -->
-    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-      <button type="button" onclick="toggleAccordion('entryContainer', 'entryChevron', 'entryActionText')" class="w-full flex items-center justify-between px-3 py-2.5 bg-slate-50 hover:bg-slate-100 border-b border-slate-200 transition text-left">
-        <div class="flex items-center gap-2">
-          <i id="entryChevron" class="fa-solid fa-chevron-right text-xs text-indigo-600 transition-transform duration-200"></i>
-          <span class="text-xs font-bold text-slate-800">Add / Edit Guest Entry, Functions & Gifts</span>
-        </div>
-        <span id="entryActionText" class="text-[11px] font-semibold text-indigo-600">Tap to Expand</span>
-      </button>
-
-      <div id="entryContainer" class="hidden p-2.5 sm:p-3">
-        <form id="familyForm" onsubmit="handleFormSubmit(event)" class="space-y-2">
-          <input type="hidden" id="docId" value="" />
-          
-          <!-- Compact Grid: 2 Columns on Mobile, 6 Columns on Desktop -->
-          <div class="grid grid-cols-2 md:grid-cols-12 gap-1.5">
-            <!-- Function Parameter -->
-            <div class="col-span-1 md:col-span-2">
-              <label class="block text-[10px] font-bold uppercase text-indigo-700 mb-0.5">Function *</label>
-              <div id="funcSelectWrapper">
-                <select id="funcSelect" onchange="checkCustomFunc(this.value)" class="w-full bg-indigo-50/50 border border-indigo-200 rounded-lg px-2 py-1.5 text-xs font-semibold text-indigo-900 focus:outline-none focus:border-indigo-500"></select>
-              </div>
-              <div id="customFuncWrapper" class="hidden flex gap-1">
-                <input type="text" id="customFuncInput" placeholder="New Func..." class="w-full bg-white border border-indigo-500 rounded-lg px-1.5 py-1 text-xs font-semibold focus:outline-none" />
-                <button type="button" onclick="cancelCustomFunc()" class="px-1.5 py-1 bg-slate-200 hover:bg-slate-300 text-slate-600 rounded-lg text-xs">✕</button>
-              </div>
-            </div>
-
-            <!-- Category / Group -->
-            <div class="col-span-1 md:col-span-2">
-              <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Category *</label>
-              <div id="groupSelectWrapper">
-                <select id="groupSelect" onchange="checkCustomGroup(this.value)" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs font-semibold text-slate-700 focus:outline-none focus:border-indigo-500"></select>
-              </div>
-              <div id="customGroupWrapper" class="hidden flex gap-1">
-                <input type="text" id="customGroupInput" placeholder="New Cat..." class="w-full bg-white border border-indigo-500 rounded-lg px-1.5 py-1 text-xs font-semibold focus:outline-none" />
-                <button type="button" onclick="cancelCustomGroup()" class="px-1.5 py-1 bg-slate-200 hover:bg-slate-300 text-slate-600 rounded-lg text-xs">✕</button>
-              </div>
-            </div>
-
-            <!-- Relation -->
-            <div class="col-span-1 md:col-span-2">
-              <label class="block text-[10px] font-bold uppercase text-slate-400 mb-0.5">Relation</label>
-              <div id="relationSelectWrapper">
-                <select id="relationSelect" onchange="checkCustomRelation(this.value)" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs font-semibold text-slate-700 focus:outline-none focus:border-indigo-500"></select>
-              </div>
-              <div id="customRelWrapper" class="hidden flex gap-1">
-                <input type="text" id="customRelationInput" placeholder="New Rel..." class="w-full bg-white border border-indigo-500 rounded-lg px-1.5 py-1 text-xs font-semibold focus:outline-none" />
-                <button type="button" onclick="cancelCustomRelation()" class="px-1.5 py-1 bg-slate-200 hover:bg-slate-300 text-slate-600 rounded-lg text-xs">✕</button>
-              </div>
-            </div>
-
-            <!-- Family / Guest Name -->
-            <div class="col-span-1 md:col-span-2">
-              <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Guest / Head *</label>
-              <input type="text" id="familyName" required placeholder="e.g. Ramesh & Fam" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-indigo-500" />
-            </div>
-
-            <!-- Place -->
-            <div class="col-span-1 md:col-span-2">
-              <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Place</label>
-              <input type="text" id="familyPlace" placeholder="e.g. Hyderabad" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-indigo-500" />
-            </div>
-
-            <!-- Phone -->
-            <div class="col-span-1 md:col-span-2">
-              <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Phone Number</label>
-              <input type="tel" id="familyPhone" placeholder="Mobile Number" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-indigo-500" />
-            </div>
-          </div>
-
-          <!-- Stepper Headcount Row & Gift Cash/Item Grid (Side by Side on Mobile) -->
-          <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-12 gap-1.5 items-end pt-0.5">
-            <!-- Gents Stepper -->
-            <div class="col-span-1 md:col-span-2">
-              <label class="block text-[10px] font-bold text-blue-700 mb-0.5 text-center">Gents</label>
-              <div class="flex items-center justify-center gap-1 bg-slate-50 border border-slate-300 rounded-lg p-0.5">
-                <button type="button" onclick="stepFormField('gentsCount', -1)" class="w-6 h-6 rounded bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center text-xs font-black">
-                  <i class="fa-solid fa-chevron-left text-[9px]"></i>
-                </button>
-                <input type="number" id="gentsCount" min="0" value="1" required class="w-full text-center bg-transparent py-1 text-xs font-bold focus:outline-none" />
-                <button type="button" onclick="stepFormField('gentsCount', 1)" class="w-6 h-6 rounded bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center text-xs font-black">
-                  <i class="fa-solid fa-chevron-right text-[9px]"></i>
-                </button>
-              </div>
-            </div>
-
-            <!-- Ladies Stepper -->
-            <div class="col-span-1 md:col-span-2">
-              <label class="block text-[10px] font-bold text-pink-700 mb-0.5 text-center">Ladies</label>
-              <div class="flex items-center justify-center gap-1 bg-slate-50 border border-slate-300 rounded-lg p-0.5">
-                <button type="button" onclick="stepFormField('ladiesCount', -1)" class="w-6 h-6 rounded bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center text-xs font-black">
-                  <i class="fa-solid fa-chevron-left text-[9px]"></i>
-                </button>
-                <input type="number" id="ladiesCount" min="0" value="1" required class="w-full text-center bg-transparent py-1 text-xs font-bold focus:outline-none" />
-                <button type="button" onclick="stepFormField('ladiesCount', 1)" class="w-6 h-6 rounded bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center text-xs font-black">
-                  <i class="fa-solid fa-chevron-right text-[9px]"></i>
-                </button>
-              </div>
-            </div>
-
-            <!-- Kids Stepper -->
-            <div class="col-span-1 md:col-span-2">
-              <label class="block text-[10px] font-bold text-amber-700 mb-0.5 text-center">Kids</label>
-              <div class="flex items-center justify-center gap-1 bg-slate-50 border border-slate-300 rounded-lg p-0.5">
-                <button type="button" onclick="stepFormField('kidsCount', -1)" class="w-6 h-6 rounded bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center text-xs font-black">
-                  <i class="fa-solid fa-chevron-left text-[9px]"></i>
-                </button>
-                <input type="number" id="kidsCount" min="0" value="0" required class="w-full text-center bg-transparent py-1 text-xs font-bold focus:outline-none" />
-                <button type="button" onclick="stepFormField('kidsCount', 1)" class="w-6 h-6 rounded bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center text-xs font-black">
-                  <i class="fa-solid fa-chevron-right text-[9px]"></i>
-                </button>
-              </div>
-            </div>
-
-            <!-- Gift Cash (₹) -->
-            <div class="col-span-1 md:col-span-2">
-              <label class="block text-[10px] font-bold text-emerald-700 mb-0.5 text-center">Gift Cash (₹)</label>
-              <input type="number" id="giftAmount" min="0" step="100" placeholder="e.g. 1116" class="w-full text-center bg-emerald-50/50 border border-emerald-300 rounded-lg py-1.5 text-xs font-bold text-emerald-900 focus:outline-none focus:border-emerald-500" />
-            </div>
-
-            <!-- Gift Description -->
-            <div class="col-span-1 md:col-span-2">
-              <label class="block text-[10px] font-bold text-emerald-700 mb-0.5">Gift Item</label>
-              <input type="text" id="giftDescription" placeholder="e.g. Gold Ring" class="w-full bg-emerald-50/50 border border-emerald-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-emerald-500" />
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="col-span-1 md:col-span-2 flex gap-1 pt-1 md:pt-0">
-              <button type="submit" id="saveBtn" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2 rounded-lg transition shadow-sm">
-                Save Entry
-              </button>
-              <button type="button" id="cancelBtn" onclick="resetForm()" class="hidden px-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold py-2 rounded-lg transition">
-                ✕
-              </button>
-            </div>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- 2. Collapsible Filters Panel (Side by Side 2-Column Grid on Mobile for Maximum Compactness) -->
+    <!-- 2. Collapsible Filters Panel (Compact 2-Column Side-by-Side Mobile Layout) -->
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
       <button type="button" onclick="toggleAccordion('filterContainer', 'filterChevron', 'filterActionText')" class="w-full flex items-center justify-between px-3 py-2.5 bg-slate-50 hover:bg-slate-100 border-b border-slate-200 transition text-left">
         <div class="flex items-center gap-2">
@@ -398,7 +419,6 @@
       </button>
 
       <div id="filterContainer" class="hidden p-2.5 sm:p-3 space-y-2">
-        <!-- Compact 2-Column Mobile Grid for side-by-side controls -->
         <div class="bg-slate-50 p-2 sm:p-2.5 rounded-lg border border-slate-200 grid grid-cols-2 md:grid-cols-5 gap-1.5">
           
           <div id="adminCodeFilterCol" class="hidden col-span-1">
@@ -455,25 +475,30 @@
       </div>
     </div>
 
-    <!-- 3. Collapsible Showing Entries / Guest List with View Switcher & Column Customizer -->
+    <!-- 3. Showing Entries / Guest List (Mobile-Optimized Layout Without Any Overflow Clipping) -->
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-      <div class="w-full flex flex-wrap items-center justify-between px-3 py-2.5 bg-slate-50 border-b border-slate-200 gap-2">
-        <button type="button" onclick="toggleAccordion('historyContainer', 'historyChevron', 'historyActionText')" class="flex items-center gap-2 hover:opacity-80 transition text-left">
-          <i id="historyChevron" class="fa-solid fa-chevron-right text-xs text-indigo-600 transition-transform duration-200"></i>
-          <span class="text-xs font-bold text-slate-800">Showing Entries</span>
-          <span id="historyBadgeCount" class="text-[10px] font-bold bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full">0 Entries</span>
-          <span id="historyActionText" class="text-[11px] font-semibold text-indigo-600 ml-2">Tap to Expand</span>
-        </button>
+      <div class="w-full flex flex-col sm:flex-row sm:items-center justify-between p-2.5 sm:p-3 bg-slate-50 border-b border-slate-200 gap-2">
+        <div class="flex items-center justify-between sm:justify-start gap-2">
+          <div class="flex items-center gap-2">
+            <span class="text-xs sm:text-sm font-bold text-slate-800 flex items-center gap-1.5">
+              <i class="fa-solid fa-list-check text-indigo-600"></i> Showing Entries
+            </span>
+            <span id="historyBadgeCount" class="text-[10px] font-bold bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full">0 Entries</span>
+          </div>
+        </div>
 
-        <div class="flex items-center gap-2 flex-wrap">
-          <!-- Column Customizer Dropdown -->
-          <div class="relative">
-            <button type="button" onclick="toggleColumnPicker(event)" class="px-2.5 py-1 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-1.5 shadow-2xs">
+        <!-- Mobile Toolstrip (Columns Customizer & Responsive View Modes) -->
+        <div class="flex items-center justify-between sm:justify-end gap-1.5 flex-nowrap overflow-x-auto pb-0.5 sm:pb-0">
+          
+          <!-- Column Customizer Button & Dropdown -->
+          <div class="relative shrink-0">
+            <button type="button" onclick="toggleColumnPicker(event)" class="px-2 py-1 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-1 shadow-2xs">
               <i class="fa-solid fa-sliders text-indigo-600 text-[11px]"></i>
-              <span>Columns</span>
-              <i class="fa-solid fa-chevron-down text-[9px] text-slate-400"></i>
+              <span class="text-[11px]">Columns</span>
+              <i class="fa-solid fa-chevron-down text-[8px] text-slate-400"></i>
             </button>
-            <div id="columnPickerDropdown" class="hidden absolute right-0 mt-1.5 w-48 bg-white border border-slate-200 rounded-xl shadow-xl p-2.5 z-30 space-y-1.5 text-xs">
+
+            <div id="columnPickerDropdown" class="hidden absolute right-0 mt-1.5 w-48 bg-white border border-slate-200 rounded-xl shadow-xl p-2.5 z-40 space-y-1.5 text-xs">
               <div class="text-[10px] font-bold uppercase text-slate-400 pb-1 border-b border-slate-100">Toggle Visible Columns</div>
               <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600">
                 <input type="checkbox" onchange="toggleColSetting('func')" id="colChk_func" class="rounded text-indigo-600 focus:ring-0" /> Function
@@ -505,27 +530,27 @@
             </div>
           </div>
 
-          <!-- View Switcher Controls (Table, Compact, Tiles, List) -->
-          <div class="flex items-center bg-white border border-slate-200 rounded-lg p-0.5 text-xs font-semibold">
+          <!-- View Switcher Tabs -->
+          <div class="flex items-center bg-white border border-slate-200 rounded-lg p-0.5 text-xs font-semibold shrink-0">
             <button type="button" onclick="setViewMode('table')" id="btnViewTable" class="px-2 py-1 rounded transition text-indigo-600 bg-indigo-50 font-bold flex items-center gap-1" title="Table View">
-              <i class="fa-solid fa-table"></i> <span class="hidden sm:inline">Table</span>
+              <i class="fa-solid fa-table"></i> <span class="hidden sm:inline text-[11px]">Table</span>
             </button>
             <button type="button" onclick="setViewMode('compact')" id="btnViewCompact" class="px-2 py-1 rounded transition text-slate-500 hover:text-slate-800 flex items-center gap-1" title="Compact View">
-              <i class="fa-solid fa-table-cells"></i> <span class="hidden sm:inline">Compact</span>
+              <i class="fa-solid fa-table-cells"></i> <span class="hidden sm:inline text-[11px]">Compact</span>
             </button>
             <button type="button" onclick="setViewMode('tiles')" id="btnViewTiles" class="px-2 py-1 rounded transition text-slate-500 hover:text-slate-800 flex items-center gap-1" title="Tiles View">
-              <i class="fa-solid fa-grip"></i> <span class="hidden sm:inline">Tiles</span>
+              <i class="fa-solid fa-grip"></i> <span class="hidden sm:inline text-[11px]">Tiles</span>
             </button>
             <button type="button" onclick="setViewMode('list')" id="btnViewList" class="px-2 py-1 rounded transition text-slate-500 hover:text-slate-800 flex items-center gap-1" title="List View">
-              <i class="fa-solid fa-list-ul"></i> <span class="hidden sm:inline">List</span>
+              <i class="fa-solid fa-list-ul"></i> <span class="hidden sm:inline text-[11px]">List</span>
             </button>
           </div>
         </div>
       </div>
 
-      <div id="historyContainer" class="hidden p-2.5 sm:p-3">
+      <div id="historyContainer" class="p-2 sm:p-3">
         <div id="viewDisplayContainer"></div>
-        <p id="emptyMessage" class="hidden text-center py-4 text-slate-400 text-xs">No matching entries found.</p>
+        <p id="emptyMessage" class="hidden text-center py-6 text-slate-400 text-xs">No matching entries found for this filter selection.</p>
       </div>
     </div>
 
@@ -614,6 +639,20 @@
       const input = document.getElementById('spreadsheetFileInput');
       input.value = '';
       input.click();
+    }
+
+    // Modal Control Functions for Add / Edit Window
+    function openAddGuestModal() {
+      resetForm();
+      document.getElementById('modalHeaderTitle').textContent = "Add Guest Entry & Gifts";
+      document.getElementById('modalHeaderIcon').className = "fa-solid fa-user-plus text-amber-300";
+      document.getElementById('saveBtnText').textContent = "Save Guest Entry";
+      document.getElementById('guestEntryModal').classList.remove('hidden');
+    }
+
+    function closeGuestModal() {
+      document.getElementById('guestEntryModal').classList.add('hidden');
+      resetForm();
     }
 
     function stepFormField(fieldId, delta) {
@@ -813,11 +852,9 @@
       });
     }
 
-    // Top Function Filter Change Handler
     function onTopFunctionChange(val) {
       selectedTopFunction = val;
 
-      // Sync the form's default function to match currently selected top function
       const formFuncSelect = document.getElementById('funcSelect');
       if (val !== 'All') {
         for (let opt of formFuncSelect.options) {
@@ -1214,7 +1251,7 @@
         codeFilterSelect.value = allCodes.has(currentCodeVal) ? currentCodeVal : 'All';
       }
 
-      // 1. Sync PRIMARY Top Function Filter
+      // Sync Top Primary Function Filter
       const topFuncSelect = document.getElementById('topFunctionFilter');
       const curTopVal = topFuncSelect.value;
       topFuncSelect.innerHTML = '<option value="All">All Functions (Combined Overview)</option>';
@@ -1226,7 +1263,7 @@
       });
       topFuncSelect.value = scopedFunctions.has(curTopVal) ? curTopVal : 'All';
 
-      // 2. Sync Function in Form
+      // Sync Function in Form
       const formFuncSelect = document.getElementById('funcSelect');
       const curFormFnVal = formFuncSelect.value;
       formFuncSelect.innerHTML = '';
@@ -1242,7 +1279,7 @@
       formFuncSelect.appendChild(customFnOpt);
       if (scopedFunctions.has(curFormFnVal)) formFuncSelect.value = curFormFnVal;
 
-      // 3. Sync Categories in Filter & Form
+      // Sync Categories in Filter & Form
       const filterSelect = document.getElementById('histGroupFilter');
       const currentFilterVal = filterSelect.value;
       filterSelect.innerHTML = '<option value="All">All Categories</option>';
@@ -1269,7 +1306,7 @@
       formGroupSelect.appendChild(customCatOpt);
       if (scopedCategories.has(currentFormGroupVal)) formGroupSelect.value = currentFormGroupVal;
 
-      // 4. Sync Relation Type in Filter & Form
+      // Sync Relation Type in Filter & Form
       const histRelFilter = document.getElementById('histRelationFilter');
       const curHistRelVal = histRelFilter.value;
       histRelFilter.innerHTML = '<option value="All">All Relations</option>';
@@ -1401,7 +1438,7 @@
         await collectionRef.add(record);
       }
 
-      resetForm();
+      closeGuestModal();
     }
 
     async function updateInvitation(id, val) {
@@ -1439,11 +1476,6 @@
     function editEntry(id) {
       const item = families.find(f => f.id === id);
       if (!item) return;
-
-      const entryContainer = document.getElementById('entryContainer');
-      if (entryContainer.classList.contains('hidden')) {
-        toggleAccordion('entryContainer', 'entryChevron', 'entryActionText');
-      }
 
       document.getElementById('docId').value = item.id;
       document.getElementById('familyName').value = item.name || '';
@@ -1519,10 +1551,10 @@
       }
       cancelCustomRelation();
 
-      document.getElementById('saveBtn').textContent = 'Update Entry';
-      document.getElementById('cancelBtn').classList.remove('hidden');
-
-      entryContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      document.getElementById('modalHeaderTitle').textContent = "Edit Guest Entry & Gifts";
+      document.getElementById('modalHeaderIcon').className = "fa-solid fa-user-pen text-amber-300";
+      document.getElementById('saveBtnText').textContent = "Update Guest Entry";
+      document.getElementById('guestEntryModal').classList.remove('hidden');
     }
 
     async function deleteEntry(id) {
@@ -1544,9 +1576,6 @@
       cancelCustomFunc();
       cancelCustomGroup();
       cancelCustomRelation();
-
-      document.getElementById('saveBtn').textContent = 'Save Entry';
-      document.getElementById('cancelBtn').classList.add('hidden');
     }
 
     function getVisibleFamilies() {
@@ -1554,7 +1583,6 @@
       if (!isAdmin) {
         result = result.filter(f => (f.code && f.code.toUpperCase() === loggedCode));
       }
-      // Apply Top Level Function Filter
       if (selectedTopFunction !== 'All') {
         result = result.filter(f => (f.eventFunction || 'Main Reception').toLowerCase() === selectedTopFunction.toLowerCase());
       }
@@ -1629,7 +1657,6 @@
 
       const filtered = target.filter(f => {
         let matchesCode = (codeFilter === 'All') || (f.code && f.code.toUpperCase() === codeFilter);
-
         let matchesGroup = (groupFilter === 'All');
         if (!matchesGroup) {
           matchesGroup = (canonicalCategory(f.side).toLowerCase() === groupFilter.toLowerCase()) || (f.side === groupFilter);
@@ -1703,8 +1730,8 @@
       const padding = isCompact ? 'py-1 px-1.5 text-[11px]' : 'py-1.5 px-2 text-xs';
 
       let html = `
-        <div class="overflow-x-auto border border-slate-200 rounded-lg">
-          <table class="w-full text-left border-collapse ${padding}">
+        <div class="overflow-x-auto border border-slate-200 rounded-lg -mx-0.5">
+          <table class="w-full text-left border-collapse ${padding} min-w-[580px] sm:min-w-full">
             <thead>
               <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase text-[10px]">
                 ${codeTh}
@@ -1779,9 +1806,9 @@
         html += `
           <tr class="hover:bg-slate-50 transition ${isCorrupt ? 'bg-rose-50/50' : ''}">
             ${codeCell}
-            ${colSettings.func ? `<td class="py-1.5 px-2 font-bold text-indigo-800 text-[11px]">${item.eventFunction || 'Main Reception'}</td>` : ''}
-            ${colSettings.cat ? `<td class="py-1.5 px-2">${getGroupBadge(item.side)}</td>` : ''}
-            ${colSettings.rel ? `<td class="py-1.5 px-2 font-medium text-slate-700 text-xs">${item.relation || '—'}</td>` : ''}
+            ${colSettings.func ? `<td class="py-1.5 px-2 font-bold text-indigo-800 text-[11px] whitespace-nowrap">${item.eventFunction || 'Main Reception'}</td>` : ''}
+            ${colSettings.cat ? `<td class="py-1.5 px-2 whitespace-nowrap">${getGroupBadge(item.side)}</td>` : ''}
+            ${colSettings.rel ? `<td class="py-1.5 px-2 font-medium text-slate-700 text-xs whitespace-nowrap">${item.relation || '—'}</td>` : ''}
             ${colSettings.guest ? `
               <td class="py-1.5 px-2.5">
                 <div class="font-semibold text-slate-800 text-xs leading-tight">${item.name}</div>
