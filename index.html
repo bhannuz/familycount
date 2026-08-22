@@ -3,14 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Event Guest & Headcount Tracker</title>
+  <title>Event Headcount, Multi-Function & Gift Tracker</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
-  <!-- JSZip for zipped format handling -->
+  <!-- JSZip & SheetJS for full file import/export capabilities -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-
-  <!-- SheetJS with full codepage & spreadsheet parser/writer -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <!-- Firebase SDKs -->
@@ -26,7 +24,7 @@
         <div class="w-12 h-12 bg-indigo-600 text-white rounded-full flex items-center justify-center mx-auto text-xl font-bold">
           <i class="fa-solid fa-lock"></i>
         </div>
-        <h2 class="text-lg font-bold text-slate-900">Event Invitation RSVP</h2>
+        <h2 class="text-lg font-bold text-slate-900">Event RSVP & Gift Tracker</h2>
         <p class="text-xs text-slate-500">Enter your 4-digit code or create a new family entry</p>
       </div>
 
@@ -75,18 +73,30 @@
     </div>
   </div>
 
-  <!-- Manage Category & Relation Modal -->
+  <!-- Manage Functions, Categories & Relations Modal -->
   <div id="metaManagerModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-3">
     <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full max-h-[90vh] flex flex-col overflow-hidden">
       <div class="px-4 py-3 bg-slate-800 text-white flex items-center justify-between">
         <div class="flex items-center gap-2">
           <i class="fa-solid fa-tags text-amber-400 text-sm"></i>
-          <h3 class="text-sm font-bold">Manage Categories & Relations</h3>
+          <h3 class="text-sm font-bold">Manage Functions, Categories & Relations</h3>
         </div>
         <button onclick="closeMetaManager()" class="text-slate-400 hover:text-white text-base">✕</button>
       </div>
 
       <div class="p-3.5 overflow-y-auto space-y-4">
+        <!-- Functions Management -->
+        <div class="space-y-2">
+          <h4 class="text-xs font-bold uppercase text-indigo-700 flex items-center justify-between">
+            <span>🎉 Event Functions (For Your Code)</span>
+            <span class="text-[10px] text-slate-400 lowercase font-normal">(e.g. Reception, Sangeet, Pooja)</span>
+          </h4>
+          <div id="functionManageList" class="space-y-1.5"></div>
+        </div>
+
+        <div class="border-t border-slate-100"></div>
+
+        <!-- Categories Management -->
         <div class="space-y-2">
           <h4 class="text-xs font-bold uppercase text-slate-600 flex items-center justify-between">
             <span>Categories / Groups</span>
@@ -97,6 +107,7 @@
 
         <div class="border-t border-slate-100"></div>
 
+        <!-- Relations Management -->
         <div class="space-y-2">
           <h4 class="text-xs font-bold uppercase text-slate-600 flex items-center justify-between">
             <span>Relations</span>
@@ -114,20 +125,19 @@
     </div>
   </div>
 
-  <!-- Hidden File Input for All Spreadsheet Formats -->
-  <input type="file" id="spreadsheetFileInput" accept=".numbers,.csv,.xlsx,.xls,.tsv,text/csv,text/plain,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/x-iwork-numbers-sffnumbers" class="hidden" />
+  <input type="file" id="spreadsheetFileInput" accept=".numbers,.csv,.xlsx,.xls,.tsv,text/csv,text/plain" class="hidden" />
 
   <!-- Main App Screen -->
   <div id="appScreen" class="hidden max-w-6xl mx-auto space-y-2.5">
     
-    <!-- Top Header Bar with 3-Dot Action Menu -->
+    <!-- Top Header Bar -->
     <header class="bg-white p-2.5 sm:p-3 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between gap-2 relative">
       <div class="flex items-center gap-2">
         <div class="w-7 h-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shrink-0">
           <i class="fa-solid fa-users"></i>
         </div>
         <div>
-          <h1 class="text-xs sm:text-sm font-bold text-slate-900 leading-tight">Guest Headcount & RSVP Tracker</h1>
+          <h1 class="text-xs sm:text-sm font-bold text-slate-900 leading-tight">Guest Headcount, Function & Gift Tracker</h1>
           <span id="roleBadge" class="text-[10px] font-bold text-indigo-600">Guest Mode</span>
         </div>
       </div>
@@ -147,7 +157,7 @@
           </div>
 
           <button onclick="closeActionMenu(); openMetaManager();" class="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-amber-50 hover:text-amber-800 flex items-center gap-2 transition">
-            <i class="fa-solid fa-pen-ruler text-amber-600 w-4"></i> Manage Categories & Relations
+            <i class="fa-solid fa-pen-ruler text-amber-600 w-4"></i> Manage Functions, Categories & Relations
           </button>
 
           <button onclick="closeActionMenu(); purgeCorruptedEntries();" class="w-full text-left px-3 py-2 text-xs font-bold text-rose-700 hover:bg-rose-50 flex items-center gap-2 transition">
@@ -156,7 +166,6 @@
 
           <div class="border-t border-slate-100 my-1"></div>
 
-          <!-- Dual Export Options: MS CSV & Mac Numbers Compatible Format -->
           <button onclick="closeActionMenu(); exportSpreadsheet('csv');" class="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 flex items-center gap-2 transition">
             <i class="fa-solid fa-file-csv text-emerald-600 w-4"></i> Export MS Excel / Standard CSV
           </button>
@@ -182,24 +191,24 @@
       </div>
     </header>
 
-    <!-- Side-by-Side Summary Chips -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-      <!-- Chip 1: Individual Headcount (Invited / Confirmed / Total Count) -->
+    <!-- 3-Chip Summary Dashboard (Invited/Confirmed/Total Headcount, G/L/K Breakdown, and Total Cash/Gifts) -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+      <!-- Chip 1: Headcount Ratio -->
       <div class="bg-indigo-900 text-white p-2.5 rounded-xl shadow-sm flex items-center justify-between">
         <div>
           <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-200 block">Invited / Confirmed / Total Count</span>
-          <div class="flex items-baseline gap-2 mt-1">
-            <span class="text-base sm:text-lg font-bold text-indigo-200"><span id="statInvited" class="font-black text-white">0</span> <span class="text-[9px] font-medium text-indigo-300">Invited</span></span>
+          <div class="flex items-baseline gap-1.5 mt-1">
+            <span class="text-base font-bold text-indigo-200"><span id="statInvited" class="font-black text-white">0</span> <span class="text-[9px] text-indigo-300">Inv</span></span>
             <span class="text-indigo-400 font-light">/</span>
-            <span class="text-base sm:text-lg font-bold text-amber-300"><span id="statConfirmed" class="font-black text-amber-300">0</span> <span class="text-[9px] font-medium text-amber-200">Confirmed</span></span>
+            <span class="text-base font-bold text-amber-300"><span id="statConfirmed" class="font-black text-amber-300">0</span> <span class="text-[9px] text-amber-200">Conf</span></span>
             <span class="text-indigo-400 font-light">/</span>
-            <span class="text-lg sm:text-xl font-black text-emerald-300"><span id="statTotalCount">0</span> <span class="text-[9px] font-medium text-emerald-200">Total Count</span></span>
+            <span class="text-lg font-black text-emerald-300"><span id="statTotalCount">0</span> <span class="text-[9px] text-emerald-200">Total</span></span>
           </div>
         </div>
-        <i class="fa-solid fa-users text-emerald-400 text-xl sm:text-2xl opacity-80 shrink-0"></i>
+        <i class="fa-solid fa-users text-emerald-400 text-xl opacity-80 shrink-0"></i>
       </div>
 
-      <!-- Chip 2: Breakdown Chip -->
+      <!-- Chip 2: Breakdown -->
       <div class="bg-white border border-slate-200 p-2.5 rounded-xl shadow-sm flex flex-col justify-center">
         <span class="text-[9px] sm:text-[10px] font-bold uppercase text-slate-500 block mb-1">Breakdown</span>
         <div class="flex items-center justify-around text-xs font-bold text-slate-800 bg-slate-50 py-1.5 px-2 rounded-lg border border-slate-100">
@@ -210,14 +219,27 @@
           <span class="text-amber-700">Kids: <span id="statKids" class="text-xs sm:text-sm font-black">0</span></span>
         </div>
       </div>
+
+      <!-- Chip 3: Cash & Gifts Summary -->
+      <div class="bg-emerald-900 text-white p-2.5 rounded-xl shadow-sm flex items-center justify-between">
+        <div>
+          <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-200 block">Total Gifts / Cash Received</span>
+          <div class="flex items-baseline gap-2 mt-1">
+            <span class="text-lg font-black text-emerald-300">₹<span id="statTotalCash">0</span></span>
+            <span class="text-emerald-400 font-light">|</span>
+            <span class="text-xs font-bold text-white"><span id="statGiftsCount">0</span> Gifts</span>
+          </div>
+        </div>
+        <i class="fa-solid fa-gift text-emerald-300 text-xl opacity-80 shrink-0"></i>
+      </div>
     </div>
 
-    <!-- 1. Collapsible Entry Form Card with Arrow Steppers for Gents, Ladies, and Kids -->
+    <!-- 1. Collapsible Entry Form Card with Function & Gift Fields -->
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
       <button type="button" onclick="toggleAccordion('entryContainer', 'entryChevron', 'entryActionText')" class="w-full flex items-center justify-between px-3 py-2.5 bg-slate-50 hover:bg-slate-100 border-b border-slate-200 transition text-left">
         <div class="flex items-center gap-2">
           <i id="entryChevron" class="fa-solid fa-chevron-right text-xs text-indigo-600 transition-transform duration-200"></i>
-          <span class="text-xs font-bold text-slate-800">Add / Edit Guest Entry Details</span>
+          <span class="text-xs font-bold text-slate-800">Add / Edit Guest Entry, Functions & Gifts</span>
         </div>
         <span id="entryActionText" class="text-[11px] font-semibold text-indigo-600">Tap to Expand</span>
       </button>
@@ -226,56 +248,74 @@
         <form id="familyForm" onsubmit="handleFormSubmit(event)" class="space-y-2">
           <input type="hidden" id="docId" value="" />
           
+          <!-- Row 1: Function -> Category -> Relation -> Guest Name -> Place -> Phone -->
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-1.5">
-            <div class="md:col-span-3">
-              <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Category / Group *</label>
+            <!-- Function Parameter -->
+            <div class="md:col-span-2">
+              <label class="block text-[10px] font-bold uppercase text-indigo-700 mb-0.5">Function / Event *</label>
+              <div id="funcSelectWrapper">
+                <select id="funcSelect" onchange="checkCustomFunc(this.value)" class="w-full bg-indigo-50/50 border border-indigo-200 rounded-lg px-2 py-1.5 text-xs font-semibold text-indigo-900 focus:outline-none focus:border-indigo-500"></select>
+              </div>
+              <div id="customFuncWrapper" class="hidden flex gap-1">
+                <input type="text" id="customFuncInput" placeholder="New Function..." class="w-full bg-white border border-indigo-500 rounded-lg px-2 py-1.5 text-xs font-semibold focus:outline-none" />
+                <button type="button" onclick="cancelCustomFunc()" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-600 rounded-lg text-xs">✕</button>
+              </div>
+            </div>
+
+            <!-- Category / Group -->
+            <div class="md:col-span-2">
+              <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Category *</label>
               <div id="groupSelectWrapper">
                 <select id="groupSelect" onchange="checkCustomGroup(this.value)" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs font-semibold text-slate-700 focus:outline-none focus:border-indigo-500"></select>
               </div>
               <div id="customGroupWrapper" class="hidden flex gap-1">
-                <input type="text" id="customGroupInput" placeholder="Type Category Name..." class="w-full bg-white border border-indigo-500 rounded-lg px-2 py-1.5 text-xs font-semibold focus:outline-none" />
-                <button type="button" onclick="cancelCustomGroup()" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-600 rounded-lg text-xs" title="Back to list">✕</button>
+                <input type="text" id="customGroupInput" placeholder="New Category..." class="w-full bg-white border border-indigo-500 rounded-lg px-2 py-1.5 text-xs font-semibold focus:outline-none" />
+                <button type="button" onclick="cancelCustomGroup()" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-600 rounded-lg text-xs">✕</button>
               </div>
             </div>
 
+            <!-- Relation -->
             <div class="md:col-span-2">
               <label class="block text-[10px] font-bold uppercase text-slate-400 mb-0.5">Relation (Optional)</label>
               <div id="relationSelectWrapper">
                 <select id="relationSelect" onchange="checkCustomRelation(this.value)" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs font-semibold text-slate-700 focus:outline-none focus:border-indigo-500"></select>
               </div>
               <div id="customRelWrapper" class="hidden flex gap-1">
-                <input type="text" id="customRelationInput" placeholder="Type Relation..." class="w-full bg-white border border-indigo-500 rounded-lg px-2 py-1.5 text-xs font-semibold focus:outline-none" />
-                <button type="button" onclick="cancelCustomRelation()" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-600 rounded-lg text-xs" title="Back to list">✕</button>
+                <input type="text" id="customRelationInput" placeholder="New Relation..." class="w-full bg-white border border-indigo-500 rounded-lg px-2 py-1.5 text-xs font-semibold focus:outline-none" />
+                <button type="button" onclick="cancelCustomRelation()" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-600 rounded-lg text-xs">✕</button>
               </div>
             </div>
 
-            <div class="md:col-span-3">
+            <!-- Family / Guest Name -->
+            <div class="md:col-span-2">
               <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Guest / Head Name *</label>
               <input type="text" id="familyName" required placeholder="e.g. Ramesh & Family" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-indigo-500" />
             </div>
 
+            <!-- Place -->
             <div class="md:col-span-2">
               <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Place</label>
               <input type="text" id="familyPlace" placeholder="e.g. Hyderabad" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-indigo-500" />
             </div>
 
+            <!-- Phone -->
             <div class="md:col-span-2">
               <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Phone Number</label>
               <input type="tel" id="familyPhone" placeholder="Mobile Number" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-indigo-500" />
             </div>
           </div>
 
-          <!-- Stepper Controlled Headcount Row -->
-          <div class="grid grid-cols-3 md:grid-cols-12 gap-1.5 items-end">
+          <!-- Row 2: Headcount Steppers + Gift Amounts & Names -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-12 gap-1.5 items-end">
             <!-- Gents Count Stepper -->
             <div class="col-span-1 md:col-span-2">
               <label class="block text-[10px] font-bold text-blue-700 mb-0.5 text-center">Gents</label>
               <div class="flex items-center justify-center gap-1 bg-slate-50 border border-slate-300 rounded-lg p-0.5">
-                <button type="button" onclick="stepFormField('gentsCount', -1)" class="w-6 h-6 rounded bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center text-xs font-black transition">
+                <button type="button" onclick="stepFormField('gentsCount', -1)" class="w-6 h-6 rounded bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center text-xs font-black">
                   <i class="fa-solid fa-chevron-left text-[9px]"></i>
                 </button>
                 <input type="number" id="gentsCount" min="0" value="1" required class="w-full text-center bg-transparent py-1 text-xs font-bold focus:outline-none" />
-                <button type="button" onclick="stepFormField('gentsCount', 1)" class="w-6 h-6 rounded bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center text-xs font-black transition">
+                <button type="button" onclick="stepFormField('gentsCount', 1)" class="w-6 h-6 rounded bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center text-xs font-black">
                   <i class="fa-solid fa-chevron-right text-[9px]"></i>
                 </button>
               </div>
@@ -285,11 +325,11 @@
             <div class="col-span-1 md:col-span-2">
               <label class="block text-[10px] font-bold text-pink-700 mb-0.5 text-center">Ladies</label>
               <div class="flex items-center justify-center gap-1 bg-slate-50 border border-slate-300 rounded-lg p-0.5">
-                <button type="button" onclick="stepFormField('ladiesCount', -1)" class="w-6 h-6 rounded bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center text-xs font-black transition">
+                <button type="button" onclick="stepFormField('ladiesCount', -1)" class="w-6 h-6 rounded bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center text-xs font-black">
                   <i class="fa-solid fa-chevron-left text-[9px]"></i>
                 </button>
                 <input type="number" id="ladiesCount" min="0" value="1" required class="w-full text-center bg-transparent py-1 text-xs font-bold focus:outline-none" />
-                <button type="button" onclick="stepFormField('ladiesCount', 1)" class="w-6 h-6 rounded bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center text-xs font-black transition">
+                <button type="button" onclick="stepFormField('ladiesCount', 1)" class="w-6 h-6 rounded bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center text-xs font-black">
                   <i class="fa-solid fa-chevron-right text-[9px]"></i>
                 </button>
               </div>
@@ -299,22 +339,29 @@
             <div class="col-span-1 md:col-span-2">
               <label class="block text-[10px] font-bold text-amber-700 mb-0.5 text-center">Kids</label>
               <div class="flex items-center justify-center gap-1 bg-slate-50 border border-slate-300 rounded-lg p-0.5">
-                <button type="button" onclick="stepFormField('kidsCount', -1)" class="w-6 h-6 rounded bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center text-xs font-black transition">
+                <button type="button" onclick="stepFormField('kidsCount', -1)" class="w-6 h-6 rounded bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center text-xs font-black">
                   <i class="fa-solid fa-chevron-left text-[9px]"></i>
                 </button>
                 <input type="number" id="kidsCount" min="0" value="0" required class="w-full text-center bg-transparent py-1 text-xs font-bold focus:outline-none" />
-                <button type="button" onclick="stepFormField('kidsCount', 1)" class="w-6 h-6 rounded bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center text-xs font-black transition">
+                <button type="button" onclick="stepFormField('kidsCount', 1)" class="w-6 h-6 rounded bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center text-xs font-black">
                   <i class="fa-solid fa-chevron-right text-[9px]"></i>
                 </button>
               </div>
             </div>
 
-            <div class="col-span-3 md:col-span-4">
-              <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Kid Names (Optional)</label>
-              <input type="text" id="kidNames" placeholder="e.g. Aryan, Riya" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-indigo-500" />
+            <!-- Gift / Cash Amount (₹) -->
+            <div class="col-span-1 md:col-span-2">
+              <label class="block text-[10px] font-bold text-emerald-700 mb-0.5 text-center">Gift Cash (₹)</label>
+              <input type="number" id="giftAmount" min="0" step="100" placeholder="e.g. 1116" class="w-full text-center bg-emerald-50/50 border border-emerald-300 rounded-lg py-1.5 text-xs font-bold text-emerald-900 focus:outline-none focus:border-emerald-500" />
             </div>
 
-            <div class="col-span-3 md:col-span-2 flex gap-1 pt-1 md:pt-0">
+            <!-- Gift Item Name / Description -->
+            <div class="col-span-2 md:col-span-2">
+              <label class="block text-[10px] font-bold text-emerald-700 mb-0.5">Gift Item / Names</label>
+              <input type="text" id="giftDescription" placeholder="e.g. Gold Ring, Silver Bowl" class="w-full bg-emerald-50/50 border border-emerald-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-emerald-500" />
+            </div>
+
+            <div class="col-span-2 md:col-span-2 flex gap-1 pt-1 md:pt-0">
               <button type="submit" id="saveBtn" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2 rounded-lg transition shadow-sm">
                 Save Entry
               </button>
@@ -327,7 +374,7 @@
       </div>
     </div>
 
-    <!-- 2. Collapsible Filters Panel (Collapsed by Default) -->
+    <!-- 2. Collapsible Filters Panel with Function Filter -->
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
       <button type="button" onclick="toggleAccordion('filterContainer', 'filterChevron', 'filterActionText')" class="w-full flex items-center justify-between px-3 py-2.5 bg-slate-50 hover:bg-slate-100 border-b border-slate-200 transition text-left">
         <div class="flex items-center gap-2">
@@ -338,12 +385,19 @@
       </button>
 
       <div id="filterContainer" class="hidden p-2.5 sm:p-3 space-y-2">
-        <div class="bg-slate-50 p-2 sm:p-2.5 rounded-lg border border-slate-200 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-2">
+        <div class="bg-slate-50 p-2 sm:p-2.5 rounded-lg border border-slate-200 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-2">
           
           <div id="adminCodeFilterCol" class="hidden">
             <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Filter Code:</label>
             <select id="histCodeFilter" onchange="renderFilteredHistory()" class="w-full bg-white border border-slate-300 text-xs font-semibold text-slate-700 px-2 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500">
               <option value="All">All Codes</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-[10px] font-bold uppercase text-indigo-700 mb-0.5">Function Filter:</label>
+            <select id="histFuncFilter" onchange="renderFilteredHistory()" class="w-full bg-white border border-slate-300 text-xs font-semibold text-slate-700 px-2 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500">
+              <option value="All">All Functions</option>
             </select>
           </div>
 
@@ -362,6 +416,7 @@
               <option value="no_kids">No Kids (Adults Only)</option>
               <option value="has_gents">Has Gents (👨 > 0)</option>
               <option value="has_ladies">Has Ladies (👩 > 0)</option>
+              <option value="has_gift">Has Gift / Cash Given</option>
             </select>
           </div>
 
@@ -379,17 +434,19 @@
 
           <div>
             <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Search:</label>
-            <input type="text" id="searchInput" oninput="renderFilteredHistory()" placeholder="Search name, code, place..." class="w-full bg-white border border-slate-300 text-xs px-2.5 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500" />
+            <input type="text" id="searchInput" oninput="renderFilteredHistory()" placeholder="Search name, gift, place..." class="w-full bg-white border border-slate-300 text-xs px-2.5 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500" />
           </div>
         </div>
 
         <div class="flex flex-wrap items-center justify-between gap-1.5 text-xs bg-indigo-50/60 border border-indigo-100 p-2 rounded-lg text-indigo-900 font-semibold">
           <span id="filteredResultsLabel">Showing 0 entries</span>
-          <div class="flex items-center gap-3 text-[11px]">
-            <span class="text-blue-700">Gents (G): <b id="filtGents" class="text-xs">0</b></span>
-            <span class="text-pink-700">Ladies (L): <b id="filtLadies" class="text-xs">0</b></span>
-            <span class="text-amber-700">Kids (K): <b id="filtKids" class="text-xs">0</b></span>
+          <div class="flex flex-wrap items-center gap-3 text-[11px]">
+            <span class="text-blue-700">G: <b id="filtGents" class="text-xs">0</b></span>
+            <span class="text-pink-700">L: <b id="filtLadies" class="text-xs">0</b></span>
+            <span class="text-amber-700">K: <b id="filtKids" class="text-xs">0</b></span>
             <span class="text-emerald-700">Coming: <b id="filtComing" class="text-xs">0</b></span>
+            <span class="text-emerald-900 font-bold border-l pl-2 border-indigo-200">Cash: ₹<b id="filtCash">0</b></span>
+            <span class="text-indigo-900 font-bold">Gifts: <b id="filtGiftsCount">0</b></span>
           </div>
         </div>
       </div>
@@ -461,7 +518,6 @@
       input.click();
     }
 
-    // Stepper function for form fields
     function stepFormField(fieldId, delta) {
       const input = document.getElementById(fieldId);
       if (!input) return;
@@ -584,6 +640,7 @@
         code: code,
         phone: phone,
         name: name,
+        eventFunction: "General Reception",
         side: "Friends",
         relation: "Friend",
         place: place,
@@ -593,6 +650,8 @@
         kidNames: "",
         invitation: "Invited",
         comingCount: 2,
+        giftAmount: 0,
+        giftDescription: "",
         isBlocked: false,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       };
@@ -677,10 +736,8 @@
       const s = String(str);
       if (s.includes('\uFFFD') || s.includes('\0')) return true;
       if (s.length > 25 && (s.includes('dYb') || (s.includes('zm') && s.includes('yv')) || (s.includes(';') && s.includes('^') && s.includes('+')))) return true;
-      
       const nonStandard = s.replace(/[a-zA-Z0-9\s,.\-/'"&()_]/g, '');
       if (s.length > 5 && (nonStandard.length / s.length > 0.35)) return true;
-      
       return false;
     }
 
@@ -695,6 +752,7 @@
         try { return JSON.parse(stored); } catch (e) {}
       }
       return {
+        functions: ['Main Reception', 'Marriage Ceremony', 'Sangeet / Mehendi', 'Haldi Ceremony', 'Engagement', 'House Warming / Pooja'],
         categories: ['Paternal Side', 'Maternal Side', 'Friends', 'Office Friends', 'School Friends', 'College Friends', 'Neighbours'],
         relations: ['Friend', 'Colleague', 'Babai / Chacha', 'Peddananna / Tauji', 'Mama / Uncle', 'Atta / Bua / Mami', 'Annaya / Bhaiya', 'Thammudu / Younger Bro', 'Akka / Didi', 'Chelli / Younger Sis', 'Bava / Jiju', 'Cousin']
       };
@@ -736,14 +794,19 @@
     }
 
     function renderMetaManagerLists() {
+      const funcList = document.getElementById('functionManageList');
       const catList = document.getElementById('categoryManageList');
       const relList = document.getElementById('relationManageList');
 
       const target = getVisibleFamilies();
+      const funcCountMap = {};
       const catCountMap = {};
       const relCountMap = {};
 
       target.forEach(f => {
+        const fn = (f.eventFunction || 'Main Reception').trim();
+        if (fn && !isBinaryGarbage(fn)) funcCountMap[fn] = (funcCountMap[fn] || 0) + 1;
+
         const cat = canonicalCategory(f.side);
         if (cat && !isBinaryGarbage(cat)) catCountMap[cat] = (catCountMap[cat] || 0) + 1;
 
@@ -752,9 +815,38 @@
       });
 
       const meta = getCodeMetaData();
+      const allFunctions = Array.from(new Set([...(meta.functions || []), ...Object.keys(funcCountMap)]));
       const allCategories = Array.from(new Set([...meta.categories, ...Object.keys(catCountMap)]));
       const allRelations = Array.from(new Set([...meta.relations, ...Object.keys(relCountMap)]));
 
+      // 1. Render Functions
+      funcList.innerHTML = '';
+      allFunctions.forEach(fn => {
+        const count = funcCountMap[fn] || 0;
+        const row = document.createElement('div');
+        row.className = 'flex items-center justify-between p-2 rounded-lg bg-indigo-50/50 border border-indigo-100 text-xs';
+        row.innerHTML = `
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-indigo-900">${fn}</span>
+            <span class="text-[10px] px-1.5 py-0.5 rounded font-semibold ${count > 0 ? 'bg-indigo-200 text-indigo-900' : 'bg-slate-200 text-slate-600'}">
+              ${count} ${count === 1 ? 'entry' : 'entries'}
+            </span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <button onclick="modifyFunction('${fn}')" class="px-2 py-0.5 text-[11px] font-bold bg-white border border-indigo-200 hover:border-indigo-500 rounded text-indigo-700 transition" title="Rename Function">
+              <i class="fa-solid fa-pen"></i> Rename
+            </button>
+            <button onclick="deleteFunction('${fn}', ${count})" class="px-2 py-0.5 text-[11px] font-bold rounded transition ${
+              count > 0 ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200'
+            }" title="${count > 0 ? 'Cannot delete: entries already exist' : 'Delete Function'}">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </div>
+        `;
+        funcList.appendChild(row);
+      });
+
+      // 2. Render Categories
       catList.innerHTML = '';
       allCategories.forEach(cat => {
         const count = catCountMap[cat] || 0;
@@ -773,7 +865,7 @@
             </button>
             <button onclick="deleteCategory('${cat}', ${count})" class="px-2 py-0.5 text-[11px] font-bold rounded transition ${
               count > 0 ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200'
-            }" title="${count > 0 ? 'Cannot delete: entries already exist' : 'Delete Category from list'}">
+            }" title="${count > 0 ? 'Cannot delete: entries already exist' : 'Delete Category'}">
               <i class="fa-solid fa-trash"></i>
             </button>
           </div>
@@ -781,6 +873,7 @@
         catList.appendChild(row);
       });
 
+      // 3. Render Relations
       relList.innerHTML = '';
       allRelations.forEach(rel => {
         const count = relCountMap[rel] || 0;
@@ -799,13 +892,47 @@
             </button>
             <button onclick="deleteRelation('${rel}', ${count})" class="px-2 py-0.5 text-[11px] font-bold rounded transition ${
               count > 0 ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200'
-            }" title="${count > 0 ? 'Cannot delete: entries already exist' : 'Delete Relation from list'}">
+            }" title="${count > 0 ? 'Cannot delete: entries already exist' : 'Delete Relation'}">
               <i class="fa-solid fa-trash"></i>
             </button>
           </div>
         `;
         relList.appendChild(row);
       });
+    }
+
+    async function modifyFunction(oldFn) {
+      const newFn = prompt(`Rename Event Function '${oldFn}' across all records:`, oldFn);
+      if (!newFn || newFn.trim() === '' || newFn.trim().toLowerCase() === oldFn.toLowerCase()) return;
+
+      const trimmed = newFn.trim();
+      const meta = getCodeMetaData();
+      meta.functions = (meta.functions || []).map(f => f.toLowerCase() === oldFn.toLowerCase() ? trimmed : f);
+      if (!meta.functions.includes(trimmed)) meta.functions.push(trimmed);
+      saveCodeMetaData(meta);
+
+      const batch = db.batch();
+      const target = getVisibleFamilies().filter(f => (f.eventFunction || 'Main Reception').toLowerCase() === oldFn.toLowerCase());
+      target.forEach(item => {
+        const ref = collectionRef.doc(item.id);
+        batch.update(ref, {
+          eventFunction: trimmed,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      });
+      await batch.commit();
+      renderMetaManagerLists();
+    }
+
+    function deleteFunction(fn, count) {
+      if (count > 0) {
+        alert(`Cannot delete Function '${fn}': There are already ${count} guest records attached to this function.`);
+        return;
+      }
+      const meta = getCodeMetaData();
+      meta.functions = (meta.functions || []).filter(f => f.toLowerCase() !== fn.toLowerCase());
+      saveCodeMetaData(meta);
+      renderMetaManagerLists();
     }
 
     async function modifyCategory(oldCat) {
@@ -834,10 +961,9 @@
 
     function deleteCategory(cat, count) {
       if (count > 0) {
-        alert(`Cannot delete '${cat}': There are already ${count} guest entries under this category. Please reassign or delete the entries first.`);
+        alert(`Cannot delete '${cat}': There are already ${count} guest entries under this category.`);
         return;
       }
-      
       const meta = getCodeMetaData();
       meta.categories = meta.categories.filter(c => c.toLowerCase() !== cat.toLowerCase());
       saveCodeMetaData(meta);
@@ -849,7 +975,6 @@
       if (!newRel || newRel.trim() === '' || newRel.trim().toLowerCase() === oldRel.toLowerCase()) return;
 
       const trimmedNew = newRel.trim();
-
       const meta = getCodeMetaData();
       meta.relations = meta.relations.map(r => r.toLowerCase() === oldRel.toLowerCase() ? trimmedNew : r);
       if (!meta.relations.includes(trimmedNew)) meta.relations.push(trimmedNew);
@@ -870,14 +995,32 @@
 
     function deleteRelation(rel, count) {
       if (count > 0) {
-        alert(`Cannot delete '${rel}': There are already ${count} guest entries with this relation. Please reassign or delete the entries first.`);
+        alert(`Cannot delete '${rel}': There are already ${count} guest entries with this relation.`);
         return;
       }
-      
       const meta = getCodeMetaData();
       meta.relations = meta.relations.filter(r => r.toLowerCase() !== rel.toLowerCase());
       saveCodeMetaData(meta);
       renderMetaManagerLists();
+    }
+
+    // Function Dropdown Custom Switchers
+    function checkCustomFunc(val) {
+      if (val === '__custom_func__') {
+        document.getElementById('funcSelectWrapper').classList.add('hidden');
+        const wrapper = document.getElementById('customFuncWrapper');
+        wrapper.classList.remove('hidden');
+        const input = document.getElementById('customFuncInput');
+        input.value = '';
+        input.focus();
+      }
+    }
+
+    function cancelCustomFunc() {
+      document.getElementById('customFuncWrapper').classList.add('hidden');
+      const selectWrapper = document.getElementById('funcSelectWrapper');
+      selectWrapper.classList.remove('hidden');
+      document.getElementById('customFuncInput').value = '';
     }
 
     function checkCustomGroup(val) {
@@ -927,12 +1070,14 @@
 
     function syncCodeScopedDropdowns() {
       const meta = getCodeMetaData();
+      const scopedFunctions = new Set(meta.functions || ['Main Reception', 'Marriage Ceremony', 'Sangeet / Mehendi', 'Haldi Ceremony', 'Engagement', 'House Warming / Pooja']);
       const scopedCategories = new Set(meta.categories);
       const scopedRelations = new Set(meta.relations);
       const allCodes = new Set();
 
       const targetFamilies = getVisibleFamilies();
       targetFamilies.forEach(f => {
+        if (f.eventFunction && f.eventFunction.trim() && !isBinaryGarbage(f.eventFunction)) scopedFunctions.add(f.eventFunction.trim());
         if (f.side && f.side.trim() && !isBinaryGarbage(f.side)) scopedCategories.add(canonicalCategory(f.side));
         if (f.relation && f.relation.trim() && !isBinaryGarbage(f.relation)) scopedRelations.add(f.relation.trim());
         if (f.code && f.code.trim()) allCodes.add(f.code.trim().toUpperCase());
@@ -951,6 +1096,34 @@
         codeFilterSelect.value = allCodes.has(currentCodeVal) ? currentCodeVal : 'All';
       }
 
+      // 1. Sync Functions in Filter & Form
+      const histFuncFilter = document.getElementById('histFuncFilter');
+      const curHistFnVal = histFuncFilter.value;
+      histFuncFilter.innerHTML = '<option value="All">All Functions</option>';
+      scopedFunctions.forEach(fn => {
+        const opt = document.createElement('option');
+        opt.value = fn;
+        opt.textContent = fn;
+        histFuncFilter.appendChild(opt);
+      });
+      histFuncFilter.value = scopedFunctions.has(curHistFnVal) ? curHistFnVal : 'All';
+
+      const formFuncSelect = document.getElementById('funcSelect');
+      const curFormFnVal = formFuncSelect.value;
+      formFuncSelect.innerHTML = '';
+      scopedFunctions.forEach(fn => {
+        const opt = document.createElement('option');
+        opt.value = fn;
+        opt.textContent = fn;
+        formFuncSelect.appendChild(opt);
+      });
+      const customFnOpt = document.createElement('option');
+      customFnOpt.value = '__custom_func__';
+      customFnOpt.textContent = '+ Add New Function...';
+      formFuncSelect.appendChild(customFnOpt);
+      if (scopedFunctions.has(curFormFnVal)) formFuncSelect.value = curFormFnVal;
+
+      // 2. Sync Categories
       const filterSelect = document.getElementById('histGroupFilter');
       const currentFilterVal = filterSelect.value;
       filterSelect.innerHTML = '<option value="All">All Categories</option>';
@@ -975,11 +1148,9 @@
       customCatOpt.value = '__custom_group__';
       customCatOpt.textContent = '+ Add Custom Category...';
       formGroupSelect.appendChild(customCatOpt);
+      if (scopedCategories.has(currentFormGroupVal)) formGroupSelect.value = currentFormGroupVal;
 
-      if (scopedCategories.has(currentFormGroupVal)) {
-        formGroupSelect.value = currentFormGroupVal;
-      }
-
+      // 3. Sync Relations
       const formRelSelect = document.getElementById('relationSelect');
       const currentFormRelVal = formRelSelect.value;
       formRelSelect.innerHTML = '<option value="">— None / Optional —</option>';
@@ -993,22 +1164,37 @@
       customRelOpt.value = '__custom_rel__';
       customRelOpt.textContent = '+ Custom...';
       formRelSelect.appendChild(customRelOpt);
-
-      if (scopedRelations.has(currentFormRelVal)) {
-        formRelSelect.value = currentFormRelVal;
-      }
+      if (scopedRelations.has(currentFormRelVal)) formRelSelect.value = currentFormRelVal;
     }
 
     async function handleFormSubmit(e) {
       e.preventDefault();
       const docId = document.getElementById('docId').value;
       
+      // Resolve Function
+      const customFuncWrapper = document.getElementById('customFuncWrapper');
+      let finalFunction = '';
+      if (!customFuncWrapper.classList.contains('hidden')) {
+        finalFunction = document.getElementById('customFuncInput').value.trim();
+        if (finalFunction) {
+          const meta = getCodeMetaData();
+          if (!meta.functions.includes(finalFunction)) {
+            meta.functions.push(finalFunction);
+            saveCodeMetaData(meta);
+          }
+        }
+      } else {
+        finalFunction = document.getElementById('funcSelect').value;
+      }
+      if (!finalFunction) finalFunction = "Main Reception";
+
+      // Resolve Category
       const customGroupWrapper = document.getElementById('customGroupWrapper');
       let finalGroup = '';
       if (!customGroupWrapper.classList.contains('hidden')) {
         finalGroup = document.getElementById('customGroupInput').value.trim();
         if (!finalGroup) {
-          alert('Please enter a custom category name.');
+          alert('Please enter a category name.');
           return;
         }
         const meta = getCodeMetaData();
@@ -1020,6 +1206,7 @@
         finalGroup = document.getElementById('groupSelect').value;
       }
 
+      // Resolve Relation
       const customRelWrapper = document.getElementById('customRelWrapper');
       let finalRelation = '';
       if (!customRelWrapper.classList.contains('hidden')) {
@@ -1038,25 +1225,30 @@
       const guestName = document.getElementById('familyName').value.trim();
       const finalSideCanonical = canonicalCategory(finalGroup);
 
+      // Duplicate Check: Function + Category + Relation + Guest Name must be unique
       const isDuplicate = families.some(f => {
         if (docId && f.id === docId) return false;
+        const sameFunc = (f.eventFunction || 'Main Reception').toLowerCase() === finalFunction.toLowerCase();
         const sameSide = canonicalCategory(f.side).toLowerCase() === finalSideCanonical.toLowerCase();
         const sameRel = (f.relation || '').trim().toLowerCase() === (finalRelation || '').trim().toLowerCase();
         const sameName = (f.name || '').trim().toLowerCase() === guestName.toLowerCase();
-        return sameSide && sameRel && sameName;
+        return sameFunc && sameSide && sameRel && sameName;
       });
 
       if (isDuplicate) {
-        alert(`An entry already exists for Category: "${finalSideCanonical}", Relation: "${finalRelation || 'None'}", and Guest Name: "${guestName}". Please update the existing record or use a unique name.`);
+        alert(`An entry already exists for Function: "${finalFunction}", Category: "${finalSideCanonical}", and Guest: "${guestName}".`);
         return;
       }
 
       const gents = parseInt(document.getElementById('gentsCount').value) || 0;
       const ladies = parseInt(document.getElementById('ladiesCount').value) || 0;
       const kids = parseInt(document.getElementById('kidsCount').value) || 0;
+      const giftAmount = parseFloat(document.getElementById('giftAmount').value) || 0;
+      const giftDescription = document.getElementById('giftDescription').value.trim();
 
       const record = {
         code: loggedCode || "A2KU",
+        eventFunction: finalFunction,
         side: finalSideCanonical,
         relation: finalRelation || '',
         name: guestName,
@@ -1066,6 +1258,8 @@
         ladies: ladies,
         kids: kids,
         kidNames: document.getElementById('kidNames').value.trim(),
+        giftAmount: giftAmount,
+        giftDescription: giftDescription,
         isBlocked: false,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       };
@@ -1133,65 +1327,75 @@
       document.getElementById('ladiesCount').value = (item.ladies !== undefined) ? item.ladies : 1;
       document.getElementById('kidsCount').value = (item.kids !== undefined) ? item.kids : 0;
       document.getElementById('kidNames').value = item.kidNames || '';
+      document.getElementById('giftAmount').value = item.giftAmount || '';
+      document.getElementById('giftDescription').value = item.giftDescription || '';
 
+      // Populate Function
+      const formFuncSelect = document.getElementById('funcSelect');
+      const targetFn = item.eventFunction || 'Main Reception';
+      let fnFound = false;
+      for (let opt of formFuncSelect.options) {
+        if (opt.value.toLowerCase() === targetFn.toLowerCase()) {
+          opt.selected = true;
+          fnFound = true;
+          break;
+        }
+      }
+      if (!fnFound) {
+        const newOpt = document.createElement('option');
+        newOpt.value = targetFn;
+        newOpt.textContent = targetFn;
+        formFuncSelect.insertBefore(newOpt, formFuncSelect.lastElementChild);
+        formFuncSelect.value = targetFn;
+      }
+      cancelCustomFunc();
+
+      // Populate Category
       const rawSide = item.side ? item.side.trim() : '';
       const sideVal = canonicalCategory(rawSide);
       const groupSelect = document.getElementById('groupSelect');
-      
       let sideFoundIndex = -1;
       for (let i = 0; i < groupSelect.options.length; i++) {
         const optVal = groupSelect.options[i].value;
         if (optVal !== '__custom_group__' && (
             optVal.toLowerCase() === sideVal.toLowerCase() ||
-            optVal.toLowerCase() === rawSide.toLowerCase() ||
-            canonicalCategory(optVal).toLowerCase() === sideVal.toLowerCase()
+            optVal.toLowerCase() === rawSide.toLowerCase()
         )) {
           sideFoundIndex = i;
           break;
         }
       }
-
       if (sideFoundIndex !== -1) {
         groupSelect.selectedIndex = sideFoundIndex;
-        cancelCustomGroup();
       } else if (sideVal) {
         const newOpt = document.createElement('option');
         newOpt.value = sideVal;
         newOpt.textContent = sideVal;
         groupSelect.insertBefore(newOpt, groupSelect.lastElementChild);
         groupSelect.value = sideVal;
-        cancelCustomGroup();
-      } else {
-        groupSelect.selectedIndex = 0;
-        cancelCustomGroup();
       }
+      cancelCustomGroup();
 
+      // Populate Relation
       const relVal = item.relation ? item.relation.trim() : '';
       const relSelect = document.getElementById('relationSelect');
-      
       let relFoundIndex = -1;
       for (let i = 0; i < relSelect.options.length; i++) {
-        const optVal = relSelect.options[i].value;
-        if (optVal.toLowerCase() === relVal.toLowerCase()) {
+        if (relSelect.options[i].value.toLowerCase() === relVal.toLowerCase()) {
           relFoundIndex = i;
           break;
         }
       }
-
       if (relFoundIndex !== -1) {
         relSelect.selectedIndex = relFoundIndex;
-        cancelCustomRelation();
       } else if (relVal) {
         const newRelOpt = document.createElement('option');
         newRelOpt.value = relVal;
         newRelOpt.textContent = relVal;
         relSelect.insertBefore(newRelOpt, relSelect.lastElementChild);
         relSelect.value = relVal;
-        cancelCustomRelation();
-      } else {
-        relSelect.selectedIndex = 0;
-        cancelCustomRelation();
       }
+      cancelCustomRelation();
 
       document.getElementById('saveBtn').textContent = 'Update Entry';
       document.getElementById('cancelBtn').classList.remove('hidden');
@@ -1212,7 +1416,10 @@
       document.getElementById('gentsCount').value = 1;
       document.getElementById('ladiesCount').value = 1;
       document.getElementById('kidsCount').value = 0;
+      document.getElementById('giftAmount').value = '';
+      document.getElementById('giftDescription').value = '';
       
+      cancelCustomFunc();
       cancelCustomGroup();
       cancelCustomRelation();
 
@@ -1232,6 +1439,7 @@
       const target = getVisibleFamilies();
       let gCount = 0, lCount = 0, kCount = 0, comingCount = 0;
       let invitedIndividualCount = 0, confirmedIndividualCount = 0;
+      let totalCash = 0, totalGifts = 0;
 
       target.forEach(f => {
         if (isBinaryGarbage(f.name) || isBinaryGarbage(f.side)) return;
@@ -1247,11 +1455,11 @@
         kCount += k;
         comingCount += coming;
 
-        if (f.invitation === 'Invited') {
-          invitedIndividualCount += totalFamilyMembers;
-        } else if (f.invitation === 'Confirmed') {
-          confirmedIndividualCount += totalFamilyMembers;
-        }
+        if (f.invitation === 'Invited') invitedIndividualCount += totalFamilyMembers;
+        else if (f.invitation === 'Confirmed') confirmedIndividualCount += totalFamilyMembers;
+
+        if (f.giftAmount) totalCash += parseFloat(f.giftAmount) || 0;
+        if (f.giftDescription && f.giftDescription.trim().length > 0) totalGifts++;
       });
 
       const totalHeadcount = gCount + lCount + kCount;
@@ -1263,6 +1471,10 @@
       document.getElementById('statGents').textContent = gCount;
       document.getElementById('statLadies').textContent = lCount;
       document.getElementById('statKids').textContent = kCount;
+      
+      document.getElementById('statTotalCash').textContent = totalCash.toLocaleString('en-IN');
+      document.getElementById('statGiftsCount').textContent = totalGifts;
+
       document.getElementById('historyBadgeCount').textContent = `${target.length} Entries`;
     }
 
@@ -1283,6 +1495,7 @@
       const search = document.getElementById('searchInput').value.toLowerCase();
       
       const codeFilter = isAdmin ? document.getElementById('histCodeFilter').value : 'All';
+      const funcFilter = document.getElementById('histFuncFilter').value;
       const groupFilter = document.getElementById('histGroupFilter').value;
       const memberFilter = document.getElementById('histMemberFilter').value;
       const rsvpFilter = document.getElementById('histRsvpFilter').value;
@@ -1291,6 +1504,8 @@
 
       const filtered = target.filter(f => {
         let matchesCode = (codeFilter === 'All') || (f.code && f.code.toUpperCase() === codeFilter);
+
+        let matchesFunc = (funcFilter === 'All') || ((f.eventFunction || 'Main Reception').toLowerCase() === funcFilter.toLowerCase());
 
         let matchesGroup = (groupFilter === 'All');
         if (!matchesGroup) {
@@ -1306,40 +1521,39 @@
           matchesMember = (f.gents > 0);
         } else if (memberFilter === 'has_ladies') {
           matchesMember = (f.ladies > 0);
+        } else if (memberFilter === 'has_gift') {
+          matchesMember = (f.giftAmount > 0) || (f.giftDescription && f.giftDescription.trim().length > 0);
         }
 
         let matchesRsvp = true;
         const coming = parseInt(f.comingCount) || 0;
-        if (rsvpFilter === 'Confirmed') {
-          matchesRsvp = (f.invitation === 'Confirmed');
-        } else if (rsvpFilter === 'Invited') {
-          matchesRsvp = (f.invitation === 'Invited');
-        } else if (rsvpFilter === 'Not Invited') {
-          matchesRsvp = (f.invitation === 'Not Invited');
-        } else if (rsvpFilter === 'Coming') {
-          matchesRsvp = (coming > 0);
-        } else if (rsvpFilter === 'Not Coming') {
-          matchesRsvp = (coming === 0);
-        }
+        if (rsvpFilter === 'Confirmed') matchesRsvp = (f.invitation === 'Confirmed');
+        else if (rsvpFilter === 'Invited') matchesRsvp = (f.invitation === 'Invited');
+        else if (rsvpFilter === 'Not Invited') matchesRsvp = (f.invitation === 'Not Invited');
+        else if (rsvpFilter === 'Coming') matchesRsvp = (coming > 0);
+        else if (rsvpFilter === 'Not Coming') matchesRsvp = (coming === 0);
 
         const matchesSearch = (f.name && f.name.toLowerCase().includes(search)) || 
                               (f.code && f.code.toLowerCase().includes(search)) || 
+                              (f.eventFunction && f.eventFunction.toLowerCase().includes(search)) || 
                               (f.side && f.side.toLowerCase().includes(search)) || 
                               (f.relation && f.relation.toLowerCase().includes(search)) || 
                               (f.place && f.place.toLowerCase().includes(search)) || 
                               (f.phone && f.phone.includes(search)) || 
-                              (f.kidNames && f.kidNames.toLowerCase().includes(search));
+                              (f.giftDescription && f.giftDescription.toLowerCase().includes(search));
 
-        return matchesCode && matchesGroup && matchesMember && matchesRsvp && matchesSearch;
+        return matchesCode && matchesFunc && matchesGroup && matchesMember && matchesRsvp && matchesSearch;
       });
 
-      let filtG = 0, filtL = 0, filtK = 0, filtC = 0;
+      let filtG = 0, filtL = 0, filtK = 0, filtC = 0, filtCash = 0, filtGiftsCount = 0;
       filtered.forEach(item => {
         if (isBinaryGarbage(item.name) || isBinaryGarbage(item.side)) return;
         filtG += item.gents || 0;
         filtL += item.ladies || 0;
         filtK += item.kids || 0;
         filtC += parseInt(item.comingCount) || 0;
+        if (item.giftAmount) filtCash += parseFloat(item.giftAmount) || 0;
+        if (item.giftDescription && item.giftDescription.trim().length > 0) filtGiftsCount++;
       });
 
       document.getElementById('filteredResultsLabel').textContent = `Showing ${filtered.length} of ${target.length} entries`;
@@ -1347,6 +1561,8 @@
       document.getElementById('filtLadies').textContent = filtL;
       document.getElementById('filtKids').textContent = filtK;
       document.getElementById('filtComing').textContent = filtC;
+      document.getElementById('filtCash').textContent = filtCash.toLocaleString('en-IN');
+      document.getElementById('filtGiftsCount').textContent = filtGiftsCount;
 
       if (filtered.length === 0) {
         document.getElementById('emptyMessage').classList.remove('hidden');
@@ -1377,15 +1593,17 @@
             <thead>
               <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase text-[10px]">
                 ${codeTh}
-                <th class="py-2 px-2.5">Category</th>
+                <th class="py-2 px-2">Function</th>
+                <th class="py-2 px-2">Category</th>
                 <th class="py-2 px-2">Relation</th>
-                <th class="py-2 px-2.5">Guest & Place</th>
+                <th class="py-2 px-2.5">Guest & Details</th>
                 <th class="py-2 px-1 text-center text-blue-700">G</th>
                 <th class="py-2 px-1 text-center text-pink-700">L</th>
                 <th class="py-2 px-1 text-center text-amber-700">K</th>
                 <th class="py-2 px-1.5 text-center font-bold text-slate-500">Total</th>
                 <th class="py-2 px-2 text-center bg-indigo-50/60 text-indigo-900 font-bold">Invitation</th>
                 <th class="py-2 px-2 text-center bg-emerald-50/60 text-emerald-900 font-bold">Coming</th>
+                <th class="py-2 px-2 text-center bg-amber-50 text-amber-900 font-bold">Gifts / Cash</th>
                 <th class="py-2 px-2 text-right">Actions</th>
               </tr>
             </thead>
@@ -1412,18 +1630,24 @@
 
         const comingStepper = `
           <div class="flex items-center justify-center gap-1">
-            <button onclick="adjustComingCount('${item.id}', -1)" class="w-5 h-5 rounded bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center text-[10px] font-black transition">
+            <button onclick="adjustComingCount('${item.id}', -1)" class="w-5 h-5 rounded bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center text-[10px] font-black">
               <i class="fa-solid fa-chevron-left text-[8px]"></i>
             </button>
-            <div class="w-9 text-center text-xs font-black py-0.5 rounded border ${
+            <div class="w-8 text-center text-xs font-black py-0.5 rounded border ${
               comingCount > 0 ? 'bg-emerald-100 text-emerald-900 border-emerald-500' : 'bg-slate-50 text-slate-400 border-slate-300'
             }">
               ${comingCount}
             </div>
-            <button onclick="adjustComingCount('${item.id}', 1)" class="w-5 h-5 rounded bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center text-[10px] font-black transition">
+            <button onclick="adjustComingCount('${item.id}', 1)" class="w-5 h-5 rounded bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center text-[10px] font-black">
               <i class="fa-solid fa-chevron-right text-[8px]"></i>
             </button>
-            <span class="text-[9px] text-slate-400 font-semibold">/${total}</span>
+          </div>
+        `;
+
+        const giftDisplay = `
+          <div class="text-[10px] text-center">
+            ${item.giftAmount ? `<span class="font-black text-emerald-800 block">₹${Number(item.giftAmount).toLocaleString('en-IN')}</span>` : ''}
+            ${item.giftDescription ? `<span class="text-slate-500 italic block truncate max-w-[110px]">${item.giftDescription}</span>` : (!item.giftAmount ? '<span class="text-slate-300">—</span>' : '')}
           </div>
         `;
 
@@ -1438,15 +1662,15 @@
         html += `
           <tr class="hover:bg-slate-50 transition ${isCorrupt ? 'bg-rose-50/50' : ''}">
             ${codeCell}
-            <td class="py-1.5 px-2.5">${getGroupBadge(item.side)}</td>
+            <td class="py-1.5 px-2 font-bold text-indigo-800 text-[11px]">${item.eventFunction || 'Main Reception'}</td>
+            <td class="py-1.5 px-2">${getGroupBadge(item.side)}</td>
             <td class="py-1.5 px-2 font-medium text-slate-700 text-xs">${item.relation || '—'}</td>
             <td class="py-1.5 px-2.5">
-              <div class="font-semibold text-slate-800 text-xs leading-tight ${isCorrupt ? 'text-rose-700 font-mono text-[10px]' : ''}">${item.name}</div>
+              <div class="font-semibold text-slate-800 text-xs leading-tight">${item.name}</div>
               <div class="text-[10px] text-slate-400 flex items-center gap-2 mt-0.5">
                 ${item.place ? `<span><i class="fa-solid fa-location-dot mr-0.5"></i>${item.place}</span>` : ''}
                 ${item.phone ? `<span><i class="fa-solid fa-phone mr-0.5"></i>${item.phone}</span>` : ''}
               </div>
-              ${item.kidNames ? `<div class="text-[10px] text-amber-700 mt-0.5"><i class="fa-solid fa-child text-[9px] mr-1"></i>${item.kidNames}</div>` : ''}
             </td>
             <td class="py-1.5 px-1 text-center text-slate-700 font-medium">${item.gents || 0}</td>
             <td class="py-1.5 px-1 text-center text-slate-700 font-medium">${item.ladies || 0}</td>
@@ -1454,6 +1678,7 @@
             <td class="py-1.5 px-1.5 text-center font-bold text-slate-600">${total}</td>
             <td class="py-1.5 px-2 text-center bg-indigo-50/20">${inviteSelect}</td>
             <td class="py-1.5 px-2 text-center bg-emerald-50/30">${comingStepper}</td>
+            <td class="py-1.5 px-2 text-center bg-amber-50/40">${giftDisplay}</td>
             <td class="py-1.5 px-2 text-right whitespace-nowrap">
               <button onclick="editEntry('${item.id}')" class="text-slate-400 hover:text-indigo-600 px-1" title="Edit"><i class="fa-solid fa-pen"></i></button>
               <button onclick="deleteEntry('${item.id}')" class="text-slate-400 hover:text-rose-600 px-1" title="Delete"><i class="fa-solid fa-trash"></i></button>
@@ -1473,38 +1698,46 @@
         const total = (item.gents || 0) + (item.ladies || 0) + (item.kids || 0);
         const status = item.invitation || 'Invited';
         const comingCount = (item.comingCount !== undefined) ? item.comingCount : 0;
-        const isCorrupt = isBinaryGarbage(item.name) || isBinaryGarbage(item.side);
 
         let statusStyle = 'bg-slate-50 text-slate-600 border-slate-300';
         if (status === 'Confirmed') statusStyle = 'bg-amber-50 text-amber-800 border-amber-300 font-bold';
         else if (status === 'Invited') statusStyle = 'bg-emerald-50 text-emerald-800 border-emerald-300';
 
         html += `
-          <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between space-y-2.5 hover:shadow transition ${isCorrupt ? 'border-rose-300 bg-rose-50/20' : ''}">
+          <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between space-y-2.5 hover:shadow transition">
             <div class="flex items-start justify-between gap-1">
               <div>
+                <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100 inline-block mb-1">
+                  🎉 ${item.eventFunction || 'Main Reception'}
+                </span>
                 <div class="flex items-center gap-1.5">
                   ${getGroupBadge(item.side)}
                   ${item.relation ? `<span class="text-[10px] font-semibold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">${item.relation}</span>` : ''}
                 </div>
-                <h4 class="font-bold text-slate-900 text-sm mt-1 leading-tight ${isCorrupt ? 'text-rose-700 font-mono text-xs break-all' : ''}">${item.name}</h4>
+                <h4 class="font-bold text-slate-900 text-sm mt-1 leading-tight">${item.name}</h4>
                 <div class="text-[11px] text-slate-400 flex items-center gap-2 mt-0.5">
                   ${item.place ? `<span><i class="fa-solid fa-location-dot mr-0.5"></i>${item.place}</span>` : ''}
                   ${item.phone ? `<span><i class="fa-solid fa-phone mr-0.5"></i>${item.phone}</span>` : ''}
                 </div>
-                ${item.kidNames ? `<div class="text-[10px] text-amber-700 mt-1"><i class="fa-solid fa-child mr-1"></i>${item.kidNames}</div>` : ''}
               </div>
               
               ${isAdmin ? `<span class="font-mono font-bold text-indigo-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 text-[10px]">${item.code || '—'}</span>` : ''}
             </div>
 
-            <div class="flex items-center justify-between text-xs bg-slate-50 p-1.5 rounded-lg border border-slate-100">
-              <span class="text-blue-700 font-bold">G: ${item.gents || 0}</span>
-              <span class="text-pink-700 font-bold">L: ${item.ladies || 0}</span>
-              <span class="text-amber-700 font-bold">K: ${item.kids || 0}</span>
-              <span class="text-slate-800 font-black">Tot: ${total}</span>
+            <!-- Headcount & Gifts Summary Strip -->
+            <div class="grid grid-cols-2 gap-1 text-xs">
+              <div class="bg-slate-50 p-1.5 rounded-lg border border-slate-100 flex items-center justify-around font-bold">
+                <span class="text-blue-700">G:${item.gents || 0}</span>
+                <span class="text-pink-700">L:${item.ladies || 0}</span>
+                <span class="text-amber-700">K:${item.kids || 0}</span>
+              </div>
+              <div class="bg-emerald-50/70 p-1.5 rounded-lg border border-emerald-200 text-center font-bold text-emerald-900 truncate">
+                ${item.giftAmount ? `₹${Number(item.giftAmount).toLocaleString('en-IN')}` : ''}
+                ${item.giftDescription ? `<span class="text-[10px] text-emerald-700 block truncate">${item.giftDescription}</span>` : (!item.giftAmount ? '<span class="text-slate-400 font-normal">No gift logged</span>' : '')}
+              </div>
             </div>
 
+            <!-- Controls -->
             <div class="flex items-center justify-between pt-1 border-t border-slate-100">
               <select onchange="updateInvitation('${item.id}', this.value)" class="text-[10px] font-semibold px-1.5 py-1 rounded border focus:outline-none ${statusStyle}">
                 <option value="Not Invited" ${status === 'Not Invited' ? 'selected' : ''}>⏳ Pending</option>
@@ -1516,7 +1749,7 @@
                 <button onclick="adjustComingCount('${item.id}', -1)" class="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center text-xs font-black">
                   <i class="fa-solid fa-chevron-left text-[9px]"></i>
                 </button>
-                <span class="w-8 text-center text-xs font-black py-0.5 rounded border ${comingCount > 0 ? 'bg-emerald-100 text-emerald-900 border-emerald-500' : 'bg-slate-50 text-slate-400'}">
+                <span class="w-7 text-center text-xs font-black py-0.5 rounded border ${comingCount > 0 ? 'bg-emerald-100 text-emerald-900 border-emerald-500' : 'bg-slate-50 text-slate-400'}">
                   ${comingCount}
                 </span>
                 <button onclick="adjustComingCount('${item.id}', 1)" class="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center text-xs font-black">
@@ -1544,23 +1777,24 @@
         const total = (item.gents || 0) + (item.ladies || 0) + (item.kids || 0);
         const status = item.invitation || 'Invited';
         const comingCount = (item.comingCount !== undefined) ? item.comingCount : 0;
-        const isCorrupt = isBinaryGarbage(item.name) || isBinaryGarbage(item.side);
 
         html += `
-          <div class="bg-white p-2.5 sm:p-3 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-slate-50 transition ${isCorrupt ? 'border-rose-300 bg-rose-50/20' : ''}">
+          <div class="bg-white p-2.5 sm:p-3 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-slate-50 transition">
             <div class="flex items-center gap-3">
               ${isAdmin ? `<span class="font-mono font-bold text-indigo-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 text-[10px] shrink-0">${item.code || '—'}</span>` : ''}
               
               <div>
-                <div class="flex items-center gap-1.5">
-                  <span class="font-bold text-slate-900 text-xs sm:text-sm ${isCorrupt ? 'text-rose-700 font-mono text-[11px]' : ''}">${item.name}</span>
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span class="text-[10px] font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100">${item.eventFunction || 'Main Reception'}</span>
+                  <span class="font-bold text-slate-900 text-xs sm:text-sm">${item.name}</span>
                   ${getGroupBadge(item.side)}
                   ${item.relation ? `<span class="text-[10px] text-slate-500 font-medium">(${item.relation})</span>` : ''}
                 </div>
                 <div class="text-[10px] text-slate-400 flex items-center gap-2 mt-0.5">
                   ${item.place ? `<span><i class="fa-solid fa-location-dot mr-0.5"></i>${item.place}</span>` : ''}
                   ${item.phone ? `<span><i class="fa-solid fa-phone mr-0.5"></i>${item.phone}</span>` : ''}
-                  ${item.kidNames ? `<span class="text-amber-700"><i class="fa-solid fa-child mr-0.5"></i>${item.kidNames}</span>` : ''}
+                  ${item.giftAmount ? `<span class="text-emerald-700 font-bold"><i class="fa-solid fa-indian-rupee-sign mr-0.5"></i>${Number(item.giftAmount).toLocaleString('en-IN')}</span>` : ''}
+                  ${item.giftDescription ? `<span class="text-emerald-800 italic">🎁 ${item.giftDescription}</span>` : ''}
                 </div>
               </div>
             </div>
@@ -1611,8 +1845,9 @@
         return;
       }
 
-      const headers = ['Category', 'Relation', 'Guest Name', 'Place', 'Phone', 'Gents', 'Ladies', 'Kids', 'Kid Names', 'Total Invited', 'Invitation Status', 'Coming Count', 'Access Code'];
+      const headers = ['Function', 'Category', 'Relation', 'Guest Name', 'Place', 'Phone', 'Gents', 'Ladies', 'Kids', 'Total Invited', 'Invitation Status', 'Coming Count', 'Gift Amount', 'Gift Description', 'Access Code'];
       const dataRows = target.map(f => [
+        f.eventFunction || 'Main Reception',
         canonicalCategory(f.side) || '',
         f.relation || '',
         f.name || '',
@@ -1621,10 +1856,11 @@
         f.gents || 0,
         f.ladies || 0,
         f.kids || 0,
-        f.kidNames || '',
         (f.gents || 0) + (f.ladies || 0) + (f.kids || 0),
         f.invitation || 'Invited',
         f.comingCount || 0,
+        f.giftAmount || 0,
+        f.giftDescription || '',
         f.code || ''
       ]);
 
@@ -1633,8 +1869,8 @@
       if (format === 'numbers') {
         const ws = XLSX.utils.aoa_to_sheet([headers, ...dataRows]);
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Guests");
-        XLSX.writeFile(wb, `Guest_Headcount_${dateStr}.xlsx`);
+        XLSX.utils.book_append_sheet(wb, ws, "Guest_RSVP_Gifts");
+        XLSX.writeFile(wb, `Guest_Headcount_Gifts_${dateStr}.xlsx`);
       } else {
         const csvRows = dataRows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(','));
         const csvString = '\uFEFF' + [headers.join(','), ...csvRows].join('\r\n');
@@ -1642,16 +1878,12 @@
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.setAttribute('href', url);
-        link.setAttribute('download', `Guest_Headcount_MS_Excel_${dateStr}.csv`);
+        link.setAttribute('download', `Guest_Headcount_Gifts_MS_Excel_${dateStr}.csv`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
       }
-    }
-
-    function exportCSV() {
-      exportSpreadsheet('csv');
     }
 
     async function handleSpreadsheetImport(event) {
@@ -1671,7 +1903,7 @@
               parsedRows = parseTextCSV(csvText);
             }
           } catch (zipErr) {
-            console.warn('Zip stream check on .numbers:', zipErr);
+            console.warn('Zip stream parse on .numbers:', zipErr);
           }
         }
 
@@ -1689,13 +1921,14 @@
         }
 
         if (!parsedRows || parsedRows.length <= 1) {
-          alert('Could not extract readable records. If using Apple Numbers on Mac/iPhone, you can also export as CSV (File → Export To → CSV).');
+          alert('Could not extract readable records from spreadsheet.');
           return;
         }
 
         const headers = parsedRows[0].map(h => String(h || '').trim().toLowerCase());
         const getIdx = (candidates) => headers.findIndex(h => candidates.some(c => h.includes(c)));
 
+        const funcIdx = getIdx(['function', 'event']);
         const catIdx = getIdx(['category', 'group', 'side']);
         const relIdx = getIdx(['relation']);
         const nameIdx = getIdx(['name', 'guest', 'head']);
@@ -1704,9 +1937,10 @@
         const gentsIdx = getIdx(['gent', 'male', 'man', 'males']);
         const ladiesIdx = getIdx(['lad', 'female', 'women', 'females']);
         const kidsIdx = getIdx(['kid', 'child', 'children']);
-        const kidNamesIdx = getIdx(['kid name', 'children name']);
         const statusIdx = getIdx(['invitation', 'status', 'rsvp']);
         const comingIdx = getIdx(['coming', 'attending', 'confirmed count']);
+        const giftAmtIdx = getIdx(['gift amount', 'amount', 'cash', 'gift cash', 'rupee']);
+        const giftDescIdx = getIdx(['gift item', 'gift description', 'gift name', 'gift']);
         const codeIdx = getIdx(['code', 'passcode']);
 
         const snapshot = await collectionRef.get();
@@ -1718,26 +1952,23 @@
         const batch = db.batch();
         let overwrittenCount = 0;
         let newInsertedCount = 0;
-        let skippedCorruptCount = 0;
 
         for (let i = 1; i < parsedRows.length; i++) {
           const row = parsedRows[i];
           if (!row || row.length === 0) continue;
 
-          const nameVal = String(nameIdx !== -1 && row[nameIdx] !== undefined ? row[nameIdx] : (row[2] || '')).trim();
-          const sideVal = String(catIdx !== -1 && row[catIdx] !== undefined ? row[catIdx] : (row[0] || 'General')).trim();
-          const relVal = String(relIdx !== -1 && row[relIdx] !== undefined ? row[relIdx] : (row[1] || '')).trim();
+          const nameVal = String(nameIdx !== -1 && row[nameIdx] !== undefined ? row[nameIdx] : (row[3] || '')).trim();
+          const sideVal = String(catIdx !== -1 && row[catIdx] !== undefined ? row[catIdx] : (row[1] || 'General')).trim();
+          const relVal = String(relIdx !== -1 && row[relIdx] !== undefined ? row[relIdx] : (row[2] || '')).trim();
+          const fnVal = String(funcIdx !== -1 && row[funcIdx] !== undefined ? row[funcIdx] : (row[0] || 'Main Reception')).trim();
 
-          if (!nameVal || isBinaryGarbage(nameVal) || isBinaryGarbage(sideVal) || isBinaryGarbage(relVal)) {
-            skippedCorruptCount++;
-            continue;
-          }
+          if (!nameVal || isBinaryGarbage(nameVal) || isBinaryGarbage(sideVal) || isBinaryGarbage(relVal)) continue;
 
           const targetCode = String(codeIdx !== -1 && row[codeIdx] !== undefined && row[codeIdx] !== '' ? row[codeIdx] : (loggedCode || 'A2KU')).trim().toUpperCase();
 
-          const g = parseInt(gentsIdx !== -1 ? row[gentsIdx] : row[5]) || 0;
-          const l = parseInt(ladiesIdx !== -1 ? row[ladiesIdx] : row[6]) || 0;
-          const k = parseInt(kidsIdx !== -1 ? row[kidsIdx] : row[7]) || 0;
+          const g = parseInt(gentsIdx !== -1 ? row[gentsIdx] : row[6]) || 0;
+          const l = parseInt(ladiesIdx !== -1 ? row[ladiesIdx] : row[7]) || 0;
+          const k = parseInt(kidsIdx !== -1 ? row[kidsIdx] : row[8]) || 0;
           const totalHead = g + l + k;
 
           const rawStatus = String(statusIdx !== -1 && row[statusIdx] !== undefined ? row[statusIdx] : (row[10] || 'Invited')).trim();
@@ -1746,33 +1977,38 @@
           else if (rawStatus.toLowerCase().includes('not') || rawStatus.toLowerCase().includes('pend')) parsedStatus = 'Not Invited';
 
           let parsedComing = parseInt(comingIdx !== -1 ? row[comingIdx] : row[11]);
-          if (isNaN(parsedComing)) {
-            parsedComing = (parsedStatus === 'Not Invited') ? 0 : totalHead;
-          }
+          if (isNaN(parsedComing)) parsedComing = (parsedStatus === 'Not Invited') ? 0 : totalHead;
+
+          const giftAmt = parseFloat(giftAmtIdx !== -1 ? row[giftAmtIdx] : row[12]) || 0;
+          const giftDesc = String(giftDescIdx !== -1 && row[giftDescIdx] !== undefined ? row[giftDescIdx] : (row[13] || '')).trim();
 
           const record = {
+            code: targetCode,
+            eventFunction: fnVal || 'Main Reception',
             side: canonicalCategory(sideVal),
             relation: relVal,
             name: nameVal,
-            place: String(placeIdx !== -1 && row[placeIdx] !== undefined ? row[placeIdx] : (row[3] || '')).trim(),
-            phone: String(phoneIdx !== -1 && row[phoneIdx] !== undefined ? row[phoneIdx] : (row[4] || '')).trim(),
+            place: String(placeIdx !== -1 && row[placeIdx] !== undefined ? row[placeIdx] : (row[4] || '')).trim(),
+            phone: String(phoneIdx !== -1 && row[phoneIdx] !== undefined ? row[phoneIdx] : (row[5] || '')).trim(),
             gents: g,
             ladies: l,
             kids: k,
-            kidNames: String(kidNamesIdx !== -1 && row[kidNamesIdx] !== undefined ? row[kidNamesIdx] : (row[8] || '')).trim(),
+            kidNames: '',
             invitation: parsedStatus,
             comingCount: parsedComing,
-            code: targetCode,
+            giftAmount: giftAmt,
+            giftDescription: giftDesc,
             isBlocked: false,
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
           };
 
           const matchIndex = existingDocs.findIndex(f => {
             const sameCode = (f.code || '').toUpperCase() === targetCode;
+            const sameFn = (f.eventFunction || 'Main Reception').toLowerCase() === (fnVal || 'Main Reception').toLowerCase();
             const sameSide = canonicalCategory(f.side).toLowerCase() === canonicalCategory(sideVal).toLowerCase();
             const sameRel = (f.relation || '').trim().toLowerCase() === relVal.toLowerCase();
             const sameName = (f.name || '').trim().toLowerCase() === nameVal.toLowerCase();
-            return sameCode && sameSide && sameRel && sameName;
+            return sameCode && sameFn && sameSide && sameRel && sameName;
           });
 
           if (matchIndex !== -1) {
@@ -1789,13 +2025,13 @@
 
         if (overwrittenCount > 0 || newInsertedCount > 0) {
           await batch.commit();
-          alert(`Import complete in Overwrite Mode!\n• Updated/Overwritten: ${overwrittenCount}\n• Newly Added: ${newInsertedCount}${skippedCorruptCount > 0 ? `\n• Blocked & skipped ${skippedCorruptCount} unreadable row(s).` : ''}`);
+          alert(`Import complete in Overwrite Mode!\n• Updated: ${overwrittenCount}\n• Newly Added: ${newInsertedCount}`);
         } else {
-          alert('No valid readable rows were parsed. On Mac/iOS Numbers, please choose File → Export To → CSV.');
+          alert('No valid readable rows were parsed.');
         }
       } catch (err) {
         console.error(err);
-        alert('Error processing spreadsheet file. Please verify file formatting.');
+        alert('Error processing file.');
       } finally {
         event.target.value = '';
       }
@@ -1832,9 +2068,7 @@
         } else if ((c === '\r' || c === '\n') && !inQuotes) {
           if (c === '\r' && next === '\n') i++;
           row.push(cell.trim());
-          if (row.some(field => field.length > 0)) {
-            rows.push(row);
-          }
+          if (row.some(field => field.length > 0)) rows.push(row);
           row = [];
           cell = '';
         } else {
@@ -1843,9 +2077,7 @@
       }
       if (cell.length > 0 || row.length > 0) {
         row.push(cell.trim());
-        if (row.some(field => field.length > 0)) {
-          rows.push(row);
-        }
+        if (row.some(field => field.length > 0)) rows.push(row);
       }
       return rows;
     }
