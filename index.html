@@ -130,64 +130,76 @@
   <!-- Main App Screen -->
   <div id="appScreen" class="hidden max-w-6xl mx-auto space-y-2.5">
     
-    <!-- Top Header Bar -->
-    <header class="bg-white p-2.5 sm:p-3 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between gap-2 relative">
-      <div class="flex items-center gap-2">
-        <div class="w-7 h-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shrink-0">
-          <i class="fa-solid fa-users"></i>
+    <!-- Top Header Bar with Top Function Filter directly underneath -->
+    <header class="bg-white p-2.5 sm:p-3 rounded-xl border border-slate-200 shadow-sm space-y-2 relative">
+      <div class="flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shrink-0">
+            <i class="fa-solid fa-users"></i>
+          </div>
+          <div>
+            <h1 class="text-xs sm:text-sm font-bold text-slate-900 leading-tight">Guest Headcount, Function & Gift Tracker</h1>
+            <span id="roleBadge" class="text-[10px] font-bold text-indigo-600">Guest Mode</span>
+          </div>
         </div>
-        <div>
-          <h1 class="text-xs sm:text-sm font-bold text-slate-900 leading-tight">Guest Headcount, Function & Gift Tracker</h1>
-          <span id="roleBadge" class="text-[10px] font-bold text-indigo-600">Guest Mode</span>
+
+        <!-- Top Right Action Menu -->
+        <div class="relative">
+          <button onclick="toggleActionMenu(event)" id="actionMenuBtn" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition border border-slate-200">
+            <i class="fa-solid fa-ellipsis-vertical text-sm"></i>
+          </button>
+
+          <div id="actionMenuDropdown" class="hidden absolute right-0 mt-2 w-60 bg-white rounded-xl shadow-xl border border-slate-200 py-1 z-40">
+            <div class="px-3 py-2 border-b border-slate-100 bg-amber-50/60 flex items-center justify-between text-xs font-bold text-amber-900">
+              <span class="flex items-center gap-1.5">
+                <i class="fa-solid fa-key text-[10px] text-amber-600"></i> Code:
+              </span>
+              <span id="menuCodeBadge" class="font-mono text-indigo-700 bg-white px-1.5 py-0.5 rounded border border-amber-200">—</span>
+            </div>
+
+            <button onclick="closeActionMenu(); openMetaManager();" class="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-amber-50 hover:text-amber-800 flex items-center gap-2 transition">
+              <i class="fa-solid fa-pen-ruler text-amber-600 w-4"></i> Manage Functions, Categories & Relations
+            </button>
+
+            <button onclick="closeActionMenu(); purgeCorruptedEntries();" class="w-full text-left px-3 py-2 text-xs font-bold text-rose-700 hover:bg-rose-50 flex items-center gap-2 transition">
+              <i class="fa-solid fa-broom text-rose-600 w-4"></i> Clean Corrupted Data (Auto-Fix)
+            </button>
+
+            <div class="border-t border-slate-100 my-1"></div>
+
+            <button onclick="closeActionMenu(); exportSpreadsheet('csv');" class="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 flex items-center gap-2 transition">
+              <i class="fa-solid fa-file-csv text-emerald-600 w-4"></i> Export MS Excel / Standard CSV
+            </button>
+
+            <button onclick="closeActionMenu(); exportSpreadsheet('numbers');" class="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-teal-50 hover:text-teal-700 flex items-center gap-2 transition">
+              <i class="fa-solid fa-table-cells text-teal-600 w-4"></i> Export Mac / iOS Numbers (.numbers)
+            </button>
+
+            <button onclick="triggerImport();" class="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-sky-50 hover:text-sky-700 flex items-center gap-2 transition">
+              <i class="fa-solid fa-file-arrow-up text-sky-600 w-4"></i> Import (Numbers / MS CSV)
+            </button>
+
+            <button onclick="closeActionMenu(); window.print();" class="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-2 transition">
+              <i class="fa-solid fa-print text-slate-600 w-4"></i> Print Report
+            </button>
+
+            <div class="border-t border-slate-100 my-1"></div>
+
+            <button onclick="closeActionMenu(); logoutSession();" class="w-full text-left px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 flex items-center gap-2 transition">
+              <i class="fa-solid fa-right-from-bracket w-4"></i> Logout
+            </button>
+          </div>
         </div>
       </div>
 
-      <!-- Action Menu -->
-      <div class="relative">
-        <button onclick="toggleActionMenu(event)" id="actionMenuBtn" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition border border-slate-200">
-          <i class="fa-solid fa-ellipsis-vertical text-sm"></i>
-        </button>
-
-        <div id="actionMenuDropdown" class="hidden absolute right-0 mt-2 w-60 bg-white rounded-xl shadow-xl border border-slate-200 py-1 z-40">
-          <div class="px-3 py-2 border-b border-slate-100 bg-amber-50/60 flex items-center justify-between text-xs font-bold text-amber-900">
-            <span class="flex items-center gap-1.5">
-              <i class="fa-solid fa-key text-[10px] text-amber-600"></i> Code:
-            </span>
-            <span id="menuCodeBadge" class="font-mono text-indigo-700 bg-white px-1.5 py-0.5 rounded border border-amber-200">—</span>
-          </div>
-
-          <button onclick="closeActionMenu(); openMetaManager();" class="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-amber-50 hover:text-amber-800 flex items-center gap-2 transition">
-            <i class="fa-solid fa-pen-ruler text-amber-600 w-4"></i> Manage Functions, Categories & Relations
-          </button>
-
-          <button onclick="closeActionMenu(); purgeCorruptedEntries();" class="w-full text-left px-3 py-2 text-xs font-bold text-rose-700 hover:bg-rose-50 flex items-center gap-2 transition">
-            <i class="fa-solid fa-broom text-rose-600 w-4"></i> Clean Corrupted Data (Auto-Fix)
-          </button>
-
-          <div class="border-t border-slate-100 my-1"></div>
-
-          <button onclick="closeActionMenu(); exportSpreadsheet('csv');" class="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 flex items-center gap-2 transition">
-            <i class="fa-solid fa-file-csv text-emerald-600 w-4"></i> Export MS Excel / Standard CSV
-          </button>
-
-          <button onclick="closeActionMenu(); exportSpreadsheet('numbers');" class="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-teal-50 hover:text-teal-700 flex items-center gap-2 transition">
-            <i class="fa-solid fa-table-cells text-teal-600 w-4"></i> Export Mac / iOS Numbers (.numbers)
-          </button>
-
-          <button onclick="triggerImport();" class="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-sky-50 hover:text-sky-700 flex items-center gap-2 transition">
-            <i class="fa-solid fa-file-arrow-up text-sky-600 w-4"></i> Import (Numbers / MS CSV)
-          </button>
-
-          <button onclick="closeActionMenu(); window.print();" class="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-2 transition">
-            <i class="fa-solid fa-print text-slate-600 w-4"></i> Print Report
-          </button>
-
-          <div class="border-t border-slate-100 my-1"></div>
-
-          <button onclick="closeActionMenu(); logoutSession();" class="w-full text-left px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 flex items-center gap-2 transition">
-            <i class="fa-solid fa-right-from-bracket w-4"></i> Logout
-          </button>
-        </div>
+      <!-- PRIMARY TOP FUNCTION FILTER (Drives Dashboard, Form & Showing Entries) -->
+      <div class="flex items-center gap-2 pt-1 border-t border-slate-100">
+        <label class="text-[11px] font-black uppercase tracking-wider text-indigo-700 shrink-0 flex items-center gap-1">
+          <i class="fa-solid fa-calendar-check text-indigo-600 text-xs"></i> Select Function:
+        </label>
+        <select id="topFunctionFilter" onchange="onTopFunctionChange(this.value)" class="w-full bg-indigo-50/80 border border-indigo-300 text-xs font-bold text-indigo-950 px-2.5 py-1.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300 transition cursor-pointer shadow-2xs">
+          <option value="All">All Functions (Combined Overview)</option>
+        </select>
       </div>
     </header>
 
@@ -196,7 +208,7 @@
       <!-- Chip 1: Headcount Ratio -->
       <div class="bg-indigo-900 text-white p-2.5 rounded-xl shadow-sm flex items-center justify-between">
         <div>
-          <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-200 block">Invited / Confirmed / Total Count</span>
+          <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-200 block" id="chipTitleHeadcount">Invited / Confirmed / Total Count</span>
           <div class="flex items-baseline gap-1.5 mt-1">
             <span class="text-base font-bold text-indigo-200"><span id="statInvited" class="font-black text-white">0</span> <span class="text-[9px] text-indigo-300">Inv</span></span>
             <span class="text-indigo-400 font-light">/</span>
@@ -234,7 +246,7 @@
       </div>
     </div>
 
-    <!-- 1. Collapsible Entry Form Card -->
+    <!-- 1. Collapsible Entry Form Card (Compact Mobile Side-by-Side Grid Layout) -->
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
       <button type="button" onclick="toggleAccordion('entryContainer', 'entryChevron', 'entryActionText')" class="w-full flex items-center justify-between px-3 py-2.5 bg-slate-50 hover:bg-slate-100 border-b border-slate-200 transition text-left">
         <div class="flex items-center gap-2">
@@ -248,65 +260,66 @@
         <form id="familyForm" onsubmit="handleFormSubmit(event)" class="space-y-2">
           <input type="hidden" id="docId" value="" />
           
-          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-1.5">
+          <!-- Compact Grid: 2 Columns on Mobile, 6 Columns on Desktop -->
+          <div class="grid grid-cols-2 md:grid-cols-12 gap-1.5">
             <!-- Function Parameter -->
-            <div class="md:col-span-2">
-              <label class="block text-[10px] font-bold uppercase text-indigo-700 mb-0.5">Function / Event *</label>
+            <div class="col-span-1 md:col-span-2">
+              <label class="block text-[10px] font-bold uppercase text-indigo-700 mb-0.5">Function *</label>
               <div id="funcSelectWrapper">
                 <select id="funcSelect" onchange="checkCustomFunc(this.value)" class="w-full bg-indigo-50/50 border border-indigo-200 rounded-lg px-2 py-1.5 text-xs font-semibold text-indigo-900 focus:outline-none focus:border-indigo-500"></select>
               </div>
               <div id="customFuncWrapper" class="hidden flex gap-1">
-                <input type="text" id="customFuncInput" placeholder="New Function..." class="w-full bg-white border border-indigo-500 rounded-lg px-2 py-1.5 text-xs font-semibold focus:outline-none" />
-                <button type="button" onclick="cancelCustomFunc()" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-600 rounded-lg text-xs">✕</button>
+                <input type="text" id="customFuncInput" placeholder="New Func..." class="w-full bg-white border border-indigo-500 rounded-lg px-1.5 py-1 text-xs font-semibold focus:outline-none" />
+                <button type="button" onclick="cancelCustomFunc()" class="px-1.5 py-1 bg-slate-200 hover:bg-slate-300 text-slate-600 rounded-lg text-xs">✕</button>
               </div>
             </div>
 
             <!-- Category / Group -->
-            <div class="md:col-span-2">
+            <div class="col-span-1 md:col-span-2">
               <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Category *</label>
               <div id="groupSelectWrapper">
                 <select id="groupSelect" onchange="checkCustomGroup(this.value)" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs font-semibold text-slate-700 focus:outline-none focus:border-indigo-500"></select>
               </div>
               <div id="customGroupWrapper" class="hidden flex gap-1">
-                <input type="text" id="customGroupInput" placeholder="New Category..." class="w-full bg-white border border-indigo-500 rounded-lg px-2 py-1.5 text-xs font-semibold focus:outline-none" />
-                <button type="button" onclick="cancelCustomGroup()" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-600 rounded-lg text-xs">✕</button>
+                <input type="text" id="customGroupInput" placeholder="New Cat..." class="w-full bg-white border border-indigo-500 rounded-lg px-1.5 py-1 text-xs font-semibold focus:outline-none" />
+                <button type="button" onclick="cancelCustomGroup()" class="px-1.5 py-1 bg-slate-200 hover:bg-slate-300 text-slate-600 rounded-lg text-xs">✕</button>
               </div>
             </div>
 
             <!-- Relation -->
-            <div class="md:col-span-2">
-              <label class="block text-[10px] font-bold uppercase text-slate-400 mb-0.5">Relation (Optional)</label>
+            <div class="col-span-1 md:col-span-2">
+              <label class="block text-[10px] font-bold uppercase text-slate-400 mb-0.5">Relation</label>
               <div id="relationSelectWrapper">
                 <select id="relationSelect" onchange="checkCustomRelation(this.value)" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs font-semibold text-slate-700 focus:outline-none focus:border-indigo-500"></select>
               </div>
               <div id="customRelWrapper" class="hidden flex gap-1">
-                <input type="text" id="customRelationInput" placeholder="New Relation..." class="w-full bg-white border border-indigo-500 rounded-lg px-2 py-1.5 text-xs font-semibold focus:outline-none" />
-                <button type="button" onclick="cancelCustomRelation()" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-600 rounded-lg text-xs">✕</button>
+                <input type="text" id="customRelationInput" placeholder="New Rel..." class="w-full bg-white border border-indigo-500 rounded-lg px-1.5 py-1 text-xs font-semibold focus:outline-none" />
+                <button type="button" onclick="cancelCustomRelation()" class="px-1.5 py-1 bg-slate-200 hover:bg-slate-300 text-slate-600 rounded-lg text-xs">✕</button>
               </div>
             </div>
 
             <!-- Family / Guest Name -->
-            <div class="md:col-span-2">
-              <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Guest / Head Name *</label>
-              <input type="text" id="familyName" required placeholder="e.g. Ramesh & Family" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-indigo-500" />
+            <div class="col-span-1 md:col-span-2">
+              <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Guest / Head *</label>
+              <input type="text" id="familyName" required placeholder="e.g. Ramesh & Fam" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-indigo-500" />
             </div>
 
             <!-- Place -->
-            <div class="md:col-span-2">
+            <div class="col-span-1 md:col-span-2">
               <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Place</label>
               <input type="text" id="familyPlace" placeholder="e.g. Hyderabad" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-indigo-500" />
             </div>
 
             <!-- Phone -->
-            <div class="md:col-span-2">
+            <div class="col-span-1 md:col-span-2">
               <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Phone Number</label>
               <input type="tel" id="familyPhone" placeholder="Mobile Number" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-indigo-500" />
             </div>
           </div>
 
-          <!-- Row 2: Headcount Steppers + Gift Amounts & Names -->
-          <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-12 gap-1.5 items-end">
-            <!-- Gents Count Stepper -->
+          <!-- Stepper Headcount Row & Gift Cash/Item Grid (Side by Side on Mobile) -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-12 gap-1.5 items-end pt-0.5">
+            <!-- Gents Stepper -->
             <div class="col-span-1 md:col-span-2">
               <label class="block text-[10px] font-bold text-blue-700 mb-0.5 text-center">Gents</label>
               <div class="flex items-center justify-center gap-1 bg-slate-50 border border-slate-300 rounded-lg p-0.5">
@@ -320,7 +333,7 @@
               </div>
             </div>
 
-            <!-- Ladies Count Stepper -->
+            <!-- Ladies Stepper -->
             <div class="col-span-1 md:col-span-2">
               <label class="block text-[10px] font-bold text-pink-700 mb-0.5 text-center">Ladies</label>
               <div class="flex items-center justify-center gap-1 bg-slate-50 border border-slate-300 rounded-lg p-0.5">
@@ -334,7 +347,7 @@
               </div>
             </div>
 
-            <!-- Kids Count Stepper -->
+            <!-- Kids Stepper -->
             <div class="col-span-1 md:col-span-2">
               <label class="block text-[10px] font-bold text-amber-700 mb-0.5 text-center">Kids</label>
               <div class="flex items-center justify-center gap-1 bg-slate-50 border border-slate-300 rounded-lg p-0.5">
@@ -348,23 +361,24 @@
               </div>
             </div>
 
-            <!-- Gift / Cash Amount (₹) -->
+            <!-- Gift Cash (₹) -->
             <div class="col-span-1 md:col-span-2">
               <label class="block text-[10px] font-bold text-emerald-700 mb-0.5 text-center">Gift Cash (₹)</label>
               <input type="number" id="giftAmount" min="0" step="100" placeholder="e.g. 1116" class="w-full text-center bg-emerald-50/50 border border-emerald-300 rounded-lg py-1.5 text-xs font-bold text-emerald-900 focus:outline-none focus:border-emerald-500" />
             </div>
 
-            <!-- Gift Item Name / Description -->
-            <div class="col-span-2 md:col-span-2">
-              <label class="block text-[10px] font-bold text-emerald-700 mb-0.5">Gift Item / Names</label>
-              <input type="text" id="giftDescription" placeholder="e.g. Gold Ring, Silver Bowl" class="w-full bg-emerald-50/50 border border-emerald-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-emerald-500" />
+            <!-- Gift Description -->
+            <div class="col-span-1 md:col-span-2">
+              <label class="block text-[10px] font-bold text-emerald-700 mb-0.5">Gift Item</label>
+              <input type="text" id="giftDescription" placeholder="e.g. Gold Ring" class="w-full bg-emerald-50/50 border border-emerald-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-emerald-500" />
             </div>
 
-            <div class="col-span-2 md:col-span-2 flex gap-1 pt-1 md:pt-0">
+            <!-- Action Buttons -->
+            <div class="col-span-1 md:col-span-2 flex gap-1 pt-1 md:pt-0">
               <button type="submit" id="saveBtn" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2 rounded-lg transition shadow-sm">
                 Save Entry
               </button>
-              <button type="button" id="cancelBtn" onclick="resetForm()" class="hidden px-3 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold py-2 rounded-lg transition">
+              <button type="button" id="cancelBtn" onclick="resetForm()" class="hidden px-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold py-2 rounded-lg transition">
                 ✕
               </button>
             </div>
@@ -373,50 +387,44 @@
       </div>
     </div>
 
-    <!-- 2. Collapsible Filters Panel with Relation Type Filter -->
+    <!-- 2. Collapsible Filters Panel (Side by Side 2-Column Grid on Mobile for Maximum Compactness) -->
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
       <button type="button" onclick="toggleAccordion('filterContainer', 'filterChevron', 'filterActionText')" class="w-full flex items-center justify-between px-3 py-2.5 bg-slate-50 hover:bg-slate-100 border-b border-slate-200 transition text-left">
         <div class="flex items-center gap-2">
           <i id="filterChevron" class="fa-solid fa-chevron-right text-xs text-indigo-600 transition-transform duration-200"></i>
-          <span class="text-xs font-bold text-slate-800">Filter & Search Controls</span>
+          <span class="text-xs font-bold text-slate-800">Advanced Filter & Search Controls</span>
         </div>
         <span id="filterActionText" class="text-[11px] font-semibold text-indigo-600">Tap to Expand</span>
       </button>
 
       <div id="filterContainer" class="hidden p-2.5 sm:p-3 space-y-2">
-        <div class="bg-slate-50 p-2 sm:p-2.5 rounded-lg border border-slate-200 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-2">
+        <!-- Compact 2-Column Mobile Grid for side-by-side controls -->
+        <div class="bg-slate-50 p-2 sm:p-2.5 rounded-lg border border-slate-200 grid grid-cols-2 md:grid-cols-5 gap-1.5">
           
-          <div id="adminCodeFilterCol" class="hidden">
+          <div id="adminCodeFilterCol" class="hidden col-span-1">
             <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Filter Code:</label>
             <select id="histCodeFilter" onchange="renderFilteredHistory()" class="w-full bg-white border border-slate-300 text-xs font-semibold text-slate-700 px-2 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500">
               <option value="All">All Codes</option>
             </select>
           </div>
 
-          <div>
-            <label class="block text-[10px] font-bold uppercase text-indigo-700 mb-0.5">Function Filter:</label>
-            <select id="histFuncFilter" onchange="renderFilteredHistory()" class="w-full bg-white border border-slate-300 text-xs font-semibold text-slate-700 px-2 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500">
-              <option value="All">All Functions</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Category Filter:</label>
+          <div class="col-span-1">
+            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Category:</label>
             <select id="histGroupFilter" onchange="renderFilteredHistory()" class="w-full bg-white border border-slate-300 text-xs font-semibold text-slate-700 px-2 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500">
               <option value="All">All Categories</option>
             </select>
           </div>
 
-          <!-- Relation Type Filter (Updated in place of Member Type) -->
-          <div>
+          <!-- Relation Type Filter -->
+          <div class="col-span-1">
             <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Relation Type:</label>
             <select id="histRelationFilter" onchange="renderFilteredHistory()" class="w-full bg-white border border-slate-300 text-xs font-semibold text-slate-700 px-2 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500">
               <option value="All">All Relations</option>
             </select>
           </div>
 
-          <div>
-            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Invitation / Status:</label>
+          <div class="col-span-1">
+            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Invitation / RSVP:</label>
             <select id="histRsvpFilter" onchange="renderFilteredHistory()" class="w-full bg-white border border-slate-300 text-xs font-semibold text-slate-700 px-2 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500">
               <option value="All">All Statuses</option>
               <option value="Confirmed">Confirmed</option>
@@ -427,7 +435,7 @@
             </select>
           </div>
 
-          <div>
+          <div class="col-span-2 sm:col-span-1">
             <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Search:</label>
             <input type="text" id="searchInput" oninput="renderFilteredHistory()" placeholder="Search name, gift, place..." class="w-full bg-white border border-slate-300 text-xs px-2.5 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500" />
           </div>
@@ -545,8 +553,8 @@
     let loggedCode = localStorage.getItem('fc_user_code') || '';
     let isAdmin = (loggedCode.toUpperCase() === ADMIN_CODE);
     let currentViewMode = localStorage.getItem('fc_view_mode') || 'table';
+    let selectedTopFunction = 'All';
 
-    // Configurable Column Visibility Settings (Stored per device)
     let colSettings = getStoredColSettings();
 
     function getStoredColSettings() {
@@ -803,6 +811,29 @@
           renderMetaManagerLists();
         }
       });
+    }
+
+    // Top Function Filter Change Handler
+    function onTopFunctionChange(val) {
+      selectedTopFunction = val;
+
+      // Sync the form's default function to match currently selected top function
+      const formFuncSelect = document.getElementById('funcSelect');
+      if (val !== 'All') {
+        for (let opt of formFuncSelect.options) {
+          if (opt.value.toLowerCase() === val.toLowerCase()) {
+            formFuncSelect.value = opt.value;
+            break;
+          }
+        }
+      }
+
+      document.getElementById('chipTitleHeadcount').textContent = (val === 'All') 
+        ? 'All Functions: Invited / Confirmed / Total' 
+        : `${val}: Invited / Confirmed / Total`;
+
+      renderDashboard();
+      renderFilteredHistory();
     }
 
     async function purgeCorruptedEntries() {
@@ -1183,18 +1214,19 @@
         codeFilterSelect.value = allCodes.has(currentCodeVal) ? currentCodeVal : 'All';
       }
 
-      // Sync Functions in Filter & Form
-      const histFuncFilter = document.getElementById('histFuncFilter');
-      const curHistFnVal = histFuncFilter.value;
-      histFuncFilter.innerHTML = '<option value="All">All Functions</option>';
+      // 1. Sync PRIMARY Top Function Filter
+      const topFuncSelect = document.getElementById('topFunctionFilter');
+      const curTopVal = topFuncSelect.value;
+      topFuncSelect.innerHTML = '<option value="All">All Functions (Combined Overview)</option>';
       scopedFunctions.forEach(fn => {
         const opt = document.createElement('option');
         opt.value = fn;
-        opt.textContent = fn;
-        histFuncFilter.appendChild(opt);
+        opt.textContent = `🎉 ${fn}`;
+        topFuncSelect.appendChild(opt);
       });
-      histFuncFilter.value = scopedFunctions.has(curHistFnVal) ? curHistFnVal : 'All';
+      topFuncSelect.value = scopedFunctions.has(curTopVal) ? curTopVal : 'All';
 
+      // 2. Sync Function in Form
       const formFuncSelect = document.getElementById('funcSelect');
       const curFormFnVal = formFuncSelect.value;
       formFuncSelect.innerHTML = '';
@@ -1210,7 +1242,7 @@
       formFuncSelect.appendChild(customFnOpt);
       if (scopedFunctions.has(curFormFnVal)) formFuncSelect.value = curFormFnVal;
 
-      // Sync Categories in Filter & Form
+      // 3. Sync Categories in Filter & Form
       const filterSelect = document.getElementById('histGroupFilter');
       const currentFilterVal = filterSelect.value;
       filterSelect.innerHTML = '<option value="All">All Categories</option>';
@@ -1237,7 +1269,7 @@
       formGroupSelect.appendChild(customCatOpt);
       if (scopedCategories.has(currentFormGroupVal)) formGroupSelect.value = currentFormGroupVal;
 
-      // Sync Relation Type Filter & Form
+      // 4. Sync Relation Type in Filter & Form
       const histRelFilter = document.getElementById('histRelationFilter');
       const curHistRelVal = histRelFilter.value;
       histRelFilter.innerHTML = '<option value="All">All Relations</option>';
@@ -1351,7 +1383,7 @@
         gents: gents,
         ladies: ladies,
         kids: kids,
-        kidNames: document.getElementById('kidNames').value.trim(),
+        kidNames: '',
         giftAmount: giftAmount,
         giftDescription: giftDescription,
         isBlocked: false,
@@ -1420,7 +1452,6 @@
       document.getElementById('gentsCount').value = (item.gents !== undefined) ? item.gents : 1;
       document.getElementById('ladiesCount').value = (item.ladies !== undefined) ? item.ladies : 1;
       document.getElementById('kidsCount').value = (item.kids !== undefined) ? item.kids : 0;
-      document.getElementById('kidNames').value = item.kidNames || '';
       document.getElementById('giftAmount').value = item.giftAmount || '';
       document.getElementById('giftDescription').value = item.giftDescription || '';
 
@@ -1519,11 +1550,15 @@
     }
 
     function getVisibleFamilies() {
-      if (isAdmin) {
-        return families;
-      } else {
-        return families.filter(f => (f.code && f.code.toUpperCase() === loggedCode));
+      let result = families;
+      if (!isAdmin) {
+        result = result.filter(f => (f.code && f.code.toUpperCase() === loggedCode));
       }
+      // Apply Top Level Function Filter
+      if (selectedTopFunction !== 'All') {
+        result = result.filter(f => (f.eventFunction || 'Main Reception').toLowerCase() === selectedTopFunction.toLowerCase());
+      }
+      return result;
     }
 
     function renderDashboard() {
@@ -1586,7 +1621,6 @@
       const search = document.getElementById('searchInput').value.toLowerCase();
       
       const codeFilter = isAdmin ? document.getElementById('histCodeFilter').value : 'All';
-      const funcFilter = document.getElementById('histFuncFilter').value;
       const groupFilter = document.getElementById('histGroupFilter').value;
       const relationFilter = document.getElementById('histRelationFilter').value;
       const rsvpFilter = document.getElementById('histRsvpFilter').value;
@@ -1595,14 +1629,12 @@
 
       const filtered = target.filter(f => {
         let matchesCode = (codeFilter === 'All') || (f.code && f.code.toUpperCase() === codeFilter);
-        let matchesFunc = (funcFilter === 'All') || ((f.eventFunction || 'Main Reception').toLowerCase() === funcFilter.toLowerCase());
 
         let matchesGroup = (groupFilter === 'All');
         if (!matchesGroup) {
           matchesGroup = (canonicalCategory(f.side).toLowerCase() === groupFilter.toLowerCase()) || (f.side === groupFilter);
         }
 
-        // Filter by Relation Type
         let matchesRelation = (relationFilter === 'All');
         if (!matchesRelation) {
           matchesRelation = ((f.relation || '').trim().toLowerCase() === relationFilter.toLowerCase());
@@ -1625,7 +1657,7 @@
                               (f.phone && f.phone.includes(search)) || 
                               (f.giftDescription && f.giftDescription.toLowerCase().includes(search));
 
-        return matchesCode && matchesFunc && matchesGroup && matchesRelation && matchesRsvp && matchesSearch;
+        return matchesCode && matchesGroup && matchesRelation && matchesRsvp && matchesSearch;
       });
 
       let filtG = 0, filtL = 0, filtK = 0, filtC = 0, filtCash = 0, filtGiftsCount = 0;
@@ -1666,7 +1698,6 @@
       }
     }
 
-    // 1. Table & Compact View with Configurable Dynamic Column Visibility
     function renderTableView(items, container, isCompact) {
       const codeTh = isAdmin ? `<th class="py-2 px-2">Code</th>` : '';
       const padding = isCompact ? 'py-1 px-1.5 text-[11px]' : 'py-1.5 px-2 text-xs';
