@@ -350,7 +350,6 @@
 
       <!-- PRIMARY FUNCTION FILTER + ADD GUEST BUTTON SIDE-BY-SIDE (Add Guest on Left, Function on Right) -->
       <div class="flex items-center gap-1.5 pt-1 border-t border-slate-100">
-        <!-- Add Guest Button on Left Side -->
         <button type="button" onclick="openAddGuestModal()" class="px-2.5 sm:px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1 shrink-0 transition">
           <i class="fa-solid fa-plus text-[10px]"></i>
           <span>Add Guest</span>
@@ -360,53 +359,59 @@
           Function:
         </label>
         
-        <!-- Function Filter Dropdown on Right Side -->
         <select id="topFunctionFilter" onchange="onTopFunctionChange(this.value)" class="flex-1 min-w-0 bg-indigo-50/80 border border-indigo-300 text-xs font-bold text-indigo-950 px-2 py-1.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300 transition cursor-pointer shadow-2xs truncate">
           <option value="All">All Functions (Combined)</option>
         </select>
       </div>
     </header>
 
-    <!-- 3-Chip Summary Dashboard -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
-      <!-- Chip 1: Headcount Ratio -->
-      <div class="bg-indigo-900 text-white p-2.5 rounded-xl shadow-sm flex items-center justify-between">
+    <!-- Side-by-Side Unified Summary Dashboard (Integrated Headcount & Breakdown in Single Chip) -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+      <!-- Unified Headcount & Breakdown Card -->
+      <div class="bg-indigo-900 text-white p-3 rounded-xl shadow-sm space-y-2 flex flex-col justify-between">
         <div>
-          <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-200 block" id="chipTitleHeadcount">Invited / Confirmed / Total Count</span>
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-200 block" id="chipTitleHeadcount">Invited / Confirmed / Total Count</span>
+            <i class="fa-solid fa-users text-emerald-400 text-base opacity-80"></i>
+          </div>
+          
           <div class="flex items-baseline gap-1.5 mt-1">
-            <span class="text-base font-bold text-indigo-200"><span id="statInvited" class="font-black text-white">0</span> <span class="text-[9px] text-indigo-300">Inv</span></span>
+            <span class="text-base sm:text-lg font-bold text-indigo-200"><span id="statInvited" class="font-black text-white">0</span> <span class="text-[9px] text-indigo-300 font-normal">Invited</span></span>
             <span class="text-indigo-400 font-light">/</span>
-            <span class="text-base font-bold text-amber-300"><span id="statConfirmed" class="font-black text-amber-300">0</span> <span class="text-[9px] text-amber-200">Conf</span></span>
+            <span class="text-base sm:text-lg font-bold text-amber-300"><span id="statConfirmed" class="font-black text-amber-300">0</span> <span class="text-[9px] text-amber-200 font-normal">Confirmed</span></span>
             <span class="text-indigo-400 font-light">/</span>
-            <span class="text-lg font-black text-emerald-300"><span id="statTotalCount">0</span> <span class="text-[9px] text-emerald-200">Total</span></span>
+            <span class="text-lg sm:text-xl font-black text-emerald-300"><span id="statTotalCount">0</span> <span class="text-[9px] text-emerald-200 font-normal">Total Count</span></span>
           </div>
         </div>
-        <i class="fa-solid fa-users text-emerald-400 text-xl opacity-80 shrink-0"></i>
-      </div>
 
-      <!-- Chip 2: Breakdown -->
-      <div class="bg-white border border-slate-200 p-2.5 rounded-xl shadow-sm flex flex-col justify-center">
-        <span class="text-[9px] sm:text-[10px] font-bold uppercase text-slate-500 block mb-1">Breakdown</span>
-        <div class="flex items-center justify-around text-xs font-bold text-slate-800 bg-slate-50 py-1.5 px-2 rounded-lg border border-slate-100">
-          <span class="text-blue-700">Gents: <span id="statGents" class="text-xs sm:text-sm font-black">0</span></span>
-          <span class="text-slate-300 font-normal">|</span>
-          <span class="text-pink-700">Ladies: <span id="statLadies" class="text-xs sm:text-sm font-black">0</span></span>
-          <span class="text-slate-300 font-normal">|</span>
-          <span class="text-amber-700">Kids: <span id="statKids" class="text-xs sm:text-sm font-black">0</span></span>
+        <!-- Integrated Breakdown Row directly below -->
+        <div class="pt-2 border-t border-indigo-800/80 flex items-center justify-between text-xs">
+          <span class="text-[10px] uppercase font-bold text-indigo-300 tracking-wider">Breakdown:</span>
+          <div class="flex items-center gap-3 bg-indigo-950/60 px-2.5 py-1 rounded-lg border border-indigo-800">
+            <span class="text-blue-300 font-bold text-xs">G: <b id="statGents" class="text-white">0</b></span>
+            <span class="text-pink-300 font-bold text-xs">L: <b id="statLadies" class="text-white">0</b></span>
+            <span class="text-amber-300 font-bold text-xs">K: <b id="statKids" class="text-white">0</b></span>
+          </div>
         </div>
       </div>
 
-      <!-- Chip 3: Cash & Gifts Summary -->
-      <div class="bg-emerald-900 text-white p-2.5 rounded-xl shadow-sm flex items-center justify-between">
-        <div>
+      <!-- Total Gifts & Cash Card -->
+      <div class="bg-emerald-900 text-white p-3 rounded-xl shadow-sm flex flex-col justify-between space-y-2">
+        <div class="flex items-center justify-between">
           <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-200 block">Total Gifts / Cash Received</span>
-          <div class="flex items-baseline gap-2 mt-1">
-            <span class="text-lg font-black text-emerald-300">₹<span id="statTotalCash">0</span></span>
-            <span class="text-emerald-400 font-light">|</span>
-            <span class="text-xs font-bold text-white"><span id="statGiftsCount">0</span> Gifts</span>
-          </div>
+          <i class="fa-solid fa-gift text-emerald-300 text-lg opacity-80"></i>
         </div>
-        <i class="fa-solid fa-gift text-emerald-300 text-xl opacity-80 shrink-0"></i>
+        
+        <div class="flex items-baseline gap-2 my-auto">
+          <span class="text-2xl font-black text-emerald-300">₹<span id="statTotalCash">0</span></span>
+          <span class="text-emerald-400 font-light text-xl">|</span>
+          <span class="text-sm font-bold text-white"><span id="statGiftsCount">0</span> Gifts</span>
+        </div>
+
+        <div class="text-[10px] text-emerald-300/80 pt-1 border-t border-emerald-800/80 flex items-center justify-between">
+          <span>Function-Specific Cash & Gifts Log</span>
+          <span class="text-emerald-200 font-semibold">Active Tracker</span>
+        </div>
       </div>
     </div>
 
@@ -473,7 +478,7 @@
       </div>
     </div>
 
-    <!-- 3. Showing Entries / Guest List (Auto Width Distribution on Column Selection) -->
+    <!-- 3. Showing Entries / Guest List -->
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-visible">
       
       <!-- Accordion Header Bar -->
@@ -487,7 +492,7 @@
           <span id="historyActionText" class="text-[11px] font-semibold text-indigo-600 ml-1">Tap to Expand</span>
         </button>
 
-        <!-- Toolstrip (Fixed Positioned Dropdown & View Mode Switcher) -->
+        <!-- Toolstrip -->
         <div class="flex items-center justify-between sm:justify-end gap-1.5 flex-nowrap">
           
           <!-- Column Customizer Dropdown -->
@@ -498,7 +503,6 @@
               <i class="fa-solid fa-chevron-down text-[8px] text-slate-400"></i>
             </button>
 
-            <!-- Correctly Positioned Dropdown to Prevent Screen Clipping -->
             <div id="columnPickerDropdown" class="hidden absolute left-0 sm:left-auto sm:right-0 mt-1 w-52 bg-white border border-slate-300 rounded-xl shadow-2xl p-3 z-50 space-y-2 text-xs">
               <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 pb-1 border-b border-slate-100">Toggle Visible Columns</div>
               <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600 py-0.5">
@@ -547,7 +551,7 @@
       </div>
 
       <!-- Collapsible Body Container -->
-      <div id="historyContainer" class="hidden p-2 sm:p-3 overflow-x-auto">
+      <div id="historyContainer" class="hidden p-2.5 sm:p-3 overflow-x-auto">
         <div id="viewDisplayContainer"></div>
         <p id="emptyMessage" class="hidden text-center py-6 text-slate-400 text-xs">No matching entries found for this filter selection.</p>
       </div>
@@ -1704,28 +1708,28 @@
     }
 
     function renderTableView(items, container, isCompact) {
-      const codeTh = isAdmin ? `<th class="py-2 px-2 w-[8%]">Code</th>` : '';
+      const codeTh = isAdmin ? `<th class="py-2 px-2 whitespace-nowrap">Code</th>` : '';
       const padding = isCompact ? 'py-1 px-1.5 text-[11px]' : 'py-1.5 px-2 text-xs';
 
       let html = `
         <div class="w-full overflow-x-auto border border-slate-200 rounded-lg">
-          <table class="w-full text-left table-auto sm:table-fixed border-collapse ${padding}">
+          <table class="w-full text-left table-auto border-collapse ${padding}">
             <thead>
               <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase text-[10px]">
                 ${codeTh}
-                ${colSettings.func ? `<th class="py-2 px-2">Function</th>` : ''}
-                ${colSettings.cat ? `<th class="py-2 px-2">Category</th>` : ''}
-                ${colSettings.rel ? `<th class="py-2 px-2">Relation</th>` : ''}
-                ${colSettings.guest ? `<th class="py-2 px-2.5">Guest & Details</th>` : ''}
+                ${colSettings.func ? `<th class="py-2 px-2 whitespace-nowrap">Function</th>` : ''}
+                ${colSettings.cat ? `<th class="py-2 px-2 whitespace-nowrap">Category</th>` : ''}
+                ${colSettings.rel ? `<th class="py-2 px-2 whitespace-nowrap">Relation</th>` : ''}
+                ${colSettings.guest ? `<th class="py-2 px-2.5 whitespace-nowrap">Guest & Place</th>` : ''}
                 ${colSettings.glk ? `
-                  <th class="py-2 px-1 text-center text-blue-700 w-8">G</th>
-                  <th class="py-2 px-1 text-center text-pink-700 w-8">L</th>
-                  <th class="py-2 px-1 text-center text-amber-700 w-8">K</th>
+                  <th class="py-2 px-1 text-center text-blue-700 whitespace-nowrap">G</th>
+                  <th class="py-2 px-1 text-center text-pink-700 whitespace-nowrap">L</th>
+                  <th class="py-2 px-1 text-center text-amber-700 whitespace-nowrap">K</th>
                 ` : ''}
-                ${colSettings.total ? `<th class="py-2 px-1.5 text-center font-bold text-slate-500 w-10">Total</th>` : ''}
-                ${colSettings.inv ? `<th class="py-2 px-2 text-center bg-indigo-50/60 text-indigo-900 font-bold w-24">Invitation</th>` : ''}
-                ${colSettings.gifts ? `<th class="py-2 px-2 text-center bg-amber-50 text-amber-900 font-bold">Gifts / Cash</th>` : ''}
-                <th class="py-2 px-2 text-right w-16">Actions</th>
+                ${colSettings.total ? `<th class="py-2 px-1.5 text-center font-bold text-slate-500 whitespace-nowrap">Total</th>` : ''}
+                ${colSettings.inv ? `<th class="py-2 px-2 text-center bg-indigo-50/60 text-indigo-900 font-bold whitespace-nowrap">Invitation</th>` : ''}
+                ${colSettings.gifts ? `<th class="py-2 px-2 text-center bg-amber-50 text-amber-900 font-bold whitespace-nowrap">Gifts / Cash</th>` : ''}
+                <th class="py-2 px-2 text-right whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
@@ -1749,14 +1753,14 @@
         `;
 
         const giftDisplay = `
-          <div class="text-[10px] text-center">
+          <div class="text-[10px] text-center whitespace-nowrap">
             ${item.giftAmount ? `<span class="font-black text-emerald-800 block">₹${Number(item.giftAmount).toLocaleString('en-IN')}</span>` : ''}
             ${item.giftDescription ? `<span class="text-slate-500 italic block truncate max-w-[120px]">${item.giftDescription}</span>` : (!item.giftAmount ? '<span class="text-slate-300">—</span>' : '')}
           </div>
         `;
 
         const codeCell = isAdmin ? `
-          <td class="py-1.5 px-2">
+          <td class="py-1.5 px-2 whitespace-nowrap">
             <span class="font-mono font-bold text-indigo-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 text-[10px]">
               ${item.code || '—'}
             </span>
@@ -1766,25 +1770,25 @@
         html += `
           <tr class="hover:bg-slate-50 transition ${isCorrupt ? 'bg-rose-50/50' : ''}">
             ${codeCell}
-            ${colSettings.func ? `<td class="py-1.5 px-2 font-bold text-indigo-800 text-[11px]">${item.eventFunction || 'Main Reception'}</td>` : ''}
-            ${colSettings.cat ? `<td class="py-1.5 px-2">${getGroupBadge(item.side)}</td>` : ''}
-            ${colSettings.rel ? `<td class="py-1.5 px-2 font-medium text-slate-700 text-xs">${item.relation || '—'}</td>` : ''}
+            ${colSettings.func ? `<td class="py-1.5 px-2 font-bold text-indigo-800 text-[11px] whitespace-nowrap">${item.eventFunction || 'Main Reception'}</td>` : ''}
+            ${colSettings.cat ? `<td class="py-1.5 px-2 whitespace-nowrap">${getGroupBadge(item.side)}</td>` : ''}
+            ${colSettings.rel ? `<td class="py-1.5 px-2 font-medium text-slate-700 text-xs whitespace-nowrap">${item.relation || '—'}</td>` : ''}
             ${colSettings.guest ? `
               <td class="py-1.5 px-2.5">
-                <div class="font-semibold text-slate-800 text-xs leading-tight">${item.name}</div>
-                <div class="text-[10px] text-slate-400 flex items-center gap-2 mt-0.5">
+                <div class="font-semibold text-slate-800 text-xs leading-tight whitespace-nowrap">${item.name}</div>
+                <div class="text-[10px] text-slate-400 flex items-center gap-2 mt-0.5 whitespace-nowrap">
                   ${item.place ? `<span><i class="fa-solid fa-location-dot mr-0.5"></i>${item.place}</span>` : ''}
                   ${item.phone ? `<span><i class="fa-solid fa-phone mr-0.5"></i>${item.phone}</span>` : ''}
                 </div>
               </td>
             ` : ''}
             ${colSettings.glk ? `
-              <td class="py-1.5 px-1 text-center text-slate-700 font-medium">${item.gents || 0}</td>
-              <td class="py-1.5 px-1 text-center text-slate-700 font-medium">${item.ladies || 0}</td>
-              <td class="py-1.5 px-1 text-center text-amber-700 font-bold">${item.kids || 0}</td>
+              <td class="py-1.5 px-1 text-center text-slate-700 font-medium whitespace-nowrap">${item.gents || 0}</td>
+              <td class="py-1.5 px-1 text-center text-slate-700 font-medium whitespace-nowrap">${item.ladies || 0}</td>
+              <td class="py-1.5 px-1 text-center text-amber-700 font-bold whitespace-nowrap">${item.kids || 0}</td>
             ` : ''}
-            ${colSettings.total ? `<td class="py-1.5 px-1.5 text-center font-bold text-slate-600">${total}</td>` : ''}
-            ${colSettings.inv ? `<td class="py-1.5 px-2 text-center bg-indigo-50/20">${inviteSelect}</td>` : ''}
+            ${colSettings.total ? `<td class="py-1.5 px-1.5 text-center font-bold text-slate-600 whitespace-nowrap">${total}</td>` : ''}
+            ${colSettings.inv ? `<td class="py-1.5 px-2 text-center bg-indigo-50/20 whitespace-nowrap">${inviteSelect}</td>` : ''}
             ${colSettings.gifts ? `<td class="py-1.5 px-2 text-center bg-amber-50/40">${giftDisplay}</td>` : ''}
             <td class="py-1.5 px-2 text-right whitespace-nowrap">
               <button onclick="editEntry('${item.id}')" class="text-slate-400 hover:text-indigo-600 px-1" title="Edit"><i class="fa-solid fa-pen"></i></button>
