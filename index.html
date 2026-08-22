@@ -212,7 +212,7 @@
       </div>
     </div>
 
-    <!-- 1. Collapsible Entry Form Card -->
+    <!-- 1. Collapsible Entry Form Card with Arrow Steppers for Gents, Ladies, and Kids -->
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
       <button type="button" onclick="toggleAccordion('entryContainer', 'entryChevron', 'entryActionText')" class="w-full flex items-center justify-between px-3 py-2.5 bg-slate-50 hover:bg-slate-100 border-b border-slate-200 transition text-left">
         <div class="flex items-center gap-2">
@@ -265,20 +265,48 @@
             </div>
           </div>
 
+          <!-- Stepper Controlled Headcount Row -->
           <div class="grid grid-cols-3 md:grid-cols-12 gap-1.5 items-end">
+            <!-- Gents Count Stepper -->
             <div class="col-span-1 md:col-span-2">
               <label class="block text-[10px] font-bold text-blue-700 mb-0.5 text-center">Gents</label>
-              <input type="number" id="gentsCount" min="0" value="1" required class="w-full text-center bg-slate-50 border border-slate-300 rounded-lg py-1.5 text-xs font-bold focus:outline-none" />
+              <div class="flex items-center justify-center gap-1 bg-slate-50 border border-slate-300 rounded-lg p-0.5">
+                <button type="button" onclick="stepFormField('gentsCount', -1)" class="w-6 h-6 rounded bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center text-xs font-black transition">
+                  <i class="fa-solid fa-chevron-left text-[9px]"></i>
+                </button>
+                <input type="number" id="gentsCount" min="0" value="1" required class="w-full text-center bg-transparent py-1 text-xs font-bold focus:outline-none" />
+                <button type="button" onclick="stepFormField('gentsCount', 1)" class="w-6 h-6 rounded bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center text-xs font-black transition">
+                  <i class="fa-solid fa-chevron-right text-[9px]"></i>
+                </button>
+              </div>
             </div>
 
+            <!-- Ladies Count Stepper -->
             <div class="col-span-1 md:col-span-2">
               <label class="block text-[10px] font-bold text-pink-700 mb-0.5 text-center">Ladies</label>
-              <input type="number" id="ladiesCount" min="0" value="1" required class="w-full text-center bg-slate-50 border border-slate-300 rounded-lg py-1.5 text-xs font-bold focus:outline-none" />
+              <div class="flex items-center justify-center gap-1 bg-slate-50 border border-slate-300 rounded-lg p-0.5">
+                <button type="button" onclick="stepFormField('ladiesCount', -1)" class="w-6 h-6 rounded bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center text-xs font-black transition">
+                  <i class="fa-solid fa-chevron-left text-[9px]"></i>
+                </button>
+                <input type="number" id="ladiesCount" min="0" value="1" required class="w-full text-center bg-transparent py-1 text-xs font-bold focus:outline-none" />
+                <button type="button" onclick="stepFormField('ladiesCount', 1)" class="w-6 h-6 rounded bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center text-xs font-black transition">
+                  <i class="fa-solid fa-chevron-right text-[9px]"></i>
+                </button>
+              </div>
             </div>
 
+            <!-- Kids Count Stepper -->
             <div class="col-span-1 md:col-span-2">
               <label class="block text-[10px] font-bold text-amber-700 mb-0.5 text-center">Kids</label>
-              <input type="number" id="kidsCount" min="0" value="0" required class="w-full text-center bg-slate-50 border border-slate-300 rounded-lg py-1.5 text-xs font-bold focus:outline-none" />
+              <div class="flex items-center justify-center gap-1 bg-slate-50 border border-slate-300 rounded-lg p-0.5">
+                <button type="button" onclick="stepFormField('kidsCount', -1)" class="w-6 h-6 rounded bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center text-xs font-black transition">
+                  <i class="fa-solid fa-chevron-left text-[9px]"></i>
+                </button>
+                <input type="number" id="kidsCount" min="0" value="0" required class="w-full text-center bg-transparent py-1 text-xs font-bold focus:outline-none" />
+                <button type="button" onclick="stepFormField('kidsCount', 1)" class="w-6 h-6 rounded bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center text-xs font-black transition">
+                  <i class="fa-solid fa-chevron-right text-[9px]"></i>
+                </button>
+              </div>
             </div>
 
             <div class="col-span-3 md:col-span-4">
@@ -431,6 +459,14 @@
       const input = document.getElementById('spreadsheetFileInput');
       input.value = '';
       input.click();
+    }
+
+    // Stepper function for form fields
+    function stepFormField(fieldId, delta) {
+      const input = document.getElementById(fieldId);
+      if (!input) return;
+      let val = parseInt(input.value) || 0;
+      input.value = Math.max(0, val + delta);
     }
 
     if (loggedCode) {
@@ -640,7 +676,7 @@
       if (!str) return false;
       const s = String(str);
       if (s.includes('\uFFFD') || s.includes('\0')) return true;
-      if (s.length > 25 && (s.includes('dYb') || s.includes('zm') && s.includes('yv') || (s.includes(';') && s.includes('^') && s.includes('+')))) return true;
+      if (s.length > 25 && (s.includes('dYb') || (s.includes('zm') && s.includes('yv')) || (s.includes(';') && s.includes('^') && s.includes('+')))) return true;
       
       const nonStandard = s.replace(/[a-zA-Z0-9\s,.\-/'"&()_]/g, '');
       if (s.length > 5 && (nonStandard.length / s.length > 0.35)) return true;
@@ -1568,7 +1604,6 @@
       container.innerHTML = html;
     }
 
-    // Comprehensive Multi-Format Spreadsheet Exporter (Numbers & MS CSV)
     function exportSpreadsheet(format) {
       const target = getVisibleFamilies();
       if (target.length === 0) {
@@ -1596,13 +1631,11 @@
       const dateStr = new Date().toISOString().slice(0, 10);
 
       if (format === 'numbers') {
-        // Build binary-safe Workbook for native macOS/iOS Numbers compatibility
         const ws = XLSX.utils.aoa_to_sheet([headers, ...dataRows]);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Guests");
         XLSX.writeFile(wb, `Guest_Headcount_${dateStr}.xlsx`);
       } else {
-        // Clean UTF-8 with BOM MS Excel CSV
         const csvRows = dataRows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(','));
         const csvString = '\uFEFF' + [headers.join(','), ...csvRows].join('\r\n');
         const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
@@ -1621,7 +1654,6 @@
       exportSpreadsheet('csv');
     }
 
-    // Comprehensive Mac Numbers, iOS iWork, Excel and MS CSV Native Importer (Overwrite Mode)
     async function handleSpreadsheetImport(event) {
       const file = event.target.files && event.target.files[0];
       if (!file) return;
@@ -1630,7 +1662,6 @@
         const buffer = await file.arrayBuffer();
         let parsedRows = [];
 
-        // 1. Native Mac/iOS Numbers Archive Inspection (.numbers is a zip container)
         if (file.name.endsWith('.numbers')) {
           try {
             const zip = await JSZip.loadAsync(buffer);
@@ -1644,7 +1675,6 @@
           }
         }
 
-        // 2. Parse via XLSX engine
         if (!parsedRows || parsedRows.length === 0) {
           try {
             const workbook = XLSX.read(new Uint8Array(buffer), { type: 'array', codepage: 65001, raw: false });
@@ -1652,7 +1682,6 @@
             const worksheet = workbook.Sheets[firstSheetName];
             parsedRows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '', raw: false });
           } catch (xlsxErr) {
-            // 3. Fallback text reader
             const decoder = new TextDecoder('utf-8');
             const text = decoder.decode(buffer);
             parsedRows = parseTextCSV(text);
@@ -1699,7 +1728,6 @@
           const sideVal = String(catIdx !== -1 && row[catIdx] !== undefined ? row[catIdx] : (row[0] || 'General')).trim();
           const relVal = String(relIdx !== -1 && row[relIdx] !== undefined ? row[relIdx] : (row[1] || '')).trim();
 
-          // Reject empty lines and binary junk
           if (!nameVal || isBinaryGarbage(nameVal) || isBinaryGarbage(sideVal) || isBinaryGarbage(relVal)) {
             skippedCorruptCount++;
             continue;
