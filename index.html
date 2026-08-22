@@ -348,21 +348,22 @@
         </div>
       </div>
 
-      <!-- PRIMARY FUNCTION FILTER + ADD GUEST BUTTON SIDE-BY-SIDE -->
-      <div class="flex items-center gap-2 pt-1 border-t border-slate-100">
-        <label class="text-[11px] font-black uppercase tracking-wider text-indigo-700 shrink-0 flex items-center gap-1">
-          <i class="fa-solid fa-calendar-check text-indigo-600 text-xs"></i> Function:
-        </label>
-        
-        <select id="topFunctionFilter" onchange="onTopFunctionChange(this.value)" class="flex-1 bg-indigo-50/80 border border-indigo-300 text-xs font-bold text-indigo-950 px-2.5 py-1.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300 transition cursor-pointer shadow-2xs">
-          <option value="All">All Functions (Combined Overview)</option>
-        </select>
-
-        <!-- Add Guest Button right next to Select Function -->
-        <button type="button" onclick="openAddGuestModal()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1.5 shrink-0 transition">
+      <!-- PRIMARY FUNCTION FILTER + ADD GUEST BUTTON SIDE-BY-SIDE (Add Guest on Left, Function on Right) -->
+      <div class="flex items-center gap-1.5 pt-1 border-t border-slate-100">
+        <!-- Add Guest Button on Left Side -->
+        <button type="button" onclick="openAddGuestModal()" class="px-2.5 sm:px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1 shrink-0 transition">
           <i class="fa-solid fa-plus text-[10px]"></i>
           <span>Add Guest</span>
         </button>
+
+        <label class="text-[11px] font-bold text-slate-500 shrink-0 hidden sm:inline">
+          Function:
+        </label>
+        
+        <!-- Function Filter Dropdown on Right Side -->
+        <select id="topFunctionFilter" onchange="onTopFunctionChange(this.value)" class="flex-1 min-w-0 bg-indigo-50/80 border border-indigo-300 text-xs font-bold text-indigo-950 px-2 py-1.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300 transition cursor-pointer shadow-2xs truncate">
+          <option value="All">All Functions (Combined)</option>
+        </select>
       </div>
     </header>
 
@@ -450,8 +451,6 @@
               <option value="Confirmed">Confirmed</option>
               <option value="Invited">Marked as Invited</option>
               <option value="Not Invited">Pending / Not Invited</option>
-              <option value="Coming">Coming (Count > 0)</option>
-              <option value="Not Coming">Not Coming (Count = 0)</option>
             </select>
           </div>
 
@@ -474,7 +473,7 @@
       </div>
     </div>
 
-    <!-- 3. Showing Entries / Guest List (Working Collapse & Responsive Dropdown) -->
+    <!-- 3. Showing Entries / Guest List (Robust Dropdown & Smooth Working Collapse) -->
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-visible">
       
       <!-- Accordion Header Bar -->
@@ -499,8 +498,8 @@
               <i class="fa-solid fa-chevron-down text-[8px] text-slate-400"></i>
             </button>
 
-            <!-- Correctly Left/Right Positioned Dropdown to Prevent Screen Clipping -->
-            <div id="columnPickerDropdown" class="hidden absolute left-0 sm:left-auto sm:right-0 mt-1.5 w-52 bg-white border border-slate-300 rounded-xl shadow-2xl p-3 z-50 space-y-2 text-xs">
+            <!-- Correctly Positioned Dropdown to Prevent Screen Clipping -->
+            <div id="columnPickerDropdown" class="hidden absolute left-0 sm:left-auto sm:right-0 mt-1 w-52 bg-white border border-slate-300 rounded-xl shadow-2xl p-3 z-50 space-y-2 text-xs">
               <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 pb-1 border-b border-slate-100">Toggle Visible Columns</div>
               <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600 py-0.5">
                 <input type="checkbox" onchange="toggleColSetting('func')" id="colChk_func" class="w-3.5 h-3.5 rounded text-indigo-600 focus:ring-0" /> Function
@@ -547,7 +546,7 @@
         </div>
       </div>
 
-      <!-- Collapsible Body Container (Starts collapsed, expands smoothly) -->
+      <!-- Collapsible Body Container -->
       <div id="historyContainer" class="hidden p-2.5 sm:p-3 overflow-x-auto">
         <div id="viewDisplayContainer"></div>
         <p id="emptyMessage" class="hidden text-center py-6 text-slate-400 text-xs">No matching entries found for this filter selection.</p>
@@ -1253,7 +1252,7 @@
       // Sync Top Primary Function Filter
       const topFuncSelect = document.getElementById('topFunctionFilter');
       const curTopVal = topFuncSelect.value;
-      topFuncSelect.innerHTML = '<option value="All">All Functions (Combined Overview)</option>';
+      topFuncSelect.innerHTML = '<option value="All">All Functions (Combined)</option>';
       scopedFunctions.forEach(fn => {
         const opt = document.createElement('option');
         opt.value = fn;
@@ -1653,12 +1652,9 @@
         }
 
         let matchesRsvp = true;
-        const coming = parseInt(f.comingCount) || 0;
         if (rsvpFilter === 'Confirmed') matchesRsvp = (f.invitation === 'Confirmed');
         else if (rsvpFilter === 'Invited') matchesRsvp = (f.invitation === 'Invited');
         else if (rsvpFilter === 'Not Invited') matchesRsvp = (f.invitation === 'Not Invited');
-        else if (rsvpFilter === 'Coming') matchesRsvp = (coming > 0);
-        else if (rsvpFilter === 'Not Coming') matchesRsvp = (coming === 0);
 
         const matchesSearch = (f.name && f.name.toLowerCase().includes(search)) || 
                               (f.code && f.code.toLowerCase().includes(search)) || 
@@ -2058,8 +2054,8 @@
           if (rawStatus.toLowerCase().includes('confirm')) parsedStatus = 'Confirmed';
           else if (rawStatus.toLowerCase().includes('not') || rawStatus.toLowerCase().includes('pend')) parsedStatus = 'Not Invited';
 
-          const giftAmt = parseFloat(giftAmtIdx !== -1 ? row[giftAmtIdx] : row[12]) || 0;
-          const giftDesc = String(giftDescIdx !== -1 && row[giftDescIdx] !== undefined ? row[giftDescIdx] : (row[13] || '')).trim();
+          const giftAmt = parseFloat(giftAmtIdx !== -1 ? row[giftAmtIdx] : row[11]) || 0;
+          const giftDesc = String(giftDescIdx !== -1 && row[giftDescIdx] !== undefined ? row[giftDescIdx] : (row[12] || '')).trim();
 
           const record = {
             code: targetCode,
