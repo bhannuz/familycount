@@ -71,8 +71,8 @@
     </div>
   </div>
 
-  <!-- Hidden File Input for CSV Import -->
-  <input type="file" id="csvFileInput" accept=".csv" onchange="handleCSVImport(event)" class="hidden" />
+  <!-- Hidden File Input for CSV / Numbers Export Import -->
+  <input type="file" id="csvFileInput" accept=".csv,text/csv,text/plain" onchange="handleCSVImport(event)" class="hidden" />
 
   <!-- Main App Screen -->
   <div id="appScreen" class="hidden max-w-6xl mx-auto space-y-2.5">
@@ -124,7 +124,7 @@
       </div>
     </header>
 
-    <!-- Side-by-Side Summary Chips (Individual Count Aggregation for All Headcount) -->
+    <!-- Side-by-Side Summary Chips -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
       <!-- Chip 1: Individual Headcount (Invited / Confirmed / Total Count) -->
       <div class="bg-indigo-900 text-white p-2.5 rounded-xl shadow-sm flex items-center justify-between">
@@ -141,7 +141,7 @@
         <i class="fa-solid fa-users text-emerald-400 text-xl sm:text-2xl opacity-80 shrink-0"></i>
       </div>
 
-      <!-- Chip 2: Breakdown Chip (Header without Gents / Ladies / Kids label) -->
+      <!-- Chip 2: Breakdown Chip -->
       <div class="bg-white border border-slate-200 p-2.5 rounded-xl shadow-sm flex flex-col justify-center">
         <span class="text-[9px] sm:text-[10px] font-bold uppercase text-slate-500 block mb-1">Breakdown</span>
         <div class="flex items-center justify-around text-xs font-bold text-slate-800 bg-slate-50 py-1.5 px-2 rounded-lg border border-slate-100">
@@ -1309,6 +1309,7 @@
       });
     }
 
+    // Export CSV with standard Blob creation for Apple Numbers & Excel compatibility
     function exportCSV() {
       const target = getVisibleFamilies();
       if (target.length === 0) {
@@ -1318,65 +1319,106 @@
 
       const headers = ['Category', 'Relation', 'Guest Name', 'Place', 'Phone', 'Gents', 'Ladies', 'Kids', 'Kid Names', 'Total Invited', 'Invitation Status', 'Coming Count', 'Access Code'];
       const rows = target.map(f => [
-        `"${canonicalCategory(f.side) || ''}"`,
-        `"${f.relation || ''}"`,
-        `"${f.name || ''}"`,
-        `"${f.place || ''}"`,
-        `"${f.phone || ''}"`,
+        `"${(canonicalCategory(f.side) || '').replace(/"/g, '""')}"`,
+        `"${(f.relation || '').replace(/"/g, '""')}"`,
+        `"${(f.name || '').replace(/"/g, '""')}"`,
+        `"${(f.place || '').replace(/"/g, '""')}"`,
+        `"${(f.phone || '').replace(/"/g, '""')}"`,
         f.gents || 0,
         f.ladies || 0,
         f.kids || 0,
-        `"${f.kidNames || ''}"`,
+        `"${(f.kidNames || '').replace(/"/g, '""')}"`,
         (f.gents || 0) + (f.ladies || 0) + (f.kids || 0),
-        `"${f.invitation || 'Invited'}"`,
+        `"${(f.invitation || 'Invited').replace(/"/g, '""')}"`,
         f.comingCount || 0,
-        `"${f.code || ''}"`
+        `"${(f.code || '').replace(/"/g, '""')}"`
       ]);
 
-      const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
-      const encodedUri = encodeURI(csvContent);
+      const csvString = '\uFEFF' + [headers.join(','), ...rows.map(e => e.join(','))].join('\r\n');
+      const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
-      link.setAttribute('href', encodedUri);
+      link.setAttribute('href', url);
       link.setAttribute('download', `Guest_Headcount_Export_${new Date().toISOString().slice(0, 10)}.csv`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      URL.revokeObjectURL(url);
     }
 
+    // Robust CSV Import Parser compatible with Apple Numbers, Excel, Google Sheets
     function handleCSVImport(event) {
       const file = event.target.files[0];
       if (!file) return;
 
       const reader = new FileReader();
       reader.onload = async function(e) {
-        const text = e.target.result;
-        const lines = text.split(/\r\n|\n/).filter(line => line.trim() !== '');
-        
-        if (lines.length <= 1) {
+        let text = e.target.result;
+        if (text.charCodeAt(0) === 0xFEFF) {
+          text = text.substr(1);
+        }
+
+        const parsedRows = parseFullCSV(text);
+        if (parsedRows.length <= 1) {
           alert('CSV file is empty or invalid.');
           return;
         }
 
+        // Map column headers dynamically
+        const headers = parsedRows[0].map(h => h.trim().toLowerCase());
+        const getIdx = (candidates) => headers.findIndex(h => candidates.some(c => h.includes(c)));
+
+        const catIdx = getIdx(['category', 'group', 'side']);
+        const relIdx = getIdx(['relation']);
+        const nameIdx = getIdx(['name', 'guest', 'head']);
+        const placeIdx = getIdx(['place', 'city']);
+        const phoneIdx = getIdx(['phone', 'mobile']);
+        const gentsIdx = getIdx(['gent', 'male', 'man', 'males']);
+        const ladiesIdx = getIdx(['lad', 'female', 'women', 'females']);
+        const kidsIdx = getIdx(['kid', 'child', 'children']);
+        const kidNamesIdx = getIdx(['kid name', 'children name']);
+        const statusIdx = getIdx(['invitation', 'status', 'rsvp']);
+        const comingIdx = getIdx(['coming', 'attending', 'confirmed count']);
+        const codeIdx = getIdx(['code', 'passcode']);
+
         const batch = db.batch();
         let count = 0;
 
-        for (let i = 1; i < lines.length; i++) {
-          const row = parseCSVLine(lines[i]);
-          if (row.length < 3 || !row[2]) continue;
+        for (let i = 1; i < parsedRows.length; i++) {
+          const row = parsedRows[i];
+          if (!row || row.length === 0) continue;
+
+          const nameVal = nameIdx !== -1 && row[nameIdx] ? row[nameIdx].trim() : (row[2] ? row[2].trim() : '');
+          if (!nameVal) continue;
+
+          const g = parseInt(gentsIdx !== -1 ? row[gentsIdx] : row[5]) || 0;
+          const l = parseInt(ladiesIdx !== -1 ? row[ladiesIdx] : row[6]) || 0;
+          const k = parseInt(kidsIdx !== -1 ? row[kidsIdx] : row[7]) || 0;
+          const totalHead = g + l + k;
+
+          const rawStatus = (statusIdx !== -1 && row[statusIdx]) ? row[statusIdx].trim() : (row[10] || 'Invited');
+          let parsedStatus = 'Invited';
+          if (rawStatus.toLowerCase().includes('confirm')) parsedStatus = 'Confirmed';
+          else if (rawStatus.toLowerCase().includes('not') || rawStatus.toLowerCase().includes('pend')) parsedStatus = 'Not Invited';
+
+          let parsedComing = parseInt(comingIdx !== -1 ? row[comingIdx] : row[11]);
+          if (isNaN(parsedComing)) {
+            parsedComing = (parsedStatus === 'Not Invited') ? 0 : totalHead;
+          }
 
           const record = {
-            side: canonicalCategory(row[0]) || 'General',
-            relation: row[1] || '',
-            name: row[2].trim(),
-            place: row[3] || '',
-            phone: row[4] || '',
-            gents: parseInt(row[5]) || 0,
-            ladies: parseInt(row[6]) || 0,
-            kids: parseInt(row[7]) || 0,
-            kidNames: row[8] || '',
-            invitation: row[10] || 'Invited',
-            comingCount: parseInt(row[11]) || (parseInt(row[5]) || 0) + (parseInt(row[6]) || 0) + (parseInt(row[7]) || 0),
-            code: row[12] || loggedCode || 'A2KU',
+            side: canonicalCategory(catIdx !== -1 ? row[catIdx] : row[0]) || 'General',
+            relation: (relIdx !== -1 ? row[relIdx] : row[1]) || '',
+            name: nameVal,
+            place: (placeIdx !== -1 ? row[placeIdx] : row[3]) || '',
+            phone: (phoneIdx !== -1 ? row[phoneIdx] : row[4]) || '',
+            gents: g,
+            ladies: l,
+            kids: k,
+            kidNames: (kidNamesIdx !== -1 ? row[kidNamesIdx] : row[8]) || '',
+            invitation: parsedStatus,
+            comingCount: parsedComing,
+            code: (codeIdx !== -1 && row[codeIdx] ? row[codeIdx].trim().toUpperCase() : (loggedCode || 'A2KU')),
             isBlocked: false,
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
           };
@@ -1390,7 +1432,7 @@
           await batch.commit();
           alert(`Successfully imported ${count} guest records!`);
         } else {
-          alert('No valid records found in the uploaded CSV.');
+          alert('No valid records found in the uploaded file. Please ensure guest names are present.');
         }
 
         event.target.value = '';
@@ -1398,23 +1440,53 @@
       reader.readAsText(file);
     }
 
-    function parseCSVLine(text) {
-      const result = [];
-      let cur = '';
+    // Complete CSV parser handling multiline values, escaped quotes, semicolons & commas
+    function parseFullCSV(text) {
+      const rows = [];
+      let row = [];
+      let cell = '';
       let inQuotes = false;
+
+      // Determine delimiter (comma or semicolon)
+      let delimiter = ',';
+      const firstLine = text.split(/\r\n|\n/)[0] || '';
+      if ((firstLine.match(/;/g) || []).length > (firstLine.match(/,/g) || []).length) {
+        delimiter = ';';
+      }
+
       for (let i = 0; i < text.length; i++) {
         const c = text[i];
+        const next = text[i + 1];
+
         if (c === '"') {
-          inQuotes = !inQuotes;
-        } else if (c === ',' && !inQuotes) {
-          result.push(cur.replace(/^"|"$/g, '').trim());
-          cur = '';
+          if (inQuotes && next === '"') {
+            cell += '"';
+            i++;
+          } else {
+            inQuotes = !inQuotes;
+          }
+        } else if (c === delimiter && !inQuotes) {
+          row.push(cell.trim());
+          cell = '';
+        } else if ((c === '\r' || c === '\n') && !inQuotes) {
+          if (c === '\r' && next === '\n') i++;
+          row.push(cell.trim());
+          if (row.some(field => field.length > 0)) {
+            rows.push(row);
+          }
+          row = [];
+          cell = '';
         } else {
-          cur += c;
+          cell += c;
         }
       }
-      result.push(cur.replace(/^"|"$/g, '').trim());
-      return result;
+      if (cell.length > 0 || row.length > 0) {
+        row.push(cell.trim());
+        if (row.some(field => field.length > 0)) {
+          rows.push(row);
+        }
+      }
+      return rows;
     }
   </script>
 </body>
