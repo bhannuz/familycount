@@ -473,7 +473,7 @@
       </div>
     </div>
 
-    <!-- 3. Showing Entries / Guest List (Robust Dropdown & Smooth Working Collapse) -->
+    <!-- 3. Showing Entries / Guest List (Auto Width Distribution on Column Selection) -->
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-visible">
       
       <!-- Accordion Header Bar -->
@@ -547,7 +547,7 @@
       </div>
 
       <!-- Collapsible Body Container -->
-      <div id="historyContainer" class="hidden p-2.5 sm:p-3 overflow-x-auto">
+      <div id="historyContainer" class="hidden p-2 sm:p-3 overflow-x-auto">
         <div id="viewDisplayContainer"></div>
         <p id="emptyMessage" class="hidden text-center py-6 text-slate-400 text-xs">No matching entries found for this filter selection.</p>
       </div>
@@ -639,7 +639,6 @@
       input.click();
     }
 
-    // Modal Control Functions for Add / Edit Window
     function openAddGuestModal() {
       resetForm();
       document.getElementById('modalHeaderTitle').textContent = "Add Guest Entry & Gifts";
@@ -1705,12 +1704,12 @@
     }
 
     function renderTableView(items, container, isCompact) {
-      const codeTh = isAdmin ? `<th class="py-2 px-2">Code</th>` : '';
+      const codeTh = isAdmin ? `<th class="py-2 px-2 w-[8%]">Code</th>` : '';
       const padding = isCompact ? 'py-1 px-1.5 text-[11px]' : 'py-1.5 px-2 text-xs';
 
       let html = `
-        <div class="overflow-x-auto border border-slate-200 rounded-lg -mx-0.5">
-          <table class="w-full text-left border-collapse ${padding} min-w-[500px] sm:min-w-full">
+        <div class="w-full overflow-x-auto border border-slate-200 rounded-lg">
+          <table class="w-full text-left table-auto sm:table-fixed border-collapse ${padding}">
             <thead>
               <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase text-[10px]">
                 ${codeTh}
@@ -1719,14 +1718,14 @@
                 ${colSettings.rel ? `<th class="py-2 px-2">Relation</th>` : ''}
                 ${colSettings.guest ? `<th class="py-2 px-2.5">Guest & Details</th>` : ''}
                 ${colSettings.glk ? `
-                  <th class="py-2 px-1 text-center text-blue-700">G</th>
-                  <th class="py-2 px-1 text-center text-pink-700">L</th>
-                  <th class="py-2 px-1 text-center text-amber-700">K</th>
+                  <th class="py-2 px-1 text-center text-blue-700 w-8">G</th>
+                  <th class="py-2 px-1 text-center text-pink-700 w-8">L</th>
+                  <th class="py-2 px-1 text-center text-amber-700 w-8">K</th>
                 ` : ''}
-                ${colSettings.total ? `<th class="py-2 px-1.5 text-center font-bold text-slate-500">Total</th>` : ''}
-                ${colSettings.inv ? `<th class="py-2 px-2 text-center bg-indigo-50/60 text-indigo-900 font-bold">Invitation</th>` : ''}
+                ${colSettings.total ? `<th class="py-2 px-1.5 text-center font-bold text-slate-500 w-10">Total</th>` : ''}
+                ${colSettings.inv ? `<th class="py-2 px-2 text-center bg-indigo-50/60 text-indigo-900 font-bold w-24">Invitation</th>` : ''}
                 ${colSettings.gifts ? `<th class="py-2 px-2 text-center bg-amber-50 text-amber-900 font-bold">Gifts / Cash</th>` : ''}
-                <th class="py-2 px-2 text-right">Actions</th>
+                <th class="py-2 px-2 text-right w-16">Actions</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
@@ -1752,7 +1751,7 @@
         const giftDisplay = `
           <div class="text-[10px] text-center">
             ${item.giftAmount ? `<span class="font-black text-emerald-800 block">₹${Number(item.giftAmount).toLocaleString('en-IN')}</span>` : ''}
-            ${item.giftDescription ? `<span class="text-slate-500 italic block truncate max-w-[110px]">${item.giftDescription}</span>` : (!item.giftAmount ? '<span class="text-slate-300">—</span>' : '')}
+            ${item.giftDescription ? `<span class="text-slate-500 italic block truncate max-w-[120px]">${item.giftDescription}</span>` : (!item.giftAmount ? '<span class="text-slate-300">—</span>' : '')}
           </div>
         `;
 
@@ -1767,9 +1766,9 @@
         html += `
           <tr class="hover:bg-slate-50 transition ${isCorrupt ? 'bg-rose-50/50' : ''}">
             ${codeCell}
-            ${colSettings.func ? `<td class="py-1.5 px-2 font-bold text-indigo-800 text-[11px] whitespace-nowrap">${item.eventFunction || 'Main Reception'}</td>` : ''}
-            ${colSettings.cat ? `<td class="py-1.5 px-2 whitespace-nowrap">${getGroupBadge(item.side)}</td>` : ''}
-            ${colSettings.rel ? `<td class="py-1.5 px-2 font-medium text-slate-700 text-xs whitespace-nowrap">${item.relation || '—'}</td>` : ''}
+            ${colSettings.func ? `<td class="py-1.5 px-2 font-bold text-indigo-800 text-[11px]">${item.eventFunction || 'Main Reception'}</td>` : ''}
+            ${colSettings.cat ? `<td class="py-1.5 px-2">${getGroupBadge(item.side)}</td>` : ''}
+            ${colSettings.rel ? `<td class="py-1.5 px-2 font-medium text-slate-700 text-xs">${item.relation || '—'}</td>` : ''}
             ${colSettings.guest ? `
               <td class="py-1.5 px-2.5">
                 <div class="font-semibold text-slate-800 text-xs leading-tight">${item.name}</div>
