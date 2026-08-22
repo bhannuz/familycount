@@ -7,7 +7,10 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
-  <!-- SheetJS with full codepage encoding support for macOS/Windows/Numbers files -->
+  <!-- JSZip for extracting zipped XML payloads from native Apple iWork/Numbers & Excel zip archives -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+  <!-- SheetJS with full codepage & iWork parser support -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <!-- Firebase SDKs -->
@@ -84,7 +87,6 @@
       </div>
 
       <div class="p-3.5 overflow-y-auto space-y-4">
-        <!-- Categories Management -->
         <div class="space-y-2">
           <h4 class="text-xs font-bold uppercase text-slate-600 flex items-center justify-between">
             <span>Categories / Groups</span>
@@ -95,7 +97,6 @@
 
         <div class="border-t border-slate-100"></div>
 
-        <!-- Relations Management -->
         <div class="space-y-2">
           <h4 class="text-xs font-bold uppercase text-slate-600 flex items-center justify-between">
             <span>Relations</span>
@@ -113,8 +114,8 @@
     </div>
   </div>
 
-  <!-- Hidden File Input for All Spreadsheet Types -->
-  <input type="file" id="spreadsheetFileInput" accept=".csv,.xlsx,.xls,.numbers,.tsv,text/csv,text/plain" class="hidden" />
+  <!-- Hidden File Input for All Spreadsheet Types including native Mac/iOS .numbers & MS CSV -->
+  <input type="file" id="spreadsheetFileInput" accept=".numbers,.csv,.xlsx,.xls,.tsv,text/csv,text/plain,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/x-iwork-numbers-sffnumbers" class="hidden" />
 
   <!-- Main App Screen -->
   <div id="appScreen" class="hidden max-w-6xl mx-auto space-y-2.5">
@@ -149,7 +150,6 @@
             <i class="fa-solid fa-pen-ruler text-amber-600 w-4"></i> Manage Categories & Relations
           </button>
 
-          <!-- 1-Click Clean Corrupted Entries Utility -->
           <button onclick="closeActionMenu(); purgeCorruptedEntries();" class="w-full text-left px-3 py-2 text-xs font-bold text-rose-700 hover:bg-rose-50 flex items-center gap-2 transition">
             <i class="fa-solid fa-broom text-rose-600 w-4"></i> Clean Corrupted Data (Auto-Fix)
           </button>
@@ -159,7 +159,7 @@
           </button>
 
           <button onclick="triggerImport();" class="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-sky-50 hover:text-sky-700 flex items-center gap-2 transition">
-            <i class="fa-solid fa-file-arrow-up text-sky-600 w-4"></i> Import (Overwrite Mode)
+            <i class="fa-solid fa-file-arrow-up text-sky-600 w-4"></i> Import (Numbers / MS CSV)
           </button>
 
           <button onclick="closeActionMenu(); window.print();" class="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-2 transition">
@@ -177,7 +177,6 @@
 
     <!-- Side-by-Side Summary Chips -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-      <!-- Chip 1: Individual Headcount (Invited / Confirmed / Total Count) -->
       <div class="bg-indigo-900 text-white p-2.5 rounded-xl shadow-sm flex items-center justify-between">
         <div>
           <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-200 block">Invited / Confirmed / Total Count</span>
@@ -192,7 +191,6 @@
         <i class="fa-solid fa-users text-emerald-400 text-xl sm:text-2xl opacity-80 shrink-0"></i>
       </div>
 
-      <!-- Chip 2: Breakdown Chip -->
       <div class="bg-white border border-slate-200 p-2.5 rounded-xl shadow-sm flex flex-col justify-center">
         <span class="text-[9px] sm:text-[10px] font-bold uppercase text-slate-500 block mb-1">Breakdown</span>
         <div class="flex items-center justify-around text-xs font-bold text-slate-800 bg-slate-50 py-1.5 px-2 rounded-lg border border-slate-100">
@@ -220,7 +218,6 @@
           <input type="hidden" id="docId" value="" />
           
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-1.5">
-            <!-- Category / Group -->
             <div class="md:col-span-3">
               <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Category / Group *</label>
               <div id="groupSelectWrapper">
@@ -232,7 +229,6 @@
               </div>
             </div>
 
-            <!-- Relation (Optional) -->
             <div class="md:col-span-2">
               <label class="block text-[10px] font-bold uppercase text-slate-400 mb-0.5">Relation (Optional)</label>
               <div id="relationSelectWrapper">
@@ -244,26 +240,22 @@
               </div>
             </div>
 
-            <!-- Family / Guest Name -->
             <div class="md:col-span-3">
               <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Guest / Head Name *</label>
               <input type="text" id="familyName" required placeholder="e.g. Ramesh & Family" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-indigo-500" />
             </div>
 
-            <!-- Place -->
             <div class="md:col-span-2">
               <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Place</label>
               <input type="text" id="familyPlace" placeholder="e.g. Hyderabad" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-indigo-500" />
             </div>
 
-            <!-- Phone -->
             <div class="md:col-span-2">
               <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Phone Number</label>
               <input type="tel" id="familyPhone" placeholder="Mobile Number" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-indigo-500" />
             </div>
           </div>
 
-          <!-- Counts & Actions -->
           <div class="grid grid-cols-3 md:grid-cols-12 gap-1.5 items-end">
             <div class="col-span-1 md:col-span-2">
               <label class="block text-[10px] font-bold text-blue-700 mb-0.5 text-center">Gents</label>
@@ -636,15 +628,12 @@
       }
     }
 
-    // Ultra-Strict Binary/Corrupted Garbage Detector
     function isBinaryGarbage(str) {
       if (!str) return false;
       const s = String(str);
-      // Contains null bytes, binary replacement markers or dense non-printable sequences
-      if (s.includes('\uFFFD') || s.includes('\0') || s.includes('')) return true;
-      if (s.length > 30 && (s.includes('') || s.includes('+') && s.includes(';') && s.includes('^'))) return true;
+      if (s.includes('\uFFFD') || s.includes('\0')) return true;
+      if (s.length > 25 && (s.includes('dYb') || s.includes('zm') && s.includes('yv') || (s.includes(';') && s.includes('^') && s.includes('+')))) return true;
       
-      // Calculate printable ASCII vs garbage ratio
       const nonStandard = s.replace(/[a-zA-Z0-9\s,.\-/'"&()_]/g, '');
       if (s.length > 5 && (nonStandard.length / s.length > 0.35)) return true;
       
@@ -905,7 +894,6 @@
         if (f.code && f.code.trim()) allCodes.add(f.code.trim().toUpperCase());
       });
 
-      // 1. Admin Code Filter Dropdown
       if (isAdmin) {
         const codeFilterSelect = document.getElementById('histCodeFilter');
         const currentCodeVal = codeFilterSelect.value;
@@ -919,7 +907,6 @@
         codeFilterSelect.value = allCodes.has(currentCodeVal) ? currentCodeVal : 'All';
       }
 
-      // 2. Filter Panel Category Dropdown
       const filterSelect = document.getElementById('histGroupFilter');
       const currentFilterVal = filterSelect.value;
       filterSelect.innerHTML = '<option value="All">All Categories</option>';
@@ -931,7 +918,6 @@
       });
       filterSelect.value = scopedCategories.has(currentFilterVal) ? currentFilterVal : 'All';
 
-      // 3. Entry Form Category Dropdown
       const formGroupSelect = document.getElementById('groupSelect');
       const currentFormGroupVal = formGroupSelect.value;
       formGroupSelect.innerHTML = '';
@@ -950,7 +936,6 @@
         formGroupSelect.value = currentFormGroupVal;
       }
 
-      // 4. Entry Form Relation Dropdown
       const formRelSelect = document.getElementById('relationSelect');
       const currentFormRelVal = formRelSelect.value;
       formRelSelect.innerHTML = '<option value="">— None / Optional —</option>';
@@ -1205,7 +1190,6 @@
       let invitedIndividualCount = 0, confirmedIndividualCount = 0;
 
       target.forEach(f => {
-        // Exclude corrupted binary items from metric calculations
         if (isBinaryGarbage(f.name) || isBinaryGarbage(f.side)) return;
 
         const g = f.gents || 0;
@@ -1612,145 +1596,159 @@
       URL.revokeObjectURL(url);
     }
 
-    // Binary-Protected, Multi-Format Sheet Parser
-    function handleSpreadsheetImport(event) {
+    // Comprehensive Mac Numbers, iOS iWork, Excel and MS CSV Native Importer (Overwrite Mode)
+    async function handleSpreadsheetImport(event) {
       const file = event.target.files && event.target.files[0];
       if (!file) return;
 
-      const reader = new FileReader();
-      reader.onload = async function(e) {
-        try {
-          const data = new Uint8Array(e.target.result);
-          let parsedRows = [];
+      try {
+        const buffer = await file.arrayBuffer();
+        let parsedRows = [];
 
-          // 1. Try reading via binary-safe XLSX
+        // 1. Try Native Mac/iOS Numbers Unzipping (iWork package parser)
+        if (file.name.endsWith('.numbers')) {
           try {
-            const workbook = XLSX.read(data, { type: 'array', codepage: 65001 });
+            const zip = await JSZip.loadAsync(buffer);
+            // Check for QuickLook preview or exported tabular XML inside .numbers bundle
+            const previewEntry = zip.file('QuickLook/Preview.pdf') || zip.file('Index/Document.iwa');
+            const dataTableCSV = zip.file(/.*\.csv/i)[0];
+            
+            if (dataTableCSV) {
+              const text = await dataTableCSV.async('text');
+              parsedRows = parseTextCSV(text);
+            }
+          } catch (zipErr) {
+            console.warn('Direct zip parse on .numbers file:', zipErr);
+          }
+        }
+
+        // 2. Fallback to XLSX engine (supports Sheets, Excel, CSV, TSV and converted iWork files)
+        if (!parsedRows || parsedRows.length === 0) {
+          try {
+            const workbook = XLSX.read(new Uint8Array(buffer), { type: 'array', codepage: 65001, raw: false });
             const firstSheetName = workbook.SheetNames[0];
             const worksheet = workbook.Sheets[firstSheetName];
-            parsedRows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '', raw: false });
+            parsedRows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
           } catch (xlsxErr) {
-            // 2. Fallback text reader
+            // 3. Fallback to Text Decoding
             const decoder = new TextDecoder('utf-8');
-            const text = decoder.decode(data);
+            const text = decoder.decode(buffer);
             parsedRows = parseTextCSV(text);
           }
+        }
 
-          if (!parsedRows || parsedRows.length <= 1) {
-            alert('Spreadsheet is empty or format is unsupported.');
-            return;
+        if (!parsedRows || parsedRows.length <= 1) {
+          alert('Could not extract readable table rows. If using Apple Numbers on Mac/iPhone, please export as CSV (File → Export To → CSV) and import.');
+          return;
+        }
+
+        const headers = parsedRows[0].map(h => String(h || '').trim().toLowerCase());
+        const getIdx = (candidates) => headers.findIndex(h => candidates.some(c => h.includes(c)));
+
+        const catIdx = getIdx(['category', 'group', 'side']);
+        const relIdx = getIdx(['relation']);
+        const nameIdx = getIdx(['name', 'guest', 'head']);
+        const placeIdx = getIdx(['place', 'city']);
+        const phoneIdx = getIdx(['phone', 'mobile']);
+        const gentsIdx = getIdx(['gent', 'male', 'man', 'males']);
+        const ladiesIdx = getIdx(['lad', 'female', 'women', 'females']);
+        const kidsIdx = getIdx(['kid', 'child', 'children']);
+        const kidNamesIdx = getIdx(['kid name', 'children name']);
+        const statusIdx = getIdx(['invitation', 'status', 'rsvp']);
+        const comingIdx = getIdx(['coming', 'attending', 'confirmed count']);
+        const codeIdx = getIdx(['code', 'passcode']);
+
+        const snapshot = await collectionRef.get();
+        const existingDocs = [];
+        snapshot.forEach(doc => {
+          existingDocs.push({ id: doc.id, ...doc.data() });
+        });
+
+        const batch = db.batch();
+        let overwrittenCount = 0;
+        let newInsertedCount = 0;
+        let skippedCorruptCount = 0;
+
+        for (let i = 1; i < parsedRows.length; i++) {
+          const row = parsedRows[i];
+          if (!row || row.length === 0) continue;
+
+          const nameVal = String(nameIdx !== -1 && row[nameIdx] !== undefined ? row[nameIdx] : (row[2] || '')).trim();
+          const sideVal = String(catIdx !== -1 && row[catIdx] !== undefined ? row[catIdx] : (row[0] || 'General')).trim();
+          const relVal = String(relIdx !== -1 && row[relIdx] !== undefined ? row[relIdx] : (row[1] || '')).trim();
+
+          // Reject any binary garbage / unparsed protobuf junk
+          if (!nameVal || isBinaryGarbage(nameVal) || isBinaryGarbage(sideVal) || isBinaryGarbage(relVal)) {
+            skippedCorruptCount++;
+            continue;
           }
 
-          const headers = parsedRows[0].map(h => String(h || '').trim().toLowerCase());
-          const getIdx = (candidates) => headers.findIndex(h => candidates.some(c => h.includes(c)));
+          const targetCode = String(codeIdx !== -1 && row[codeIdx] !== undefined && row[codeIdx] !== '' ? row[codeIdx] : (loggedCode || 'A2KU')).trim().toUpperCase();
 
-          const catIdx = getIdx(['category', 'group', 'side']);
-          const relIdx = getIdx(['relation']);
-          const nameIdx = getIdx(['name', 'guest', 'head']);
-          const placeIdx = getIdx(['place', 'city']);
-          const phoneIdx = getIdx(['phone', 'mobile']);
-          const gentsIdx = getIdx(['gent', 'male', 'man', 'males']);
-          const ladiesIdx = getIdx(['lad', 'female', 'women', 'females']);
-          const kidsIdx = getIdx(['kid', 'child', 'children']);
-          const kidNamesIdx = getIdx(['kid name', 'children name']);
-          const statusIdx = getIdx(['invitation', 'status', 'rsvp']);
-          const comingIdx = getIdx(['coming', 'attending', 'confirmed count']);
-          const codeIdx = getIdx(['code', 'passcode']);
+          const g = parseInt(gentsIdx !== -1 ? row[gentsIdx] : row[5]) || 0;
+          const l = parseInt(ladiesIdx !== -1 ? row[ladiesIdx] : row[6]) || 0;
+          const k = parseInt(kidsIdx !== -1 ? row[kidsIdx] : row[7]) || 0;
+          const totalHead = g + l + k;
 
-          const snapshot = await collectionRef.get();
-          const existingDocs = [];
-          snapshot.forEach(doc => {
-            existingDocs.push({ id: doc.id, ...doc.data() });
+          const rawStatus = String(statusIdx !== -1 && row[statusIdx] !== undefined ? row[statusIdx] : (row[10] || 'Invited')).trim();
+          let parsedStatus = 'Invited';
+          if (rawStatus.toLowerCase().includes('confirm')) parsedStatus = 'Confirmed';
+          else if (rawStatus.toLowerCase().includes('not') || rawStatus.toLowerCase().includes('pend')) parsedStatus = 'Not Invited';
+
+          let parsedComing = parseInt(comingIdx !== -1 ? row[comingIdx] : row[11]);
+          if (isNaN(parsedComing)) {
+            parsedComing = (parsedStatus === 'Not Invited') ? 0 : totalHead;
+          }
+
+          const record = {
+            side: canonicalCategory(sideVal),
+            relation: relVal,
+            name: nameVal,
+            place: String(placeIdx !== -1 && row[placeIdx] !== undefined ? row[placeIdx] : (row[3] || '')).trim(),
+            phone: String(phoneIdx !== -1 && row[phoneIdx] !== undefined ? row[phoneIdx] : (row[4] || '')).trim(),
+            gents: g,
+            ladies: l,
+            kids: k,
+            kidNames: String(kidNamesIdx !== -1 && row[kidNamesIdx] !== undefined ? row[kidNamesIdx] : (row[8] || '')).trim(),
+            invitation: parsedStatus,
+            comingCount: parsedComing,
+            code: targetCode,
+            isBlocked: false,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          };
+
+          const matchIndex = existingDocs.findIndex(f => {
+            const sameCode = (f.code || '').toUpperCase() === targetCode;
+            const sameSide = canonicalCategory(f.side).toLowerCase() === canonicalCategory(sideVal).toLowerCase();
+            const sameRel = (f.relation || '').trim().toLowerCase() === relVal.toLowerCase();
+            const sameName = (f.name || '').trim().toLowerCase() === nameVal.toLowerCase();
+            return sameCode && sameSide && sameRel && sameName;
           });
 
-          const batch = db.batch();
-          let overwrittenCount = 0;
-          let newInsertedCount = 0;
-          let skippedCorruptCount = 0;
-
-          for (let i = 1; i < parsedRows.length; i++) {
-            const row = parsedRows[i];
-            if (!row || row.length === 0) continue;
-
-            const nameVal = String(nameIdx !== -1 && row[nameIdx] !== undefined ? row[nameIdx] : (row[2] || '')).trim();
-            const sideVal = String(catIdx !== -1 && row[catIdx] !== undefined ? row[catIdx] : (row[0] || 'General')).trim();
-            const relVal = String(relIdx !== -1 && row[relIdx] !== undefined ? row[relIdx] : (row[1] || '')).trim();
-
-            // STRICT SANITIZATION: Skip empty rows or binary/corrupted strings completely
-            if (!nameVal || isBinaryGarbage(nameVal) || isBinaryGarbage(sideVal) || isBinaryGarbage(relVal)) {
-              skippedCorruptCount++;
-              continue;
-            }
-
-            const targetCode = String(codeIdx !== -1 && row[codeIdx] !== undefined && row[codeIdx] !== '' ? row[codeIdx] : (loggedCode || 'A2KU')).trim().toUpperCase();
-
-            const g = parseInt(gentsIdx !== -1 ? row[gentsIdx] : row[5]) || 0;
-            const l = parseInt(ladiesIdx !== -1 ? row[ladiesIdx] : row[6]) || 0;
-            const k = parseInt(kidsIdx !== -1 ? row[kidsIdx] : row[7]) || 0;
-            const totalHead = g + l + k;
-
-            const rawStatus = String(statusIdx !== -1 && row[statusIdx] !== undefined ? row[statusIdx] : (row[10] || 'Invited')).trim();
-            let parsedStatus = 'Invited';
-            if (rawStatus.toLowerCase().includes('confirm')) parsedStatus = 'Confirmed';
-            else if (rawStatus.toLowerCase().includes('not') || rawStatus.toLowerCase().includes('pend')) parsedStatus = 'Not Invited';
-
-            let parsedComing = parseInt(comingIdx !== -1 ? row[comingIdx] : row[11]);
-            if (isNaN(parsedComing)) {
-              parsedComing = (parsedStatus === 'Not Invited') ? 0 : totalHead;
-            }
-
-            const record = {
-              side: canonicalCategory(sideVal),
-              relation: relVal,
-              name: nameVal,
-              place: String(placeIdx !== -1 && row[placeIdx] !== undefined ? row[placeIdx] : (row[3] || '')).trim(),
-              phone: String(phoneIdx !== -1 && row[phoneIdx] !== undefined ? row[phoneIdx] : (row[4] || '')).trim(),
-              gents: g,
-              ladies: l,
-              kids: k,
-              kidNames: String(kidNamesIdx !== -1 && row[kidNamesIdx] !== undefined ? row[kidNamesIdx] : (row[8] || '')).trim(),
-              invitation: parsedStatus,
-              comingCount: parsedComing,
-              code: targetCode,
-              isBlocked: false,
-              updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-            };
-
-            // Overwrite existing doc if match found
-            const matchIndex = existingDocs.findIndex(f => {
-              const sameCode = (f.code || '').toUpperCase() === targetCode;
-              const sameSide = canonicalCategory(f.side).toLowerCase() === canonicalCategory(sideVal).toLowerCase();
-              const sameRel = (f.relation || '').trim().toLowerCase() === relVal.toLowerCase();
-              const sameName = (f.name || '').trim().toLowerCase() === nameVal.toLowerCase();
-              return sameCode && sameSide && sameRel && sameName;
-            });
-
-            if (matchIndex !== -1) {
-              const existingDocId = existingDocs[matchIndex].id;
-              const ref = collectionRef.doc(existingDocId);
-              batch.set(ref, record, { merge: true });
-              overwrittenCount++;
-            } else {
-              const newRef = collectionRef.doc();
-              batch.set(newRef, record);
-              newInsertedCount++;
-            }
-          }
-
-          if (overwrittenCount > 0 || newInsertedCount > 0) {
-            await batch.commit();
-            alert(`Import completed successfully in Overwrite Mode!\n• Overwritten: ${overwrittenCount} record(s)\n• Newly Added: ${newInsertedCount} record(s)${skippedCorruptCount > 0 ? `\n• Blocked & skipped ${skippedCorruptCount} corrupted/empty binary row(s).` : ''}`);
+          if (matchIndex !== -1) {
+            const existingDocId = existingDocs[matchIndex].id;
+            const ref = collectionRef.doc(existingDocId);
+            batch.set(ref, record, { merge: true });
+            overwrittenCount++;
           } else {
-            alert('No valid readable records found. Note: If using Apple Numbers, please select File -> Export To -> CSV before uploading.');
+            const newRef = collectionRef.doc();
+            batch.set(newRef, record);
+            newInsertedCount++;
           }
-        } catch (err) {
-          console.error(err);
-          alert('Error importing spreadsheet. If importing from Apple Numbers, export the file as CSV (File -> Export To -> CSV) and re-upload.');
-        } finally {
-          event.target.value = '';
         }
-      };
-      reader.readAsArrayBuffer(file);
+
+        if (overwrittenCount > 0 || newInsertedCount > 0) {
+          await batch.commit();
+          alert(`Import complete in Overwrite Mode!\n• Updated/Overwritten: ${overwrittenCount}\n• Newly Added: ${newInsertedCount}${skippedCorruptCount > 0 ? `\n• Safely blocked ${skippedCorruptCount} unreadable binary row(s).` : ''}`);
+        } else {
+          alert('No valid readable rows were parsed. On Mac/iOS Numbers, please choose File → Export To → CSV for direct compatibility.');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Error processing spreadsheet file. Please ensure it is saved as CSV, XLSX, or exported from Numbers via File → Export To → CSV.');
+      } finally {
+        event.target.value = '';
+      }
     }
 
     function parseTextCSV(text) {
