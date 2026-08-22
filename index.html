@@ -7,7 +7,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
-  <!-- SheetJS (xlsx) for clean parsing of .numbers, .xlsx, .xls, and CSV files -->
+  <!-- SheetJS with full codepage encoding support for macOS/Windows/Numbers files -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <!-- Firebase SDKs -->
@@ -114,7 +114,7 @@
   </div>
 
   <!-- Hidden File Input for All Spreadsheet Types -->
-  <input type="file" id="spreadsheetFileInput" accept=".csv,.numbers,.xlsx,.xls,.tsv,text/csv,text/plain" class="hidden" />
+  <input type="file" id="spreadsheetFileInput" accept=".csv,.xlsx,.xls,.numbers,.tsv,text/csv,text/plain" class="hidden" />
 
   <!-- Main App Screen -->
   <div id="appScreen" class="hidden max-w-6xl mx-auto space-y-2.5">
@@ -149,8 +149,9 @@
             <i class="fa-solid fa-pen-ruler text-amber-600 w-4"></i> Manage Categories & Relations
           </button>
 
-          <button onclick="closeActionMenu(); purgeCorruptedEntries();" class="w-full text-left px-3 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-50 flex items-center gap-2 transition">
-            <i class="fa-solid fa-broom text-rose-600 w-4"></i> Clean Corrupted Entries
+          <!-- 1-Click Clean Corrupted Entries Utility -->
+          <button onclick="closeActionMenu(); purgeCorruptedEntries();" class="w-full text-left px-3 py-2 text-xs font-bold text-rose-700 hover:bg-rose-50 flex items-center gap-2 transition">
+            <i class="fa-solid fa-broom text-rose-600 w-4"></i> Clean Corrupted Data (Auto-Fix)
           </button>
 
           <button onclick="closeActionMenu(); exportCSV();" class="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 flex items-center gap-2 transition">
@@ -617,12 +618,13 @@
       });
     }
 
+    // Auto-Purge Corrupted/Binary Junk Records
     async function purgeCorruptedEntries() {
       const target = getVisibleFamilies();
-      const corrupted = target.filter(f => isBinaryGarbage(f.name) || isBinaryGarbage(f.side));
+      const corrupted = target.filter(f => isBinaryGarbage(f.name) || isBinaryGarbage(f.side) || isBinaryGarbage(f.place) || isBinaryGarbage(f.relation));
       
       if (corrupted.length === 0) {
-        alert('No corrupted or binary records found in your list.');
+        alert('No corrupted or binary records found in your database.');
         return;
       }
 
@@ -630,14 +632,23 @@
         const batch = db.batch();
         corrupted.forEach(f => batch.delete(collectionRef.doc(f.id)));
         await batch.commit();
-        alert(`Successfully removed ${corrupted.length} corrupted records.`);
+        alert(`Successfully purged ${corrupted.length} corrupted records!`);
       }
     }
 
+    // Ultra-Strict Binary/Corrupted Garbage Detector
     function isBinaryGarbage(str) {
       if (!str) return false;
-      const nonPrintable = str.replace(/[\x20-\x7E\u00A0-\uFFFF]/g, '');
-      return (nonPrintable.length / str.length > 0.15) || str.includes('dYb') || (str.includes('zm') && str.includes('yv'));
+      const s = String(str);
+      // Contains null bytes, binary replacement markers or dense non-printable sequences
+      if (s.includes('\uFFFD') || s.includes('\0') || s.includes('')) return true;
+      if (s.length > 30 && (s.includes('') || s.includes('+') && s.includes(';') && s.includes('^'))) return true;
+      
+      // Calculate printable ASCII vs garbage ratio
+      const nonStandard = s.replace(/[a-zA-Z0-9\s,.\-/'"&()_]/g, '');
+      if (s.length > 5 && (nonStandard.length / s.length > 0.35)) return true;
+      
+      return false;
     }
 
     function getCodeMetaStorageKey() {
@@ -874,7 +885,7 @@
 
     function canonicalCategory(cat) {
       if (!cat) return '';
-      const c = cat.trim();
+      const c = String(cat).trim();
       const lower = c.toLowerCase();
       if (lower === 'paternal' || lower === 'paternal side') return 'Paternal Side';
       if (lower === 'maternal' || lower === 'maternal side') return 'Maternal Side';
@@ -1194,6 +1205,9 @@
       let invitedIndividualCount = 0, confirmedIndividualCount = 0;
 
       target.forEach(f => {
+        // Exclude corrupted binary items from metric calculations
+        if (isBinaryGarbage(f.name) || isBinaryGarbage(f.side)) return;
+
         const g = f.gents || 0;
         const l = f.ladies || 0;
         const k = f.kids || 0;
@@ -1293,6 +1307,7 @@
 
       let filtG = 0, filtL = 0, filtK = 0, filtC = 0;
       filtered.forEach(item => {
+        if (isBinaryGarbage(item.name) || isBinaryGarbage(item.side)) return;
         filtG += item.gents || 0;
         filtL += item.ladies || 0;
         filtK += item.kids || 0;
@@ -1353,6 +1368,7 @@
         const total = (item.gents || 0) + (item.ladies || 0) + (item.kids || 0);
         const status = item.invitation || 'Invited';
         const comingCount = (item.comingCount !== undefined) ? item.comingCount : 0;
+        const isCorrupt = isBinaryGarbage(item.name) || isBinaryGarbage(item.side);
 
         let statusStyle = 'bg-slate-50 text-slate-600 border-slate-300';
         if (status === 'Confirmed') statusStyle = 'bg-amber-50 text-amber-800 border-amber-300 font-bold';
@@ -1392,12 +1408,12 @@
         ` : '';
 
         html += `
-          <tr class="hover:bg-slate-50 transition">
+          <tr class="hover:bg-slate-50 transition ${isCorrupt ? 'bg-rose-50/50' : ''}">
             ${codeCell}
             <td class="py-1.5 px-2.5">${getGroupBadge(item.side)}</td>
             <td class="py-1.5 px-2 font-medium text-slate-700 text-xs">${item.relation || '—'}</td>
             <td class="py-1.5 px-2.5">
-              <div class="font-semibold text-slate-800 text-xs leading-tight">${item.name}</div>
+              <div class="font-semibold text-slate-800 text-xs leading-tight ${isCorrupt ? 'text-rose-700 font-mono text-[10px]' : ''}">${item.name}</div>
               <div class="text-[10px] text-slate-400 flex items-center gap-2 mt-0.5">
                 ${item.place ? `<span><i class="fa-solid fa-location-dot mr-0.5"></i>${item.place}</span>` : ''}
                 ${item.phone ? `<span><i class="fa-solid fa-phone mr-0.5"></i>${item.phone}</span>` : ''}
@@ -1429,20 +1445,21 @@
         const total = (item.gents || 0) + (item.ladies || 0) + (item.kids || 0);
         const status = item.invitation || 'Invited';
         const comingCount = (item.comingCount !== undefined) ? item.comingCount : 0;
+        const isCorrupt = isBinaryGarbage(item.name) || isBinaryGarbage(item.side);
 
         let statusStyle = 'bg-slate-50 text-slate-600 border-slate-300';
         if (status === 'Confirmed') statusStyle = 'bg-amber-50 text-amber-800 border-amber-300 font-bold';
         else if (status === 'Invited') statusStyle = 'bg-emerald-50 text-emerald-800 border-emerald-300';
 
         html += `
-          <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between space-y-2.5 hover:shadow transition">
+          <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between space-y-2.5 hover:shadow transition ${isCorrupt ? 'border-rose-300 bg-rose-50/20' : ''}">
             <div class="flex items-start justify-between gap-1">
               <div>
                 <div class="flex items-center gap-1.5">
                   ${getGroupBadge(item.side)}
                   ${item.relation ? `<span class="text-[10px] font-semibold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">${item.relation}</span>` : ''}
                 </div>
-                <h4 class="font-bold text-slate-900 text-sm mt-1 leading-tight">${item.name}</h4>
+                <h4 class="font-bold text-slate-900 text-sm mt-1 leading-tight ${isCorrupt ? 'text-rose-700 font-mono text-xs break-all' : ''}">${item.name}</h4>
                 <div class="text-[11px] text-slate-400 flex items-center gap-2 mt-0.5">
                   ${item.place ? `<span><i class="fa-solid fa-location-dot mr-0.5"></i>${item.place}</span>` : ''}
                   ${item.phone ? `<span><i class="fa-solid fa-phone mr-0.5"></i>${item.phone}</span>` : ''}
@@ -1499,19 +1516,16 @@
         const total = (item.gents || 0) + (item.ladies || 0) + (item.kids || 0);
         const status = item.invitation || 'Invited';
         const comingCount = (item.comingCount !== undefined) ? item.comingCount : 0;
-
-        let statusStyle = 'bg-slate-50 text-slate-600 border-slate-300';
-        if (status === 'Confirmed') statusStyle = 'bg-amber-50 text-amber-800 border-amber-300 font-bold';
-        else if (status === 'Invited') statusStyle = 'bg-emerald-50 text-emerald-800 border-emerald-300';
+        const isCorrupt = isBinaryGarbage(item.name) || isBinaryGarbage(item.side);
 
         html += `
-          <div class="bg-white p-2.5 sm:p-3 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-slate-50 transition">
+          <div class="bg-white p-2.5 sm:p-3 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-slate-50 transition ${isCorrupt ? 'border-rose-300 bg-rose-50/20' : ''}">
             <div class="flex items-center gap-3">
               ${isAdmin ? `<span class="font-mono font-bold text-indigo-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 text-[10px] shrink-0">${item.code || '—'}</span>` : ''}
               
               <div>
                 <div class="flex items-center gap-1.5">
-                  <span class="font-bold text-slate-900 text-xs sm:text-sm">${item.name}</span>
+                  <span class="font-bold text-slate-900 text-xs sm:text-sm ${isCorrupt ? 'text-rose-700 font-mono text-[11px]' : ''}">${item.name}</span>
                   ${getGroupBadge(item.side)}
                   ${item.relation ? `<span class="text-[10px] text-slate-500 font-medium">(${item.relation})</span>` : ''}
                 </div>
@@ -1531,7 +1545,7 @@
                 <span class="text-slate-800">/ <b>${total}</b></span>
               </div>
 
-              <select onchange="updateInvitation('${item.id}', this.value)" class="text-[10px] font-semibold px-1.5 py-0.5 rounded border focus:outline-none ${statusStyle}">
+              <select onchange="updateInvitation('${item.id}', this.value)" class="text-[10px] font-semibold px-1.5 py-0.5 rounded border focus:outline-none">
                 <option value="Not Invited" ${status === 'Not Invited' ? 'selected' : ''}>⏳ Pending</option>
                 <option value="Invited" ${status === 'Invited' ? 'selected' : ''}>📩 Invited</option>
                 <option value="Confirmed" ${status === 'Confirmed' ? 'selected' : ''}>✅ Confirmed</option>
@@ -1598,8 +1612,7 @@
       URL.revokeObjectURL(url);
     }
 
-    // --- OVERWRITE MODE SPREADSHEET IMPORTER ---
-    // If a guest entry matches (Category + Relation + Guest Name) or matches an existing row under the active code, it overwrites the existing record instead of duplicating.
+    // Binary-Protected, Multi-Format Sheet Parser
     function handleSpreadsheetImport(event) {
       const file = event.target.files && event.target.files[0];
       if (!file) return;
@@ -1610,19 +1623,21 @@
           const data = new Uint8Array(e.target.result);
           let parsedRows = [];
 
+          // 1. Try reading via binary-safe XLSX
           try {
-            const workbook = XLSX.read(data, { type: 'array' });
+            const workbook = XLSX.read(data, { type: 'array', codepage: 65001 });
             const firstSheetName = workbook.SheetNames[0];
             const worksheet = workbook.Sheets[firstSheetName];
-            parsedRows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
+            parsedRows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '', raw: false });
           } catch (xlsxErr) {
+            // 2. Fallback text reader
             const decoder = new TextDecoder('utf-8');
             const text = decoder.decode(data);
             parsedRows = parseTextCSV(text);
           }
 
           if (!parsedRows || parsedRows.length <= 1) {
-            alert('File is empty or format could not be parsed.');
+            alert('Spreadsheet is empty or format is unsupported.');
             return;
           }
 
@@ -1642,7 +1657,6 @@
           const comingIdx = getIdx(['coming', 'attending', 'confirmed count']);
           const codeIdx = getIdx(['code', 'passcode']);
 
-          // Fetch current records to find matches for overwrite
           const snapshot = await collectionRef.get();
           const existingDocs = [];
           snapshot.forEach(doc => {
@@ -1652,19 +1666,23 @@
           const batch = db.batch();
           let overwrittenCount = 0;
           let newInsertedCount = 0;
+          let skippedCorruptCount = 0;
 
           for (let i = 1; i < parsedRows.length; i++) {
             const row = parsedRows[i];
             if (!row || row.length === 0) continue;
 
             const nameVal = String(nameIdx !== -1 && row[nameIdx] !== undefined ? row[nameIdx] : (row[2] || '')).trim();
-            if (!nameVal || isBinaryGarbage(nameVal)) continue;
-
             const sideVal = String(catIdx !== -1 && row[catIdx] !== undefined ? row[catIdx] : (row[0] || 'General')).trim();
-            if (isBinaryGarbage(sideVal)) continue;
-
             const relVal = String(relIdx !== -1 && row[relIdx] !== undefined ? row[relIdx] : (row[1] || '')).trim();
-            const targetCode = String(codeIdx !== -1 && row[codeIdx] !== undefined ? row[codeIdx] : (loggedCode || 'A2KU')).trim().toUpperCase();
+
+            // STRICT SANITIZATION: Skip empty rows or binary/corrupted strings completely
+            if (!nameVal || isBinaryGarbage(nameVal) || isBinaryGarbage(sideVal) || isBinaryGarbage(relVal)) {
+              skippedCorruptCount++;
+              continue;
+            }
+
+            const targetCode = String(codeIdx !== -1 && row[codeIdx] !== undefined && row[codeIdx] !== '' ? row[codeIdx] : (loggedCode || 'A2KU')).trim().toUpperCase();
 
             const g = parseInt(gentsIdx !== -1 ? row[gentsIdx] : row[5]) || 0;
             const l = parseInt(ladiesIdx !== -1 ? row[ladiesIdx] : row[6]) || 0;
@@ -1698,7 +1716,7 @@
               updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             };
 
-            // Look for existing match to OVERWRITE (same Category + same Relation + same Name, under the code)
+            // Overwrite existing doc if match found
             const matchIndex = existingDocs.findIndex(f => {
               const sameCode = (f.code || '').toUpperCase() === targetCode;
               const sameSide = canonicalCategory(f.side).toLowerCase() === canonicalCategory(sideVal).toLowerCase();
@@ -1708,13 +1726,11 @@
             });
 
             if (matchIndex !== -1) {
-              // Overwrite existing doc
               const existingDocId = existingDocs[matchIndex].id;
               const ref = collectionRef.doc(existingDocId);
               batch.set(ref, record, { merge: true });
               overwrittenCount++;
             } else {
-              // Insert new entry
               const newRef = collectionRef.doc();
               batch.set(newRef, record);
               newInsertedCount++;
@@ -1723,13 +1739,13 @@
 
           if (overwrittenCount > 0 || newInsertedCount > 0) {
             await batch.commit();
-            alert(`Import completed successfully in Overwrite Mode!\n• Overwritten / Updated: ${overwrittenCount} record(s)\n• New Records Added: ${newInsertedCount} record(s)`);
+            alert(`Import completed successfully in Overwrite Mode!\n• Overwritten: ${overwrittenCount} record(s)\n• Newly Added: ${newInsertedCount} record(s)${skippedCorruptCount > 0 ? `\n• Blocked & skipped ${skippedCorruptCount} corrupted/empty binary row(s).` : ''}`);
           } else {
-            alert('No valid readable records found in the spreadsheet.');
+            alert('No valid readable records found. Note: If using Apple Numbers, please select File -> Export To -> CSV before uploading.');
           }
         } catch (err) {
           console.error(err);
-          alert('Error importing spreadsheet. Please make sure the file is a clean CSV or Excel sheet.');
+          alert('Error importing spreadsheet. If importing from Apple Numbers, export the file as CSV (File -> Export To -> CSV) and re-upload.');
         } finally {
           event.target.value = '';
         }
