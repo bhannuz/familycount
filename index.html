@@ -155,7 +155,6 @@
           <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 space-y-1.5">
             <span class="text-[10px] font-bold uppercase text-slate-500 block">Headcount & Members</span>
             <div class="grid grid-cols-3 gap-2">
-              <!-- Gents Stepper -->
               <div>
                 <label class="block text-[10px] font-bold text-blue-700 mb-0.5 text-center">Gents</label>
                 <div class="flex items-center justify-center gap-1 bg-white border border-slate-300 rounded-lg p-0.5 shadow-2xs">
@@ -169,7 +168,6 @@
                 </div>
               </div>
 
-              <!-- Ladies Stepper -->
               <div>
                 <label class="block text-[10px] font-bold text-pink-700 mb-0.5 text-center">Ladies</label>
                 <div class="flex items-center justify-center gap-1 bg-white border border-slate-300 rounded-lg p-0.5 shadow-2xs">
@@ -183,7 +181,6 @@
                 </div>
               </div>
 
-              <!-- Kids Stepper -->
               <div>
                 <label class="block text-[10px] font-bold text-amber-700 mb-0.5 text-center">Kids</label>
                 <div class="flex items-center justify-center gap-1 bg-white border border-slate-300 rounded-lg p-0.5 shadow-2xs">
@@ -229,7 +226,7 @@
     </div>
   </div>
 
-  <!-- Manage Functions, Categories & Relations Modal -->
+  <!-- Manage Functions, Categories & Relations Modal (With Quick-Add & In-Place Modify) -->
   <div id="metaManagerModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-3">
     <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full max-h-[90vh] flex flex-col overflow-hidden">
       <div class="px-4 py-3 bg-slate-800 text-white flex items-center justify-between">
@@ -245,8 +242,14 @@
         <div class="space-y-2">
           <h4 class="text-xs font-bold uppercase text-indigo-700 flex items-center justify-between">
             <span>🎉 Event Functions</span>
-            <span class="text-[10px] text-slate-400 lowercase font-normal">(e.g. Reception, Sangeet, Pooja)</span>
+            <span class="text-[10px] text-slate-400 lowercase font-normal">(deletable if 0 entries)</span>
           </h4>
+          <div class="flex gap-1.5">
+            <input type="text" id="quickAddFuncInput" placeholder="Add new function name..." class="flex-1 bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-indigo-500" />
+            <button onclick="quickAddMeta('functions', 'quickAddFuncInput')" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition shadow-2xs">
+              + Add
+            </button>
+          </div>
           <div id="functionManageList" class="space-y-1.5"></div>
         </div>
 
@@ -258,6 +261,12 @@
             <span>Categories / Groups</span>
             <span class="text-[10px] text-slate-400 lowercase font-normal">(deletable if 0 entries)</span>
           </h4>
+          <div class="flex gap-1.5">
+            <input type="text" id="quickAddCatInput" placeholder="Add new category name..." class="flex-1 bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-indigo-500" />
+            <button onclick="quickAddMeta('categories', 'quickAddCatInput')" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition shadow-2xs">
+              + Add
+            </button>
+          </div>
           <div id="categoryManageList" class="space-y-1.5"></div>
         </div>
 
@@ -269,6 +278,12 @@
             <span>Relations</span>
             <span class="text-[10px] text-slate-400 lowercase font-normal">(deletable if 0 entries)</span>
           </h4>
+          <div class="flex gap-1.5">
+            <input type="text" id="quickAddRelInput" placeholder="Add new relation name..." class="flex-1 bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-indigo-500" />
+            <button onclick="quickAddMeta('relations', 'quickAddRelInput')" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition shadow-2xs">
+              + Add
+            </button>
+          </div>
           <div id="relationManageList" class="space-y-1.5"></div>
         </div>
       </div>
@@ -348,7 +363,7 @@
         </div>
       </div>
 
-      <!-- PRIMARY FUNCTION FILTER + ADD GUEST BUTTON SIDE-BY-SIDE -->
+      <!-- PRIMARY FUNCTION FILTER + ADD GUEST BUTTON SIDE-BY-SIDE (Add Guest on Left, Function on Right) -->
       <div class="flex items-center gap-1.5 pt-1 border-t border-slate-100">
         <button type="button" onclick="openAddGuestModal()" class="px-2.5 sm:px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1 shrink-0 transition">
           <i class="fa-solid fa-plus text-[10px]"></i>
@@ -480,21 +495,21 @@
       </div>
     </div>
 
-    <!-- 3. Showing Entries / Guest List (Auto-Adjusted Column Widths) -->
+    <!-- 3. Showing Entries / Guest List (Working Collapse, Multi-Option Toggle & Auto-Width Distribution) -->
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-visible">
       
       <!-- Accordion Header Bar -->
       <div class="w-full flex flex-col sm:flex-row sm:items-center justify-between p-2.5 sm:p-3 bg-slate-50 border-b border-slate-200 gap-2">
-        <button type="button" onclick="toggleAccordion('historyContainer', 'historyChevron', 'historyActionText')" class="flex items-center gap-2 hover:opacity-80 transition text-left cursor-pointer">
+        <div onclick="toggleAccordion('historyContainer', 'historyChevron', 'historyActionText')" class="flex items-center gap-2 hover:opacity-80 transition text-left cursor-pointer select-none">
           <i id="historyChevron" class="fa-solid fa-chevron-right text-xs text-indigo-600 transition-transform duration-200"></i>
           <span class="text-xs sm:text-sm font-bold text-slate-800 flex items-center gap-1.5">
             <i class="fa-solid fa-list-check text-indigo-600"></i> Showing Entries
           </span>
           <span id="historyBadgeCount" class="text-[10px] font-bold bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full">0 Entries</span>
           <span id="historyActionText" class="text-[11px] font-semibold text-indigo-600 ml-1">Tap to Expand</span>
-        </button>
+        </div>
 
-        <!-- Toolstrip (Fixed Positioned Dropdown & View Mode Switcher) -->
+        <!-- Toolstrip (Columns Dropdown & View Mode Switcher: Table, Tiles, List) -->
         <div class="flex items-center justify-between sm:justify-end gap-1.5 flex-nowrap">
           
           <!-- Column Customizer Dropdown -->
@@ -505,8 +520,8 @@
               <i class="fa-solid fa-chevron-down text-[8px] text-slate-400"></i>
             </button>
 
-            <!-- Correctly Positioned Dropdown to Prevent Screen Clipping -->
-            <div id="columnPickerDropdown" class="hidden absolute left-0 sm:left-auto sm:right-0 mt-1 w-52 bg-white border border-slate-300 rounded-xl shadow-2xl p-3 z-50 space-y-2 text-xs">
+            <!-- Properly Positioned Left/Right Align Dropdown Menu -->
+            <div id="columnPickerDropdown" class="hidden absolute left-0 sm:left-auto sm:right-0 mt-1.5 w-52 bg-white border border-slate-300 rounded-xl shadow-2xl p-3 z-50 space-y-2 text-xs">
               <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 pb-1 border-b border-slate-100">Toggle Visible Columns</div>
               <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600 py-0.5">
                 <input type="checkbox" onchange="toggleColSetting('func')" id="colChk_func" class="w-3.5 h-3.5 rounded text-indigo-600 focus:ring-0" /> Function
@@ -535,18 +550,15 @@
             </div>
           </div>
 
-          <!-- View Switcher Tabs -->
+          <!-- View Switcher Tabs: Table, Tiles, List (Compact Removed) -->
           <div class="flex items-center bg-white border border-slate-200 rounded-lg p-0.5 text-xs font-semibold shrink-0">
-            <button type="button" onclick="setViewMode('table')" id="btnViewTable" class="px-2 py-1 rounded transition text-indigo-600 bg-indigo-50 font-bold flex items-center gap-1" title="Table View">
+            <button type="button" onclick="setViewMode('table')" id="btnViewTable" class="px-2.5 py-1 rounded transition text-indigo-600 bg-indigo-50 font-bold flex items-center gap-1" title="Table View">
               <i class="fa-solid fa-table"></i> <span class="hidden sm:inline text-[11px]">Table</span>
             </button>
-            <button type="button" onclick="setViewMode('compact')" id="btnViewCompact" class="px-2 py-1 rounded transition text-slate-500 hover:text-slate-800 flex items-center gap-1" title="Compact View">
-              <i class="fa-solid fa-table-cells"></i> <span class="hidden sm:inline text-[11px]">Compact</span>
-            </button>
-            <button type="button" onclick="setViewMode('tiles')" id="btnViewTiles" class="px-2 py-1 rounded transition text-slate-500 hover:text-slate-800 flex items-center gap-1" title="Tiles View">
+            <button type="button" onclick="setViewMode('tiles')" id="btnViewTiles" class="px-2.5 py-1 rounded transition text-slate-500 hover:text-slate-800 flex items-center gap-1" title="Tiles View">
               <i class="fa-solid fa-grip"></i> <span class="hidden sm:inline text-[11px]">Tiles</span>
             </button>
-            <button type="button" onclick="setViewMode('list')" id="btnViewList" class="px-2 py-1 rounded transition text-slate-500 hover:text-slate-800 flex items-center gap-1" title="List View">
+            <button type="button" onclick="setViewMode('list')" id="btnViewList" class="px-2.5 py-1 rounded transition text-slate-500 hover:text-slate-800 flex items-center gap-1" title="List View">
               <i class="fa-solid fa-list-ul"></i> <span class="hidden sm:inline text-[11px]">List</span>
             </button>
           </div>
@@ -586,6 +598,7 @@
     let currentViewMode = localStorage.getItem('fc_view_mode') || 'table';
     let selectedTopFunction = 'All';
 
+    // Column Settings (Compact view removed, clean dynamic toggle)
     let colSettings = getStoredColSettings();
 
     function getStoredColSettings() {
@@ -836,7 +849,7 @@
       }
 
       updateColumnPickerCheckboxes();
-      setViewMode(currentViewMode);
+      setViewMode(currentViewMode === 'compact' ? 'table' : currentViewMode);
       listenData();
     }
 
@@ -930,16 +943,16 @@
     }
 
     function setViewMode(mode) {
-      currentViewMode = mode;
-      localStorage.setItem('fc_view_mode', mode);
+      currentViewMode = (mode === 'compact') ? 'table' : mode;
+      localStorage.setItem('fc_view_mode', currentViewMode);
 
-      ['table', 'compact', 'tiles', 'list'].forEach(m => {
+      ['table', 'tiles', 'list'].forEach(m => {
         const btn = document.getElementById(`btnView${m.charAt(0).toUpperCase() + m.slice(1)}`);
         if (btn) {
-          if (m === mode) {
-            btn.className = "px-2 py-1 rounded transition text-indigo-600 bg-indigo-50 font-bold flex items-center gap-1";
+          if (m === currentViewMode) {
+            btn.className = "px-2.5 py-1 rounded transition text-indigo-600 bg-indigo-50 font-bold flex items-center gap-1";
           } else {
-            btn.className = "px-2 py-1 rounded transition text-slate-500 hover:text-slate-800 flex items-center gap-1";
+            btn.className = "px-2.5 py-1 rounded transition text-slate-500 hover:text-slate-800 flex items-center gap-1";
           }
         }
       });
@@ -954,6 +967,33 @@
 
     function closeMetaManager() {
       document.getElementById('metaManagerModal').classList.add('hidden');
+    }
+
+    // Quick Add directly inside Manage Meta Modal
+    function quickAddMeta(type, inputId) {
+      const input = document.getElementById(inputId);
+      const val = input.value.trim();
+      if (!val) return;
+
+      const meta = getCodeMetaData();
+      if (type === 'functions') {
+        if (!meta.functions.some(f => f.toLowerCase() === val.toLowerCase())) {
+          meta.functions.push(val);
+        }
+      } else if (type === 'categories') {
+        const canonical = canonicalCategory(val);
+        if (!meta.categories.some(c => c.toLowerCase() === canonical.toLowerCase())) {
+          meta.categories.push(canonical);
+        }
+      } else if (type === 'relations') {
+        if (!meta.relations.some(r => r.toLowerCase() === val.toLowerCase())) {
+          meta.relations.push(val);
+        }
+      }
+
+      saveCodeMetaData(meta);
+      input.value = '';
+      renderMetaManagerLists();
     }
 
     function renderMetaManagerLists() {
@@ -982,6 +1022,7 @@
       const allCategories = Array.from(new Set([...meta.categories, ...Object.keys(catCountMap)]));
       const allRelations = Array.from(new Set([...meta.relations, ...Object.keys(relCountMap)]));
 
+      // 1. Functions List
       funcList.innerHTML = '';
       allFunctions.forEach(fn => {
         const count = funcCountMap[fn] || 0;
@@ -1008,6 +1049,7 @@
         funcList.appendChild(row);
       });
 
+      // 2. Categories List
       catList.innerHTML = '';
       allCategories.forEach(cat => {
         const count = catCountMap[cat] || 0;
@@ -1034,6 +1076,7 @@
         catList.appendChild(row);
       });
 
+      // 3. Relations List
       relList.innerHTML = '';
       allRelations.forEach(rel => {
         const count = relCountMap[rel] || 0;
@@ -1681,6 +1724,9 @@
         return matchesCode && matchesGroup && matchesRelation && matchesRsvp && matchesSearch;
       });
 
+      // Sort Alphabetically (A-Z) by Guest Name
+      filtered.sort((a, b) => (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base' }));
+
       let filtG = 0, filtL = 0, filtK = 0, filtCash = 0, filtGiftsCount = 0;
       filtered.forEach(item => {
         if (isBinaryGarbage(item.name) || isBinaryGarbage(item.side)) return;
@@ -1707,9 +1753,7 @@
       }
 
       if (currentViewMode === 'table') {
-        renderTableView(filtered, displayContainer, false);
-      } else if (currentViewMode === 'compact') {
-        renderTableView(filtered, displayContainer, true);
+        renderTableView(filtered, displayContainer);
       } else if (currentViewMode === 'tiles') {
         renderTilesView(filtered, displayContainer);
       } else if (currentViewMode === 'list') {
@@ -1717,29 +1761,29 @@
       }
     }
 
-    function renderTableView(items, container, isCompact) {
-      const codeTh = isAdmin ? `<th class="py-2 px-2 whitespace-nowrap">Code</th>` : '';
-      const padding = isCompact ? 'py-1 px-1.5 text-[11px]' : 'py-1.5 px-2 text-xs';
+    // Auto-adjusting Table with Dynamic Column Visibility
+    function renderTableView(items, container) {
+      const codeTh = isAdmin ? `<th class="py-2 px-2.5 whitespace-nowrap">Code</th>` : '';
 
       let html = `
         <div class="w-full overflow-x-auto border border-slate-200 rounded-lg">
-          <table class="w-full text-left table-auto border-collapse ${padding}">
+          <table class="w-full text-left table-auto border-collapse text-xs">
             <thead>
               <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase text-[10px]">
                 ${codeTh}
-                ${colSettings.func ? `<th class="py-2 px-2 whitespace-nowrap">Function</th>` : ''}
-                ${colSettings.cat ? `<th class="py-2 px-2 whitespace-nowrap">Category</th>` : ''}
-                ${colSettings.rel ? `<th class="py-2 px-2 whitespace-nowrap">Relation</th>` : ''}
-                ${colSettings.guest ? `<th class="py-2 px-2.5 whitespace-nowrap">Guest & Place</th>` : ''}
+                ${colSettings.func ? `<th class="py-2 px-2.5 whitespace-nowrap">Function</th>` : ''}
+                ${colSettings.cat ? `<th class="py-2 px-2.5 whitespace-nowrap">Category</th>` : ''}
+                ${colSettings.rel ? `<th class="py-2 px-2.5 whitespace-nowrap">Relation</th>` : ''}
+                ${colSettings.guest ? `<th class="py-2 px-3 whitespace-nowrap">Guest & Place</th>` : ''}
                 ${colSettings.glk ? `
                   <th class="py-2 px-1 text-center text-blue-700 whitespace-nowrap">G</th>
                   <th class="py-2 px-1 text-center text-pink-700 whitespace-nowrap">L</th>
                   <th class="py-2 px-1 text-center text-amber-700 whitespace-nowrap">K</th>
                 ` : ''}
-                ${colSettings.total ? `<th class="py-2 px-1.5 text-center font-bold text-slate-500 whitespace-nowrap">Total</th>` : ''}
-                ${colSettings.inv ? `<th class="py-2 px-2 text-center bg-indigo-50/60 text-indigo-900 font-bold whitespace-nowrap">Invitation</th>` : ''}
-                ${colSettings.gifts ? `<th class="py-2 px-2 text-center bg-amber-50 text-amber-900 font-bold whitespace-nowrap">Gifts / Cash</th>` : ''}
-                <th class="py-2 px-2 text-right whitespace-nowrap">Actions</th>
+                ${colSettings.total ? `<th class="py-2 px-2 text-center font-bold text-slate-500 whitespace-nowrap">Total</th>` : ''}
+                ${colSettings.inv ? `<th class="py-2 px-2.5 text-center bg-indigo-50/60 text-indigo-900 font-bold whitespace-nowrap">Invitation</th>` : ''}
+                ${colSettings.gifts ? `<th class="py-2 px-2.5 text-center bg-amber-50 text-amber-900 font-bold whitespace-nowrap">Gifts / Cash</th>` : ''}
+                <th class="py-2 px-2.5 text-right whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
@@ -1755,7 +1799,7 @@
         else if (status === 'Invited') statusStyle = 'bg-emerald-50 text-emerald-800 border-emerald-300';
 
         const inviteSelect = `
-          <select onchange="updateInvitation('${item.id}', this.value)" class="text-[10px] font-semibold px-1 py-0.5 rounded border focus:outline-none ${statusStyle}">
+          <select onchange="updateInvitation('${item.id}', this.value)" class="text-[10px] font-semibold px-1.5 py-0.5 rounded border focus:outline-none ${statusStyle}">
             <option value="Not Invited" ${status === 'Not Invited' ? 'selected' : ''}>⏳ Pending</option>
             <option value="Invited" ${status === 'Invited' ? 'selected' : ''}>📩 Invited</option>
             <option value="Confirmed" ${status === 'Confirmed' ? 'selected' : ''}>✅ Confirmed</option>
@@ -1765,12 +1809,12 @@
         const giftDisplay = `
           <div class="text-[10px] text-center whitespace-nowrap">
             ${item.giftAmount ? `<span class="font-black text-emerald-800 block">₹${Number(item.giftAmount).toLocaleString('en-IN')}</span>` : ''}
-            ${item.giftDescription ? `<span class="text-slate-500 italic block truncate max-w-[120px]">${item.giftDescription}</span>` : (!item.giftAmount ? '<span class="text-slate-300">—</span>' : '')}
+            ${item.giftDescription ? `<span class="text-slate-500 italic block truncate max-w-[130px]">${item.giftDescription}</span>` : (!item.giftAmount ? '<span class="text-slate-300">—</span>' : '')}
           </div>
         `;
 
         const codeCell = isAdmin ? `
-          <td class="py-1.5 px-2 whitespace-nowrap">
+          <td class="py-2 px-2.5 whitespace-nowrap">
             <span class="font-mono font-bold text-indigo-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 text-[10px]">
               ${item.code || '—'}
             </span>
@@ -1780,11 +1824,11 @@
         html += `
           <tr class="hover:bg-slate-50 transition ${isCorrupt ? 'bg-rose-50/50' : ''}">
             ${codeCell}
-            ${colSettings.func ? `<td class="py-1.5 px-2 font-bold text-indigo-800 text-[11px] whitespace-nowrap">${item.eventFunction || 'Main Reception'}</td>` : ''}
-            ${colSettings.cat ? `<td class="py-1.5 px-2 whitespace-nowrap">${getGroupBadge(item.side)}</td>` : ''}
-            ${colSettings.rel ? `<td class="py-1.5 px-2 font-medium text-slate-700 text-xs whitespace-nowrap">${item.relation || '—'}</td>` : ''}
+            ${colSettings.func ? `<td class="py-2 px-2.5 font-bold text-indigo-800 text-[11px] whitespace-nowrap">${item.eventFunction || 'Main Reception'}</td>` : ''}
+            ${colSettings.cat ? `<td class="py-2 px-2.5 whitespace-nowrap">${getGroupBadge(item.side)}</td>` : ''}
+            ${colSettings.rel ? `<td class="py-2 px-2.5 font-medium text-slate-700 text-xs whitespace-nowrap">${item.relation || '—'}</td>` : ''}
             ${colSettings.guest ? `
-              <td class="py-1.5 px-2.5">
+              <td class="py-2 px-3">
                 <div class="font-semibold text-slate-800 text-xs leading-tight whitespace-nowrap">${item.name}</div>
                 <div class="text-[10px] text-slate-400 flex items-center gap-2 mt-0.5 whitespace-nowrap">
                   ${item.place ? `<span><i class="fa-solid fa-location-dot mr-0.5"></i>${item.place}</span>` : ''}
@@ -1793,14 +1837,14 @@
               </td>
             ` : ''}
             ${colSettings.glk ? `
-              <td class="py-1.5 px-1 text-center text-slate-700 font-medium whitespace-nowrap">${item.gents || 0}</td>
-              <td class="py-1.5 px-1 text-center text-slate-700 font-medium whitespace-nowrap">${item.ladies || 0}</td>
-              <td class="py-1.5 px-1 text-center text-amber-700 font-bold whitespace-nowrap">${item.kids || 0}</td>
+              <td class="py-2 px-1 text-center text-slate-700 font-medium whitespace-nowrap">${item.gents || 0}</td>
+              <td class="py-2 px-1 text-center text-slate-700 font-medium whitespace-nowrap">${item.ladies || 0}</td>
+              <td class="py-2 px-1 text-center text-amber-700 font-bold whitespace-nowrap">${item.kids || 0}</td>
             ` : ''}
-            ${colSettings.total ? `<td class="py-1.5 px-1.5 text-center font-bold text-slate-600 whitespace-nowrap">${total}</td>` : ''}
-            ${colSettings.inv ? `<td class="py-1.5 px-2 text-center bg-indigo-50/20 whitespace-nowrap">${inviteSelect}</td>` : ''}
-            ${colSettings.gifts ? `<td class="py-1.5 px-2 text-center bg-amber-50/40">${giftDisplay}</td>` : ''}
-            <td class="py-1.5 px-2 text-right whitespace-nowrap">
+            ${colSettings.total ? `<td class="py-2 px-2 text-center font-bold text-slate-600 whitespace-nowrap">${total}</td>` : ''}
+            ${colSettings.inv ? `<td class="py-2 px-2.5 text-center bg-indigo-50/20 whitespace-nowrap">${inviteSelect}</td>` : ''}
+            ${colSettings.gifts ? `<td class="py-2 px-2.5 text-center bg-amber-50/40">${giftDisplay}</td>` : ''}
+            <td class="py-2 px-2.5 text-right whitespace-nowrap">
               <button onclick="editEntry('${item.id}')" class="text-slate-400 hover:text-indigo-600 px-1" title="Edit"><i class="fa-solid fa-pen"></i></button>
               <button onclick="deleteEntry('${item.id}')" class="text-slate-400 hover:text-rose-600 px-1" title="Delete"><i class="fa-solid fa-trash"></i></button>
             </td>
