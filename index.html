@@ -73,7 +73,7 @@
     </div>
   </div>
 
-  <!-- POPUP MODAL: Import Mode Selector (Overwrite All vs Update Existing) -->
+  <!-- POPUP MODAL: Import Mode Selector -->
   <div id="importModeModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4">
     <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-5 space-y-4 animate-in fade-in zoom-in-95 duration-150">
       <div class="text-center space-y-1.5">
@@ -112,7 +112,7 @@
     </div>
   </div>
 
-  <!-- POPUP MODAL: Add / Edit Guest Entry Window (Gents, Ladies, Kids Headcount Steppers Only) -->
+  <!-- POPUP MODAL: Add / Edit Guest Entry Window -->
   <div id="guestEntryModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-3">
     <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[92vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
       
@@ -182,7 +182,7 @@
             </div>
           </div>
 
-          <!-- Stepper Headcount Row (Gents, Ladies, Kids Only) -->
+          <!-- Stepper Headcount Row -->
           <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 space-y-1.5">
             <span class="text-[10px] font-bold uppercase text-slate-500 block">Headcount & Members</span>
             <div class="grid grid-cols-3 gap-2">
@@ -525,7 +525,7 @@
       </div>
     </div>
 
-    <!-- 3. Showing Entries / Guest List -->
+    <!-- 3. Showing Entries / Guest List (Action column with 3 vertical dots popup menu) -->
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-visible">
       
       <!-- Accordion Header Bar -->
@@ -631,7 +631,6 @@
     let selectedTopFunction = 'All';
     let pendingImportPayload = null;
 
-    // Column Settings
     let colSettings = getStoredColSettings();
 
     function getStoredColSettings() {
@@ -677,11 +676,25 @@
       menu.classList.toggle('hidden');
     }
 
+    // Toggle 3-dots Row Menu
+    function toggleRowActionMenu(event, docId) {
+      event.stopPropagation();
+      // Close any other open row action menus
+      document.querySelectorAll('.row-action-menu').forEach(el => {
+        if (el.id !== `rowActionMenu_${docId}`) el.classList.add('hidden');
+      });
+      const menu = document.getElementById(`rowActionMenu_${docId}`);
+      if (menu) menu.classList.toggle('hidden');
+    }
+
     document.addEventListener('click', (e) => {
       const picker = document.getElementById('columnPickerDropdown');
       if (picker && !picker.contains(e.target)) {
         picker.classList.add('hidden');
       }
+      document.querySelectorAll('.row-action-menu').forEach(el => {
+        if (!el.contains(e.target)) el.classList.add('hidden');
+      });
     });
 
     document.getElementById('spreadsheetFileInput').addEventListener('change', handleSpreadsheetFilePicked);
@@ -1887,6 +1900,7 @@
       }
     }
 
+    // Table View with 3-Dot Actions Dropdown
     function renderTableView(items, container) {
       const codeTh = isAdmin ? `<th class="py-2 px-2.5 whitespace-nowrap">Code</th>` : '';
 
@@ -1909,7 +1923,7 @@
                 ${colSettings.coming ? `<th class="py-2 px-2 text-center font-black bg-emerald-50 text-emerald-950 whitespace-nowrap">Attending / Total</th>` : ''}
                 ${colSettings.inv ? `<th class="py-2 px-2.5 text-center bg-indigo-50/60 text-indigo-900 font-bold whitespace-nowrap">Invitation</th>` : ''}
                 ${colSettings.gifts ? `<th class="py-2 px-2.5 text-center bg-amber-50 text-amber-900 font-bold whitespace-nowrap">Gifts / Cash</th>` : ''}
-                <th class="py-2 px-2.5 text-right whitespace-nowrap">Actions</th>
+                <th class="py-2 px-2.5 text-center whitespace-nowrap w-10">Actions</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
@@ -1967,6 +1981,25 @@
           </td>
         ` : '';
 
+        // Row 3-Dots Action Menu
+        const actionMenuCell = `
+          <td class="py-1.5 px-2 text-center whitespace-nowrap relative">
+            <div class="relative inline-block text-left">
+              <button onclick="toggleRowActionMenu(event, '${item.id}')" class="w-7 h-7 rounded-lg hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition">
+                <i class="fa-solid fa-ellipsis-vertical text-xs"></i>
+              </button>
+              <div id="rowActionMenu_${item.id}" class="row-action-menu hidden absolute right-0 mt-1 w-28 bg-white border border-slate-200 rounded-xl shadow-xl py-1 z-30 text-left">
+                <button onclick="editEntry('${item.id}')" class="w-full px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 flex items-center gap-2 transition">
+                  <i class="fa-solid fa-pen text-[10px] w-3"></i> Edit
+                </button>
+                <button onclick="deleteEntry('${item.id}')" class="w-full px-3 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 flex items-center gap-2 transition">
+                  <i class="fa-solid fa-trash text-[10px] w-3"></i> Delete
+                </button>
+              </div>
+            </div>
+          </td>
+        `;
+
         html += `
           <tr class="hover:bg-slate-50 transition ${isCorrupt ? 'bg-rose-50/50' : ''}">
             ${codeCell}
@@ -1991,10 +2024,7 @@
             ${colSettings.coming ? `<td class="py-1.5 px-2 text-center bg-emerald-50/40 whitespace-nowrap">${attendingStepper}</td>` : ''}
             ${colSettings.inv ? `<td class="py-1.5 px-2.5 text-center bg-indigo-50/20 whitespace-nowrap">${inviteSelect}</td>` : ''}
             ${colSettings.gifts ? `<td class="py-1.5 px-2.5 text-center bg-amber-50/40 whitespace-nowrap">${giftDisplay}</td>` : ''}
-            <td class="py-1.5 px-2.5 text-right whitespace-nowrap">
-              <button onclick="editEntry('${item.id}')" class="text-slate-400 hover:text-indigo-600 px-1" title="Edit"><i class="fa-solid fa-pen"></i></button>
-              <button onclick="deleteEntry('${item.id}')" class="text-slate-400 hover:text-rose-600 px-1" title="Delete"><i class="fa-solid fa-trash"></i></button>
-            </td>
+            ${actionMenuCell}
           </tr>
         `;
       });
@@ -2040,6 +2070,7 @@
               ${isAdmin ? `<span class="font-mono font-bold text-indigo-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 text-[10px]">${item.code || '—'}</span>` : ''}
             </div>
 
+            <!-- Members & Attendance Row -->
             <div class="grid grid-cols-2 gap-1 text-xs">
               <div class="bg-slate-50 p-1.5 rounded-lg border border-slate-100 flex items-center justify-around font-bold">
                 <span class="text-blue-700">G:${item.gents || 0}</span>
@@ -2056,6 +2087,7 @@
               </div>
             </div>
 
+            <!-- Gift Display Strip -->
             <div class="bg-amber-50/60 p-1.5 rounded-lg border border-amber-200 text-center font-bold text-amber-900 truncate text-xs">
               ${hasValidCash ? `₹${Number(item.giftAmount).toLocaleString('en-IN')}` : ''}
               ${hasValidGift ? `<span class="text-[10px] text-amber-800 block truncate">${item.giftDescription}</span>` : (!hasValidCash ? '<span class="text-slate-400 font-normal">No gift logged</span>' : '')}
@@ -2068,9 +2100,19 @@
                 <option value="Confirmed" ${status === 'Confirmed' ? 'selected' : ''}>✅ Confirmed</option>
               </select>
 
-              <div class="flex items-center gap-1">
-                <button onclick="editEntry('${item.id}')" class="p-1 text-slate-400 hover:text-indigo-600"><i class="fa-solid fa-pen"></i></button>
-                <button onclick="deleteEntry('${item.id}')" class="p-1 text-slate-400 hover:text-rose-600"><i class="fa-solid fa-trash"></i></button>
+              <!-- 3-Dots Dropdown Menu in Tiles View -->
+              <div class="relative inline-block text-left">
+                <button onclick="toggleRowActionMenu(event, 'tile_${item.id}')" class="w-7 h-7 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-800 flex items-center justify-center transition">
+                  <i class="fa-solid fa-ellipsis-vertical text-xs"></i>
+                </button>
+                <div id="rowActionMenu_tile_${item.id}" class="row-action-menu hidden absolute right-0 bottom-8 w-28 bg-white border border-slate-200 rounded-xl shadow-xl py-1 z-30 text-left">
+                  <button onclick="editEntry('${item.id}')" class="w-full px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 flex items-center gap-2 transition">
+                    <i class="fa-solid fa-pen text-[10px] w-3"></i> Edit
+                  </button>
+                  <button onclick="deleteEntry('${item.id}')" class="w-full px-3 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 flex items-center gap-2 transition">
+                    <i class="fa-solid fa-trash text-[10px] w-3"></i> Delete
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -2135,9 +2177,19 @@
                 <option value="Confirmed" ${status === 'Confirmed' ? 'selected' : ''}>✅ Confirmed</option>
               </select>
 
-              <div class="flex items-center gap-1">
-                <button onclick="editEntry('${item.id}')" class="p-1 text-slate-400 hover:text-indigo-600"><i class="fa-solid fa-pen"></i></button>
-                <button onclick="deleteEntry('${item.id}')" class="p-1 text-slate-400 hover:text-rose-600"><i class="fa-solid fa-trash"></i></button>
+              <!-- 3-Dots Dropdown Menu in List View -->
+              <div class="relative inline-block text-left">
+                <button onclick="toggleRowActionMenu(event, 'list_${item.id}')" class="w-7 h-7 rounded-lg hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition">
+                  <i class="fa-solid fa-ellipsis-vertical text-xs"></i>
+                </button>
+                <div id="rowActionMenu_list_${item.id}" class="row-action-menu hidden absolute right-0 mt-1 w-28 bg-white border border-slate-200 rounded-xl shadow-xl py-1 z-30 text-left">
+                  <button onclick="editEntry('${item.id}')" class="w-full px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 flex items-center gap-2 transition">
+                    <i class="fa-solid fa-pen text-[10px] w-3"></i> Edit
+                  </button>
+                  <button onclick="deleteEntry('${item.id}')" class="w-full px-3 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 flex items-center gap-2 transition">
+                    <i class="fa-solid fa-trash text-[10px] w-3"></i> Delete
+                  </button>
+                </div>
               </div>
             </div>
           </div>
