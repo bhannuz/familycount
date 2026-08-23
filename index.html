@@ -348,7 +348,7 @@
         </div>
       </div>
 
-      <!-- PRIMARY FUNCTION FILTER + ADD GUEST BUTTON SIDE-BY-SIDE (Add Guest on Left, Function on Right) -->
+      <!-- PRIMARY FUNCTION FILTER + ADD GUEST BUTTON SIDE-BY-SIDE -->
       <div class="flex items-center gap-1.5 pt-1 border-t border-slate-100">
         <button type="button" onclick="openAddGuestModal()" class="px-2.5 sm:px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1 shrink-0 transition">
           <i class="fa-solid fa-plus text-[10px]"></i>
@@ -365,22 +365,24 @@
       </div>
     </header>
 
-    <!-- Side-by-Side Unified Summary Dashboard (Integrated Headcount & Breakdown in Single Chip) -->
+    <!-- Side-by-Side Unified Summary Dashboard -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-      <!-- Unified Headcount & Breakdown Card -->
+      <!-- Unified Headcount & Breakdown Card: Pending / Invited / Confirmed / Total Count with G/L/K below -->
       <div class="bg-indigo-900 text-white p-3 rounded-xl shadow-sm space-y-2 flex flex-col justify-between">
         <div>
           <div class="flex items-center justify-between">
-            <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-200 block" id="chipTitleHeadcount">Invited / Confirmed / Total Count</span>
+            <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-200 block" id="chipTitleHeadcount">Pending / Invited / Confirmed / Total Count</span>
             <i class="fa-solid fa-users text-emerald-400 text-base opacity-80"></i>
           </div>
           
-          <div class="flex items-baseline gap-1.5 mt-1">
-            <span class="text-base sm:text-lg font-bold text-indigo-200"><span id="statInvited" class="font-black text-white">0</span> <span class="text-[9px] text-indigo-300 font-normal">Invited</span></span>
+          <div class="flex flex-wrap items-baseline gap-1 sm:gap-1.5 mt-1">
+            <span class="text-xs sm:text-sm font-bold text-slate-300"><span id="statPending" class="text-sm sm:text-base font-black text-slate-200">0</span> <span class="text-[9px] text-slate-400 font-normal">Pending</span></span>
             <span class="text-indigo-400 font-light">/</span>
-            <span class="text-base sm:text-lg font-bold text-amber-300"><span id="statConfirmed" class="font-black text-amber-300">0</span> <span class="text-[9px] text-amber-200 font-normal">Confirmed</span></span>
+            <span class="text-xs sm:text-sm font-bold text-indigo-200"><span id="statInvited" class="text-sm sm:text-base font-black text-white">0</span> <span class="text-[9px] text-indigo-300 font-normal">Invited</span></span>
             <span class="text-indigo-400 font-light">/</span>
-            <span class="text-lg sm:text-xl font-black text-emerald-300"><span id="statTotalCount">0</span> <span class="text-[9px] text-emerald-200 font-normal">Total Count</span></span>
+            <span class="text-xs sm:text-sm font-bold text-amber-300"><span id="statConfirmed" class="text-sm sm:text-base font-black text-amber-300">0</span> <span class="text-[9px] text-amber-200 font-normal">Confirmed</span></span>
+            <span class="text-indigo-400 font-light">/</span>
+            <span class="text-sm sm:text-base font-black text-emerald-300"><span id="statTotalCount" class="text-base sm:text-lg">0</span> <span class="text-[9px] text-emerald-200 font-normal">Total Count</span></span>
           </div>
         </div>
 
@@ -478,7 +480,7 @@
       </div>
     </div>
 
-    <!-- 3. Showing Entries / Guest List -->
+    <!-- 3. Showing Entries / Guest List (Auto-Adjusted Column Widths) -->
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-visible">
       
       <!-- Accordion Header Bar -->
@@ -492,7 +494,7 @@
           <span id="historyActionText" class="text-[11px] font-semibold text-indigo-600 ml-1">Tap to Expand</span>
         </button>
 
-        <!-- Toolstrip -->
+        <!-- Toolstrip (Fixed Positioned Dropdown & View Mode Switcher) -->
         <div class="flex items-center justify-between sm:justify-end gap-1.5 flex-nowrap">
           
           <!-- Column Customizer Dropdown -->
@@ -503,6 +505,7 @@
               <i class="fa-solid fa-chevron-down text-[8px] text-slate-400"></i>
             </button>
 
+            <!-- Correctly Positioned Dropdown to Prevent Screen Clipping -->
             <div id="columnPickerDropdown" class="hidden absolute left-0 sm:left-auto sm:right-0 mt-1 w-52 bg-white border border-slate-300 rounded-xl shadow-2xl p-3 z-50 space-y-2 text-xs">
               <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 pb-1 border-b border-slate-100">Toggle Visible Columns</div>
               <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600 py-0.5">
@@ -867,8 +870,8 @@
       }
 
       document.getElementById('chipTitleHeadcount').textContent = (val === 'All') 
-        ? 'All Functions: Invited / Confirmed / Total' 
-        : `${val}: Invited / Confirmed / Total`;
+        ? 'Pending / Invited / Confirmed / Total Count' 
+        : `${val}: Pending / Invited / Confirmed / Total`;
 
       renderDashboard();
       renderFilteredHistory();
@@ -1579,7 +1582,7 @@
     function renderDashboard() {
       const target = getVisibleFamilies();
       let gCount = 0, lCount = 0, kCount = 0, comingCount = 0;
-      let invitedIndividualCount = 0, confirmedIndividualCount = 0;
+      let pendingIndividualCount = 0, invitedIndividualCount = 0, confirmedIndividualCount = 0;
       let totalCash = 0, totalGifts = 0;
 
       target.forEach(f => {
@@ -1596,8 +1599,14 @@
         kCount += k;
         comingCount += coming;
 
-        if (f.invitation === 'Invited') invitedIndividualCount += totalFamilyMembers;
-        else if (f.invitation === 'Confirmed') confirmedIndividualCount += totalFamilyMembers;
+        const invStatus = f.invitation || 'Invited';
+        if (invStatus === 'Not Invited') {
+          pendingIndividualCount += totalFamilyMembers;
+        } else if (invStatus === 'Invited') {
+          invitedIndividualCount += totalFamilyMembers;
+        } else if (invStatus === 'Confirmed') {
+          confirmedIndividualCount += totalFamilyMembers;
+        }
 
         if (f.giftAmount) totalCash += parseFloat(f.giftAmount) || 0;
         if (f.giftDescription && f.giftDescription.trim().length > 0) totalGifts++;
@@ -1605,9 +1614,10 @@
 
       const totalHeadcount = gCount + lCount + kCount;
 
+      document.getElementById('statPending').textContent = pendingIndividualCount;
       document.getElementById('statInvited').textContent = invitedIndividualCount;
       document.getElementById('statConfirmed').textContent = confirmedIndividualCount;
-      document.getElementById('statTotalCount').textContent = `${comingCount} / ${totalHeadcount}`;
+      document.getElementById('statTotalCount').textContent = totalHeadcount;
 
       document.getElementById('statGents').textContent = gCount;
       document.getElementById('statLadies').textContent = lCount;
