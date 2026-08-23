@@ -112,7 +112,7 @@
     </div>
   </div>
 
-  <!-- POPUP MODAL: Add / Edit Guest Entry Window -->
+  <!-- POPUP MODAL: Add / Edit Guest Entry Window (Gents, Ladies, Kids Headcount Steppers Only) -->
   <div id="guestEntryModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-3">
     <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[92vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
       
@@ -182,18 +182,18 @@
             </div>
           </div>
 
-          <!-- Stepper Headcount & Attending Count -->
+          <!-- Stepper Headcount Row (Gents, Ladies, Kids Only) -->
           <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 space-y-1.5">
-            <span class="text-[10px] font-bold uppercase text-slate-500 block">Headcount & Attendance</span>
-            <div class="grid grid-cols-4 gap-1.5">
+            <span class="text-[10px] font-bold uppercase text-slate-500 block">Headcount & Members</span>
+            <div class="grid grid-cols-3 gap-2">
               <div>
                 <label class="block text-[10px] font-bold text-blue-700 mb-0.5 text-center">Gents</label>
-                <div class="flex items-center justify-center gap-0.5 bg-white border border-slate-300 rounded-lg p-0.5 shadow-2xs">
-                  <button type="button" onclick="stepFormField('gentsCount', -1)" class="w-5 h-6 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center text-xs font-black">
+                <div class="flex items-center justify-center gap-1 bg-white border border-slate-300 rounded-lg p-0.5 shadow-2xs">
+                  <button type="button" onclick="stepFormField('gentsCount', -1)" class="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center text-xs font-black">
                     <i class="fa-solid fa-chevron-left text-[8px]"></i>
                   </button>
                   <input type="number" id="gentsCount" min="0" value="1" required class="w-full text-center bg-transparent py-1 text-xs font-bold focus:outline-none" />
-                  <button type="button" onclick="stepFormField('gentsCount', 1)" class="w-5 h-6 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center text-xs font-black">
+                  <button type="button" onclick="stepFormField('gentsCount', 1)" class="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center text-xs font-black">
                     <i class="fa-solid fa-chevron-right text-[8px]"></i>
                   </button>
                 </div>
@@ -201,12 +201,12 @@
 
               <div>
                 <label class="block text-[10px] font-bold text-pink-700 mb-0.5 text-center">Ladies</label>
-                <div class="flex items-center justify-center gap-0.5 bg-white border border-slate-300 rounded-lg p-0.5 shadow-2xs">
-                  <button type="button" onclick="stepFormField('ladiesCount', -1)" class="w-5 h-6 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center text-xs font-black">
+                <div class="flex items-center justify-center gap-1 bg-white border border-slate-300 rounded-lg p-0.5 shadow-2xs">
+                  <button type="button" onclick="stepFormField('ladiesCount', -1)" class="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center text-xs font-black">
                     <i class="fa-solid fa-chevron-left text-[8px]"></i>
                   </button>
                   <input type="number" id="ladiesCount" min="0" value="1" required class="w-full text-center bg-transparent py-1 text-xs font-bold focus:outline-none" />
-                  <button type="button" onclick="stepFormField('ladiesCount', 1)" class="w-5 h-6 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center text-xs font-black">
+                  <button type="button" onclick="stepFormField('ladiesCount', 1)" class="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center text-xs font-black">
                     <i class="fa-solid fa-chevron-right text-[8px]"></i>
                   </button>
                 </div>
@@ -214,25 +214,12 @@
 
               <div>
                 <label class="block text-[10px] font-bold text-amber-700 mb-0.5 text-center">Kids</label>
-                <div class="flex items-center justify-center gap-0.5 bg-white border border-slate-300 rounded-lg p-0.5 shadow-2xs">
-                  <button type="button" onclick="stepFormField('kidsCount', -1)" class="w-5 h-6 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center text-xs font-black">
+                <div class="flex items-center justify-center gap-1 bg-white border border-slate-300 rounded-lg p-0.5 shadow-2xs">
+                  <button type="button" onclick="stepFormField('kidsCount', -1)" class="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center text-xs font-black">
                     <i class="fa-solid fa-chevron-left text-[8px]"></i>
                   </button>
                   <input type="number" id="kidsCount" min="0" value="0" required class="w-full text-center bg-transparent py-1 text-xs font-bold focus:outline-none" />
-                  <button type="button" onclick="stepFormField('kidsCount', 1)" class="w-5 h-6 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center text-xs font-black">
-                    <i class="fa-solid fa-chevron-right text-[8px]"></i>
-                  </button>
-                </div>
-              </div>
-
-              <div>
-                <label class="block text-[10px] font-bold text-emerald-800 mb-0.5 text-center">Coming</label>
-                <div class="flex items-center justify-center gap-0.5 bg-emerald-50 border border-emerald-300 rounded-lg p-0.5 shadow-2xs">
-                  <button type="button" onclick="stepFormField('formComingCount', -1)" class="w-5 h-6 rounded bg-emerald-200 hover:bg-emerald-300 text-emerald-900 flex items-center justify-center text-xs font-black">
-                    <i class="fa-solid fa-chevron-left text-[8px]"></i>
-                  </button>
-                  <input type="number" id="formComingCount" min="0" value="2" required class="w-full text-center bg-transparent py-1 text-xs font-black text-emerald-950 focus:outline-none" />
-                  <button type="button" onclick="stepFormField('formComingCount', 1)" class="w-5 h-6 rounded bg-emerald-200 hover:bg-emerald-300 text-emerald-900 flex items-center justify-center text-xs font-black">
+                  <button type="button" onclick="stepFormField('kidsCount', 1)" class="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center text-xs font-black">
                     <i class="fa-solid fa-chevron-right text-[8px]"></i>
                   </button>
                 </div>
@@ -269,7 +256,7 @@
     </div>
   </div>
 
-  <!-- Manage Functions, Categories & Relations Modal -->
+  <!-- Manage Functions, Categories & Relations Modal with Collapsible Sections -->
   <div id="metaManagerModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-3">
     <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full max-h-[90vh] flex flex-col overflow-hidden">
       <div class="px-4 py-3 bg-slate-800 text-white flex items-center justify-between">
@@ -538,7 +525,7 @@
       </div>
     </div>
 
-    <!-- 3. Showing Entries / Guest List (Shows How Many Out of Total Are Coming) -->
+    <!-- 3. Showing Entries / Guest List -->
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-visible">
       
       <!-- Accordion Header Bar -->
@@ -552,7 +539,7 @@
           <span id="historyActionText" class="text-[11px] font-semibold text-indigo-600 ml-1">Tap to Expand</span>
         </div>
 
-        <!-- Toolstrip (Columns Dropdown & View Mode Switcher: Table, Tiles, List) -->
+        <!-- Toolstrip -->
         <div class="flex items-center justify-between sm:justify-end gap-1.5 flex-nowrap">
           
           <!-- Column Customizer Dropdown -->
@@ -563,7 +550,6 @@
               <i class="fa-solid fa-chevron-down text-[8px] text-slate-400"></i>
             </button>
 
-            <!-- Correctly Positioned Dropdown -->
             <div id="columnPickerDropdown" class="hidden absolute left-0 sm:left-auto sm:right-0 mt-1 w-52 bg-white border border-slate-300 rounded-xl shadow-2xl p-3 z-50 space-y-2 text-xs">
               <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 pb-1 border-b border-slate-100">Toggle Visible Columns</div>
               <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600 py-0.5">
@@ -580,6 +566,9 @@
               </label>
               <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600 py-0.5">
                 <input type="checkbox" onchange="toggleColSetting('glk')" id="colChk_glk" class="w-3.5 h-3.5 rounded text-indigo-600 focus:ring-0" /> G / L / K Counts
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600 py-0.5">
+                <input type="checkbox" onchange="toggleColSetting('total')" id="colChk_total" class="w-3.5 h-3.5 rounded text-indigo-600 focus:ring-0" /> Total Inv.
               </label>
               <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600 py-0.5">
                 <input type="checkbox" onchange="toggleColSetting('coming')" id="colChk_coming" class="w-3.5 h-3.5 rounded text-indigo-600 focus:ring-0" /> Attending / Total
@@ -642,6 +631,7 @@
     let selectedTopFunction = 'All';
     let pendingImportPayload = null;
 
+    // Column Settings
     let colSettings = getStoredColSettings();
 
     function getStoredColSettings() {
@@ -655,6 +645,7 @@
         rel: true,
         guest: true,
         glk: true,
+        total: true,
         coming: true,
         inv: true,
         gifts: true
@@ -781,14 +772,6 @@
       if (!input) return;
       let val = parseInt(input.value) || 0;
       input.value = Math.max(0, val + delta);
-
-      // Auto update form coming count if gents/ladies/kids changed
-      if (fieldId === 'gentsCount' || fieldId === 'ladiesCount' || fieldId === 'kidsCount') {
-        const g = parseInt(document.getElementById('gentsCount').value) || 0;
-        const l = parseInt(document.getElementById('ladiesCount').value) || 0;
-        const k = parseInt(document.getElementById('kidsCount').value) || 0;
-        document.getElementById('formComingCount').value = g + l + k;
-      }
     }
 
     if (loggedCode) {
@@ -1567,9 +1550,6 @@
       const kids = parseInt(document.getElementById('kidsCount').value) || 0;
       const totalHead = gents + ladies + kids;
 
-      let comingVal = parseInt(document.getElementById('formComingCount').value);
-      if (isNaN(comingVal) || comingVal < 0) comingVal = totalHead;
-      
       const rawGiftAmount = parseFloat(document.getElementById('giftAmount').value);
       const giftAmount = (!isNaN(rawGiftAmount) && rawGiftAmount > 0) ? rawGiftAmount : 0;
       
@@ -1588,7 +1568,6 @@
         ladies: ladies,
         kids: kids,
         kidNames: '',
-        comingCount: comingVal,
         giftAmount: giftAmount,
         giftDescription: giftDescription,
         isBlocked: false,
@@ -1597,6 +1576,7 @@
 
       if (!docId) {
         record.invitation = "Invited";
+        record.comingCount = totalHead;
       }
 
       if (docId) {
@@ -1652,9 +1632,6 @@
       document.getElementById('gentsCount').value = (item.gents !== undefined) ? item.gents : 1;
       document.getElementById('ladiesCount').value = (item.ladies !== undefined) ? item.ladies : 1;
       document.getElementById('kidsCount').value = (item.kids !== undefined) ? item.kids : 0;
-      
-      const total = ((item.gents || 0) + (item.ladies || 0) + (item.kids || 0));
-      document.getElementById('formComingCount').value = (item.comingCount !== undefined) ? item.comingCount : total;
 
       document.getElementById('giftAmount').value = (item.giftAmount && item.giftAmount > 0) ? item.giftAmount : '';
       document.getElementById('giftDescription').value = (item.giftDescription && item.giftDescription !== '0') ? item.giftDescription : '';
@@ -1742,7 +1719,6 @@
       document.getElementById('gentsCount').value = 1;
       document.getElementById('ladiesCount').value = 1;
       document.getElementById('kidsCount').value = 0;
-      document.getElementById('formComingCount').value = 2;
       document.getElementById('giftAmount').value = '';
       document.getElementById('giftDescription').value = '';
       
@@ -1911,7 +1887,6 @@
       }
     }
 
-    // Displays clear Attending / Total Count with Stepper Control
     function renderTableView(items, container) {
       const codeTh = isAdmin ? `<th class="py-2 px-2.5 whitespace-nowrap">Code</th>` : '';
 
@@ -1930,6 +1905,7 @@
                   <th class="py-2 px-1 text-center text-pink-700 whitespace-nowrap">L</th>
                   <th class="py-2 px-1 text-center text-amber-700 whitespace-nowrap">K</th>
                 ` : ''}
+                ${colSettings.total ? `<th class="py-2 px-2 text-center font-bold text-slate-500 whitespace-nowrap">Total</th>` : ''}
                 ${colSettings.coming ? `<th class="py-2 px-2 text-center font-black bg-emerald-50 text-emerald-950 whitespace-nowrap">Attending / Total</th>` : ''}
                 ${colSettings.inv ? `<th class="py-2 px-2.5 text-center bg-indigo-50/60 text-indigo-900 font-bold whitespace-nowrap">Invitation</th>` : ''}
                 ${colSettings.gifts ? `<th class="py-2 px-2.5 text-center bg-amber-50 text-amber-900 font-bold whitespace-nowrap">Gifts / Cash</th>` : ''}
@@ -1957,7 +1933,6 @@
           </select>
         `;
 
-        // Clear Attending / Total Stepper Block
         const attendingStepper = `
           <div class="flex items-center justify-center gap-1">
             <button onclick="adjustRowComingCount('${item.id}', -1)" class="w-5 h-5 rounded bg-emerald-100 hover:bg-emerald-200 text-emerald-800 flex items-center justify-center text-[9px] font-black transition">
@@ -2012,6 +1987,7 @@
               <td class="py-1.5 px-1 text-center text-slate-700 font-medium whitespace-nowrap">${item.ladies || 0}</td>
               <td class="py-1.5 px-1 text-center text-amber-700 font-bold whitespace-nowrap">${item.kids || 0}</td>
             ` : ''}
+            ${colSettings.total ? `<td class="py-1.5 px-2 text-center font-bold text-slate-600 whitespace-nowrap">${total}</td>` : ''}
             ${colSettings.coming ? `<td class="py-1.5 px-2 text-center bg-emerald-50/40 whitespace-nowrap">${attendingStepper}</td>` : ''}
             ${colSettings.inv ? `<td class="py-1.5 px-2.5 text-center bg-indigo-50/20 whitespace-nowrap">${inviteSelect}</td>` : ''}
             ${colSettings.gifts ? `<td class="py-1.5 px-2.5 text-center bg-amber-50/40 whitespace-nowrap">${giftDisplay}</td>` : ''}
@@ -2064,7 +2040,6 @@
               ${isAdmin ? `<span class="font-mono font-bold text-indigo-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 text-[10px]">${item.code || '—'}</span>` : ''}
             </div>
 
-            <!-- Members & Attendance Row -->
             <div class="grid grid-cols-2 gap-1 text-xs">
               <div class="bg-slate-50 p-1.5 rounded-lg border border-slate-100 flex items-center justify-around font-bold">
                 <span class="text-blue-700">G:${item.gents || 0}</span>
@@ -2081,7 +2056,6 @@
               </div>
             </div>
 
-            <!-- Gift Display Strip -->
             <div class="bg-amber-50/60 p-1.5 rounded-lg border border-amber-200 text-center font-bold text-amber-900 truncate text-xs">
               ${hasValidCash ? `₹${Number(item.giftAmount).toLocaleString('en-IN')}` : ''}
               ${hasValidGift ? `<span class="text-[10px] text-amber-800 block truncate">${item.giftDescription}</span>` : (!hasValidCash ? '<span class="text-slate-400 font-normal">No gift logged</span>' : '')}
@@ -2147,7 +2121,6 @@
                 <span class="text-amber-700">K:<b>${item.kids || 0}</b></span>
               </div>
 
-              <!-- Attending / Total Indicator -->
               <div class="flex items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
                 <span class="text-[10px] font-black text-emerald-800">Coming:</span>
                 <button onclick="adjustRowComingCount('${item.id}', -1)" class="w-4 h-4 rounded bg-emerald-200 text-emerald-900 flex items-center justify-center text-[8px] font-black">◀</button>
