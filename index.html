@@ -77,7 +77,6 @@
   <div id="guestEntryModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-3">
     <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[92vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
       
-      <!-- Modal Header -->
       <div class="px-4 py-3 bg-gradient-to-r from-indigo-900 to-indigo-800 text-white flex items-center justify-between shadow-sm">
         <div class="flex items-center gap-2">
           <div class="w-7 h-7 rounded-lg bg-indigo-600/60 flex items-center justify-center text-xs">
@@ -90,13 +89,11 @@
         </button>
       </div>
 
-      <!-- Modal Body (Form) -->
       <div class="p-3 sm:p-4 overflow-y-auto space-y-3">
         <form id="familyForm" onsubmit="handleFormSubmit(event)" class="space-y-3">
           <input type="hidden" id="docId" value="" />
 
           <div class="grid grid-cols-2 gap-2">
-            <!-- Function Parameter -->
             <div class="col-span-1">
               <label class="block text-[10px] font-bold uppercase text-indigo-700 mb-0.5">Function *</label>
               <div id="funcSelectWrapper">
@@ -108,7 +105,6 @@
               </div>
             </div>
 
-            <!-- Category / Group -->
             <div class="col-span-1">
               <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Category *</label>
               <div id="groupSelectWrapper">
@@ -120,7 +116,6 @@
               </div>
             </div>
 
-            <!-- Relation -->
             <div class="col-span-1">
               <label class="block text-[10px] font-bold uppercase text-slate-400 mb-0.5">Relation</label>
               <div id="relationSelectWrapper">
@@ -132,26 +127,22 @@
               </div>
             </div>
 
-            <!-- Family / Guest Name -->
             <div class="col-span-1">
               <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Guest / Head *</label>
               <input type="text" id="familyName" required placeholder="e.g. Ramesh & Family" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-indigo-500" />
             </div>
 
-            <!-- Place -->
             <div class="col-span-1">
               <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Place</label>
               <input type="text" id="familyPlace" placeholder="e.g. Hyderabad" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-indigo-500" />
             </div>
 
-            <!-- Phone -->
             <div class="col-span-1">
               <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Phone Number</label>
               <input type="tel" id="familyPhone" placeholder="Mobile Number" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-indigo-500" />
             </div>
           </div>
 
-          <!-- Stepper Headcount Row -->
           <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 space-y-1.5">
             <span class="text-[10px] font-bold uppercase text-slate-500 block">Headcount & Members</span>
             <div class="grid grid-cols-3 gap-2">
@@ -196,7 +187,6 @@
             </div>
           </div>
 
-          <!-- Gifts & Cash Section -->
           <div class="bg-emerald-50/50 p-2.5 rounded-xl border border-emerald-200 space-y-1.5">
             <span class="text-[10px] font-bold uppercase text-emerald-800 block">Gift / Cash Information</span>
             <div class="grid grid-cols-2 gap-2">
@@ -211,7 +201,6 @@
             </div>
           </div>
 
-          <!-- Modal Footer Actions -->
           <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
             <button type="button" onclick="closeGuestModal()" class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition">
               Cancel
@@ -226,7 +215,7 @@
     </div>
   </div>
 
-  <!-- Manage Functions, Categories & Relations Modal with Collapsible Sections -->
+  <!-- Manage Functions, Categories & Relations Modal -->
   <div id="metaManagerModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-3">
     <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full max-h-[90vh] flex flex-col overflow-hidden">
       <div class="px-4 py-3 bg-slate-800 text-white flex items-center justify-between">
@@ -238,7 +227,6 @@
       </div>
 
       <div class="p-3.5 overflow-y-auto space-y-2.5">
-        <!-- 1. Collapsible Functions Section -->
         <div class="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-2xs">
           <button type="button" onclick="toggleAccordion('metaFuncBody', 'metaFuncChev', 'metaFuncTxt')" class="w-full flex items-center justify-between p-2.5 bg-slate-50 hover:bg-slate-100 text-left border-b border-slate-200 transition">
             <div class="flex items-center gap-2">
@@ -258,7 +246,6 @@
           </div>
         </div>
 
-        <!-- 2. Collapsible Categories Section -->
         <div class="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-2xs">
           <button type="button" onclick="toggleAccordion('metaCatBody', 'metaCatChev', 'metaCatTxt')" class="w-full flex items-center justify-between p-2.5 bg-slate-50 hover:bg-slate-100 text-left border-b border-slate-200 transition">
             <div class="flex items-center gap-2">
@@ -278,7 +265,6 @@
           </div>
         </div>
 
-        <!-- 3. Collapsible Relations Section -->
         <div class="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-2xs">
           <button type="button" onclick="toggleAccordion('metaRelBody', 'metaRelChev', 'metaRelTxt')" class="w-full flex items-center justify-between p-2.5 bg-slate-50 hover:bg-slate-100 text-left border-b border-slate-200 transition">
             <div class="flex items-center gap-2">
@@ -435,7 +421,7 @@
       </div>
     </div>
 
-    <!-- 2. Collapsible Filters Panel (Left Side: Invitation Dropdown | Right Side: Search Input) -->
+    <!-- 2. Collapsible Filters Panel -->
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
       <button type="button" onclick="toggleAccordion('filterContainer', 'filterChevron', 'filterActionText')" class="w-full flex items-center justify-between px-3 py-2.5 bg-slate-50 hover:bg-slate-100 border-b border-slate-200 transition text-left">
         <div class="flex items-center gap-2">
@@ -455,7 +441,6 @@
             </select>
           </div>
 
-          <!-- Top Row Filters -->
           <div class="col-span-1">
             <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Category:</label>
             <select id="histGroupFilter" onchange="renderFilteredHistory()" class="w-full bg-white border border-slate-300 text-xs font-semibold text-slate-700 px-2 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500">
@@ -470,7 +455,6 @@
             </select>
           </div>
 
-          <!-- Bottom Row Side-by-Side: Left: Invitation Dropdown | Right: Search Input -->
           <div class="col-span-1">
             <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Invitation / RSVP:</label>
             <select id="histRsvpFilter" onchange="renderFilteredHistory()" class="w-full bg-white border border-slate-300 text-xs font-semibold text-slate-700 px-2 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500">
@@ -514,7 +498,7 @@
           <span id="historyActionText" class="text-[11px] font-semibold text-indigo-600 ml-1">Tap to Expand</span>
         </div>
 
-        <!-- Toolstrip (Columns Dropdown & View Mode Switcher: Table, Tiles, List) -->
+        <!-- Toolstrip -->
         <div class="flex items-center justify-between sm:justify-end gap-1.5 flex-nowrap">
           
           <!-- Column Customizer Dropdown -->
@@ -525,7 +509,6 @@
               <i class="fa-solid fa-chevron-down text-[8px] text-slate-400"></i>
             </button>
 
-            <!-- Correctly Positioned Dropdown to Prevent Screen Clipping -->
             <div id="columnPickerDropdown" class="hidden absolute left-0 sm:left-auto sm:right-0 mt-1 w-52 bg-white border border-slate-300 rounded-xl shadow-2xl p-3 z-50 space-y-2 text-xs">
               <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 pb-1 border-b border-slate-100">Toggle Visible Columns</div>
               <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600 py-0.5">
@@ -603,7 +586,6 @@
     let currentViewMode = localStorage.getItem('fc_view_mode') || 'table';
     let selectedTopFunction = 'All';
 
-    // Column Settings
     let colSettings = getStoredColSettings();
 
     function getStoredColSettings() {
@@ -1036,7 +1018,6 @@
       document.getElementById('metaManagerModal').classList.add('hidden');
     }
 
-    // Quick Add inside Meta Manager Modal
     function quickAddMeta(type, inputId) {
       const input = document.getElementById(inputId);
       const val = input.value.trim();
@@ -1089,7 +1070,6 @@
       const allCategories = Array.from(new Set([...meta.categories, ...Object.keys(catCountMap)]));
       const allRelations = Array.from(new Set([...meta.relations, ...Object.keys(relCountMap)]));
 
-      // Sort Alphabetically
       allFunctions.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
       allCategories.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
       allRelations.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
@@ -1357,7 +1337,6 @@
         if (f.code && f.code.trim()) allCodes.add(f.code.trim().toUpperCase());
       });
 
-      // Alphabetical Ordering
       const sortedFunctions = Array.from(scopedFunctions).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
       const sortedCategories = Array.from(scopedCategories).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
       const sortedRelations = Array.from(scopedRelations).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
@@ -1802,7 +1781,6 @@
         return matchesCode && matchesGroup && matchesRelation && matchesRsvp && matchesSearch;
       });
 
-      // Alphabetical Sorting by Guest Name (A-Z)
       filtered.sort((a, b) => (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base' }));
 
       let filtG = 0, filtL = 0, filtK = 0, filtCash = 0, filtGiftsCount = 0;
@@ -1839,7 +1817,6 @@
       }
     }
 
-    // Auto-adjusting Table with Dynamic Column Visibility
     function renderTableView(items, container) {
       const codeTh = isAdmin ? `<th class="py-2 px-2.5 whitespace-nowrap">Code</th>` : '';
 
@@ -2053,7 +2030,6 @@
       container.innerHTML = html;
     }
 
-    // Universal Spreadsheet Exporter (.xlsx / UTF-8 CSV with BOM for Windows Excel & iOS/Mac Numbers)
     function exportUniversalSpreadsheet() {
       const target = getVisibleFamilies();
       if (target.length === 0) {
