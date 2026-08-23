@@ -349,7 +349,6 @@
 
             <div class="border-t border-slate-100 my-1"></div>
 
-            <!-- Unified Single Universal Export Option (MS Excel & iOS Numbers) -->
             <button onclick="closeActionMenu(); exportUniversalSpreadsheet();" class="w-full text-left px-3 py-2 text-xs font-bold text-emerald-700 hover:bg-emerald-50 flex items-center gap-2 transition">
               <i class="fa-solid fa-file-excel text-emerald-600 w-4"></i> Export to Excel & Numbers (.xlsx / CSV)
             </button>
@@ -371,7 +370,7 @@
         </div>
       </div>
 
-      <!-- PRIMARY FUNCTION FILTER + ADD GUEST BUTTON SIDE-BY-SIDE (Add Guest on Left, Function on Right) -->
+      <!-- PRIMARY FUNCTION FILTER + ADD GUEST BUTTON SIDE-BY-SIDE -->
       <div class="flex items-center gap-1.5 pt-1 border-t border-slate-100">
         <button type="button" onclick="openAddGuestModal()" class="px-2.5 sm:px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1 shrink-0 transition">
           <i class="fa-solid fa-plus text-[10px]"></i>
@@ -390,7 +389,6 @@
 
     <!-- Side-by-Side Unified Summary Dashboard -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-      <!-- Unified Headcount & Breakdown Card: G L K counts aligned to Left Side without 'Breakdown:' label -->
       <div class="bg-indigo-900 text-white p-3 rounded-xl shadow-sm space-y-2 flex flex-col justify-between">
         <div>
           <div class="flex items-center justify-between">
@@ -409,7 +407,6 @@
           </div>
         </div>
 
-        <!-- Left-Aligned G / L / K Counts below -->
         <div class="pt-2 border-t border-indigo-800/80 flex items-center justify-start text-xs">
           <div class="flex items-center gap-3 bg-indigo-950/60 px-2.5 py-1 rounded-lg border border-indigo-800">
             <span class="text-blue-300 font-bold text-xs">G: <b id="statGents" class="text-white">0</b></span>
@@ -419,7 +416,6 @@
         </div>
       </div>
 
-      <!-- Total Gifts & Cash Card -->
       <div class="bg-emerald-900 text-white p-3 rounded-xl shadow-sm flex flex-col justify-between space-y-2">
         <div class="flex items-center justify-between">
           <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-200 block">Total Gifts / Cash Received</span>
@@ -439,7 +435,7 @@
       </div>
     </div>
 
-    <!-- 2. Collapsible Filters Panel -->
+    <!-- 2. Collapsible Filters Panel (Left Side: Invitation Dropdown | Right Side: Search Input) -->
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
       <button type="button" onclick="toggleAccordion('filterContainer', 'filterChevron', 'filterActionText')" class="w-full flex items-center justify-between px-3 py-2.5 bg-slate-50 hover:bg-slate-100 border-b border-slate-200 transition text-left">
         <div class="flex items-center gap-2">
@@ -450,15 +446,16 @@
       </button>
 
       <div id="filterContainer" class="hidden p-2.5 sm:p-3 space-y-2">
-        <div class="bg-slate-50 p-2 sm:p-2.5 rounded-lg border border-slate-200 grid grid-cols-2 md:grid-cols-5 gap-1.5">
+        <div class="bg-slate-50 p-2 sm:p-2.5 rounded-lg border border-slate-200 grid grid-cols-2 md:grid-cols-4 gap-2">
           
-          <div id="adminCodeFilterCol" class="hidden col-span-1">
+          <div id="adminCodeFilterCol" class="hidden col-span-2 md:col-span-4">
             <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Filter Code:</label>
             <select id="histCodeFilter" onchange="renderFilteredHistory()" class="w-full bg-white border border-slate-300 text-xs font-semibold text-slate-700 px-2 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500">
               <option value="All">All Codes</option>
             </select>
           </div>
 
+          <!-- Top Row Filters -->
           <div class="col-span-1">
             <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Category:</label>
             <select id="histGroupFilter" onchange="renderFilteredHistory()" class="w-full bg-white border border-slate-300 text-xs font-semibold text-slate-700 px-2 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500">
@@ -473,6 +470,7 @@
             </select>
           </div>
 
+          <!-- Bottom Row Side-by-Side: Left: Invitation Dropdown | Right: Search Input -->
           <div class="col-span-1">
             <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Invitation / RSVP:</label>
             <select id="histRsvpFilter" onchange="renderFilteredHistory()" class="w-full bg-white border border-slate-300 text-xs font-semibold text-slate-700 px-2 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500">
@@ -483,7 +481,7 @@
             </select>
           </div>
 
-          <div class="col-span-2 sm:col-span-1">
+          <div class="col-span-1">
             <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Search:</label>
             <input type="text" id="searchInput" oninput="renderFilteredHistory()" placeholder="Search name, gift, place..." class="w-full bg-white border border-slate-300 text-xs px-2.5 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500" />
           </div>
@@ -516,7 +514,7 @@
           <span id="historyActionText" class="text-[11px] font-semibold text-indigo-600 ml-1">Tap to Expand</span>
         </div>
 
-        <!-- Toolstrip -->
+        <!-- Toolstrip (Columns Dropdown & View Mode Switcher: Table, Tiles, List) -->
         <div class="flex items-center justify-between sm:justify-end gap-1.5 flex-nowrap">
           
           <!-- Column Customizer Dropdown -->
@@ -527,6 +525,7 @@
               <i class="fa-solid fa-chevron-down text-[8px] text-slate-400"></i>
             </button>
 
+            <!-- Correctly Positioned Dropdown to Prevent Screen Clipping -->
             <div id="columnPickerDropdown" class="hidden absolute left-0 sm:left-auto sm:right-0 mt-1 w-52 bg-white border border-slate-300 rounded-xl shadow-2xl p-3 z-50 space-y-2 text-xs">
               <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 pb-1 border-b border-slate-100">Toggle Visible Columns</div>
               <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600 py-0.5">
@@ -690,7 +689,6 @@
       track.lastFunc = funcName;
       track.streak = streak;
 
-      // If used more than 2 times consecutively, set as sticky default
       if (streak >= 2) {
         track.stickyDefault = funcName;
       }
@@ -708,25 +706,12 @@
       }
     }
 
-    function setStickyDefaultFunction(funcName) {
-      const key = getFunctionTrackingKey();
-      let track = {};
-      try {
-        track = JSON.parse(localStorage.getItem(key) || '{}');
-      } catch (e) {}
-      track.stickyDefault = funcName;
-      track.lastFunc = funcName;
-      track.streak = 2;
-      localStorage.setItem(key, JSON.stringify(track));
-    }
-
     function openAddGuestModal() {
       resetForm();
       document.getElementById('modalHeaderTitle').textContent = "Add Guest Entry & Gifts";
       document.getElementById('modalHeaderIcon').className = "fa-solid fa-user-plus text-amber-300";
       document.getElementById('saveBtnText').textContent = "Save Guest Entry";
 
-      // Select Sticky Default Function if Available
       const stickyFunc = getStickyDefaultFunction();
       const formFuncSelect = document.getElementById('funcSelect');
       
@@ -1577,9 +1562,7 @@
         await collectionRef.add(record);
       }
 
-      // Record Function Usage for Automatic Sticky Defaulting (If used > 2 times)
       recordFunctionUsage(finalFunction);
-
       closeGuestModal();
     }
 
@@ -2070,7 +2053,7 @@
       container.innerHTML = html;
     }
 
-    // Unified Universal Spreadsheet Exporter (.xlsx / UTF-8 CSV with BOM for Windows Excel & iOS/Mac Numbers)
+    // Universal Spreadsheet Exporter (.xlsx / UTF-8 CSV with BOM for Windows Excel & iOS/Mac Numbers)
     function exportUniversalSpreadsheet() {
       const target = getVisibleFamilies();
       if (target.length === 0) {
