@@ -73,6 +73,45 @@
     </div>
   </div>
 
+  <!-- POPUP MODAL: Import Mode Selector (Overwrite All vs Update Existing) -->
+  <div id="importModeModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-5 space-y-4 animate-in fade-in zoom-in-95 duration-150">
+      <div class="text-center space-y-1.5">
+        <div class="w-12 h-12 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-600 flex items-center justify-center mx-auto text-xl">
+          <i class="fa-solid fa-file-import"></i>
+        </div>
+        <h3 class="text-base font-bold text-slate-900">Choose Import Mode</h3>
+        <p id="importModeDesc" class="text-xs text-slate-500">Ready to import spreadsheet records. How would you like to proceed?</p>
+      </div>
+
+      <div class="space-y-2">
+        <button type="button" onclick="executePendingImport('update')" class="w-full p-3 rounded-xl border border-indigo-200 bg-indigo-50/60 hover:bg-indigo-100 hover:border-indigo-400 text-left transition flex items-start gap-3">
+          <div class="w-7 h-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-xs shrink-0 mt-0.5">
+            <i class="fa-solid fa-arrows-rotate"></i>
+          </div>
+          <div>
+            <div class="text-xs font-bold text-indigo-950">Update / Merge Existing Data</div>
+            <div class="text-[11px] text-indigo-700/80 mt-0.5">Updates existing matching guests and appends new entries without deleting anything.</div>
+          </div>
+        </button>
+
+        <button type="button" onclick="executePendingImport('replace')" class="w-full p-3 rounded-xl border border-rose-200 bg-rose-50/60 hover:bg-rose-100 hover:border-rose-400 text-left transition flex items-start gap-3">
+          <div class="w-7 h-7 rounded-lg bg-rose-600 text-white flex items-center justify-center text-xs shrink-0 mt-0.5">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+          </div>
+          <div>
+            <div class="text-xs font-bold text-rose-950">Overwrite All Data (Fresh Replace)</div>
+            <div class="text-[11px] text-rose-700/80 mt-0.5">Clears all current guest records for this code and imports fresh data from the file.</div>
+          </div>
+        </button>
+      </div>
+
+      <button type="button" onclick="cancelPendingImport()" class="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition">
+        Cancel Import
+      </button>
+    </div>
+  </div>
+
   <!-- POPUP MODAL: Add / Edit Guest Entry Window -->
   <div id="guestEntryModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-3">
     <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[92vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
@@ -215,7 +254,7 @@
     </div>
   </div>
 
-  <!-- Manage Functions, Categories & Relations Modal -->
+  <!-- Manage Functions, Categories & Relations Modal with Collapsible Sections -->
   <div id="metaManagerModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-3">
     <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full max-h-[90vh] flex flex-col overflow-hidden">
       <div class="px-4 py-3 bg-slate-800 text-white flex items-center justify-between">
@@ -509,7 +548,7 @@
               <i class="fa-solid fa-chevron-down text-[8px] text-slate-400"></i>
             </button>
 
-            <div id="columnPickerDropdown" class="hidden absolute left-0 sm:left-auto sm:right-0 mt-1 w-52 bg-white border border-slate-300 rounded-xl shadow-2xl p-3 z-50 space-y-2 text-xs">
+            <div id="columnPickerDropdown" class="hidden absolute left-0 sm:left-auto sm:right-0 mt-1.5 w-52 bg-white border border-slate-300 rounded-xl shadow-2xl p-3 z-50 space-y-2 text-xs">
               <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 pb-1 border-b border-slate-100">Toggle Visible Columns</div>
               <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600 py-0.5">
                 <input type="checkbox" onchange="toggleColSetting('func')" id="colChk_func" class="w-3.5 h-3.5 rounded text-indigo-600 focus:ring-0" /> Function
@@ -585,7 +624,9 @@
     let isAdmin = (loggedCode.toUpperCase() === ADMIN_CODE);
     let currentViewMode = localStorage.getItem('fc_view_mode') || 'table';
     let selectedTopFunction = 'All';
+    let pendingImportPayload = null;
 
+    // Column Settings
     let colSettings = getStoredColSettings();
 
     function getStoredColSettings() {
@@ -637,7 +678,7 @@
       }
     });
 
-    document.getElementById('spreadsheetFileInput').addEventListener('change', handleSpreadsheetImport);
+    document.getElementById('spreadsheetFileInput').addEventListener('change', handleSpreadsheetFilePicked);
 
     function triggerImport() {
       closeActionMenu();
@@ -1074,7 +1115,6 @@
       allCategories.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
       allRelations.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
 
-      // 1. Functions List
       funcList.innerHTML = '';
       allFunctions.forEach(fn => {
         const count = funcCountMap[fn] || 0;
@@ -1101,7 +1141,6 @@
         funcList.appendChild(row);
       });
 
-      // 2. Categories List
       catList.innerHTML = '';
       allCategories.forEach(cat => {
         const count = catCountMap[cat] || 0;
@@ -1128,7 +1167,6 @@
         catList.appendChild(row);
       });
 
-      // 3. Relations List
       relList.innerHTML = '';
       allRelations.forEach(rel => {
         const count = relCountMap[rel] || 0;
@@ -1397,7 +1435,7 @@
       const formGroupSelect = document.getElementById('groupSelect');
       const currentFormGroupVal = formGroupSelect.value;
       formGroupSelect.innerHTML = '';
-      sortedCategories.forEach(grp => {
+      scopedCategories.forEach(grp => {
         const opt = document.createElement('option');
         opt.value = grp;
         opt.textContent = grp;
@@ -2063,7 +2101,8 @@
       XLSX.writeFile(wb, `Event_Guests_Tracker_${dateStr}.xlsx`);
     }
 
-    async function handleSpreadsheetImport(event) {
+    // Step 1: File Picked -> Parse & Show Modal to Select Replace vs Update
+    async function handleSpreadsheetFilePicked(event) {
       const file = event.target.files && event.target.files[0];
       if (!file) return;
 
@@ -2099,82 +2138,127 @@
 
         if (!parsedRows || parsedRows.length <= 1) {
           alert('Could not extract readable records from spreadsheet.');
+          event.target.value = '';
           return;
         }
 
-        const headers = parsedRows[0].map(h => String(h || '').trim().toLowerCase());
-        const getIdx = (candidates) => headers.findIndex(h => candidates.some(c => h.includes(c)));
+        // Store payload in memory & prompt user via Modal
+        pendingImportPayload = parsedRows;
+        document.getElementById('importModeDesc').textContent = `Parsed ${parsedRows.length - 1} rows from "${file.name}". Choose whether to overwrite all existing data or update/merge.`;
+        document.getElementById('importModeModal').classList.remove('hidden');
 
-        const funcIdx = getIdx(['function', 'event']);
-        const catIdx = getIdx(['category', 'group', 'side']);
-        const relIdx = getIdx(['relation']);
-        const nameIdx = getIdx(['name', 'guest', 'head']);
-        const placeIdx = getIdx(['place', 'city']);
-        const phoneIdx = getIdx(['phone', 'mobile']);
-        const gentsIdx = getIdx(['gent', 'male', 'man', 'males']);
-        const ladiesIdx = getIdx(['lad', 'female', 'women', 'females']);
-        const kidsIdx = getIdx(['kid', 'child', 'children']);
-        const statusIdx = getIdx(['invitation', 'status', 'rsvp']);
-        const giftAmtIdx = getIdx(['gift amount', 'amount', 'cash', 'gift cash', 'rupee']);
-        const giftDescIdx = getIdx(['gift item', 'gift description', 'gift name', 'gift']);
-        const codeIdx = getIdx(['code', 'passcode']);
+      } catch (err) {
+        console.error(err);
+        alert('Error processing file.');
+      } finally {
+        event.target.value = '';
+      }
+    }
 
-        const snapshot = await collectionRef.get();
-        const existingDocs = [];
-        snapshot.forEach(doc => {
-          existingDocs.push({ id: doc.id, ...doc.data() });
+    function cancelPendingImport() {
+      pendingImportPayload = null;
+      document.getElementById('importModeModal').classList.add('hidden');
+    }
+
+    // Step 2: Execute Import based on chosen mode ('replace' or 'update')
+    async function executePendingImport(mode) {
+      if (!pendingImportPayload || pendingImportPayload.length <= 1) {
+        cancelPendingImport();
+        return;
+      }
+
+      const parsedRows = pendingImportPayload;
+      const headers = parsedRows[0].map(h => String(h || '').trim().toLowerCase());
+      const getIdx = (candidates) => headers.findIndex(h => candidates.some(c => h.includes(c)));
+
+      const funcIdx = getIdx(['function', 'event']);
+      const catIdx = getIdx(['category', 'group', 'side']);
+      const relIdx = getIdx(['relation']);
+      const nameIdx = getIdx(['name', 'guest', 'head']);
+      const placeIdx = getIdx(['place', 'city']);
+      const phoneIdx = getIdx(['phone', 'mobile']);
+      const gentsIdx = getIdx(['gent', 'male', 'man', 'males']);
+      const ladiesIdx = getIdx(['lad', 'female', 'women', 'females']);
+      const kidsIdx = getIdx(['kid', 'child', 'children']);
+      const statusIdx = getIdx(['invitation', 'status', 'rsvp']);
+      const giftAmtIdx = getIdx(['gift amount', 'amount', 'cash', 'gift cash', 'rupee']);
+      const giftDescIdx = getIdx(['gift item', 'gift description', 'gift name', 'gift']);
+      const codeIdx = getIdx(['code', 'passcode']);
+
+      const snapshot = await collectionRef.get();
+      const existingDocs = [];
+      snapshot.forEach(doc => {
+        existingDocs.push({ id: doc.id, ...doc.data() });
+      });
+
+      const batch = db.batch();
+      let overwrittenCount = 0;
+      let newInsertedCount = 0;
+      let deletedCount = 0;
+
+      // MODE: REPLACE ALL DATA -> Delete existing items for this family code first
+      if (mode === 'replace') {
+        const targetCode = loggedCode ? loggedCode.toUpperCase() : 'A2KU';
+        const docsToDelete = isAdmin 
+          ? existingDocs 
+          : existingDocs.filter(f => (f.code || '').toUpperCase() === targetCode);
+
+        docsToDelete.forEach(doc => {
+          batch.delete(collectionRef.doc(doc.id));
+          deletedCount++;
         });
 
-        const batch = db.batch();
-        let overwrittenCount = 0;
-        let newInsertedCount = 0;
+        // Clear existingDocs memory so all rows are inserted cleanly
+        existingDocs.length = 0;
+      }
 
-        for (let i = 1; i < parsedRows.length; i++) {
-          const row = parsedRows[i];
-          if (!row || row.length === 0) continue;
+      for (let i = 1; i < parsedRows.length; i++) {
+        const row = parsedRows[i];
+        if (!row || row.length === 0) continue;
 
-          const nameVal = String(nameIdx !== -1 && row[nameIdx] !== undefined ? row[nameIdx] : (row[3] || '')).trim();
-          const sideVal = String(catIdx !== -1 && row[catIdx] !== undefined ? row[catIdx] : (row[1] || 'General')).trim();
-          const relVal = String(relIdx !== -1 && row[relIdx] !== undefined ? row[relIdx] : (row[2] || '')).trim();
-          const fnVal = String(funcIdx !== -1 && row[funcIdx] !== undefined ? row[funcIdx] : (row[0] || 'Main Reception')).trim();
+        const nameVal = String(nameIdx !== -1 && row[nameIdx] !== undefined ? row[nameIdx] : (row[3] || '')).trim();
+        const sideVal = String(catIdx !== -1 && row[catIdx] !== undefined ? row[catIdx] : (row[1] || 'General')).trim();
+        const relVal = String(relIdx !== -1 && row[relIdx] !== undefined ? row[relIdx] : (row[2] || '')).trim();
+        const fnVal = String(funcIdx !== -1 && row[funcIdx] !== undefined ? row[funcIdx] : (row[0] || 'Main Reception')).trim();
 
-          if (!nameVal || isBinaryGarbage(nameVal) || isBinaryGarbage(sideVal) || isBinaryGarbage(relVal)) continue;
+        if (!nameVal || isBinaryGarbage(nameVal) || isBinaryGarbage(sideVal) || isBinaryGarbage(relVal)) continue;
 
-          const targetCode = String(codeIdx !== -1 && row[codeIdx] !== undefined && row[codeIdx] !== '' ? row[codeIdx] : (loggedCode || 'A2KU')).trim().toUpperCase();
+        const targetCode = String(codeIdx !== -1 && row[codeIdx] !== undefined && row[codeIdx] !== '' ? row[codeIdx] : (loggedCode || 'A2KU')).trim().toUpperCase();
 
-          const g = parseInt(gentsIdx !== -1 ? row[gentsIdx] : row[6]) || 0;
-          const l = parseInt(ladiesIdx !== -1 ? row[ladiesIdx] : row[7]) || 0;
-          const k = parseInt(kidsIdx !== -1 ? row[kidsIdx] : row[8]) || 0;
-          const totalHead = g + l + k;
+        const g = parseInt(gentsIdx !== -1 ? row[gentsIdx] : row[6]) || 0;
+        const l = parseInt(ladiesIdx !== -1 ? row[ladiesIdx] : row[7]) || 0;
+        const k = parseInt(kidsIdx !== -1 ? row[kidsIdx] : row[8]) || 0;
+        const totalHead = g + l + k;
 
-          const rawStatus = String(statusIdx !== -1 && row[statusIdx] !== undefined ? row[statusIdx] : (row[10] || 'Invited')).trim();
-          let parsedStatus = 'Invited';
-          if (rawStatus.toLowerCase().includes('confirm')) parsedStatus = 'Confirmed';
-          else if (rawStatus.toLowerCase().includes('not') || rawStatus.toLowerCase().includes('pend')) parsedStatus = 'Not Invited';
+        const rawStatus = String(statusIdx !== -1 && row[statusIdx] !== undefined ? row[statusIdx] : (row[10] || 'Invited')).trim();
+        let parsedStatus = 'Invited';
+        if (rawStatus.toLowerCase().includes('confirm')) parsedStatus = 'Confirmed';
+        else if (rawStatus.toLowerCase().includes('not') || rawStatus.toLowerCase().includes('pend')) parsedStatus = 'Not Invited';
 
-          const giftAmt = parseFloat(giftAmtIdx !== -1 ? row[giftAmtIdx] : row[11]) || 0;
-          const giftDesc = String(giftDescIdx !== -1 && row[giftDescIdx] !== undefined ? row[giftDescIdx] : (row[12] || '')).trim();
+        const giftAmt = parseFloat(giftAmtIdx !== -1 ? row[giftAmtIdx] : row[11]) || 0;
+        const giftDesc = String(giftDescIdx !== -1 && row[giftDescIdx] !== undefined ? row[giftDescIdx] : (row[12] || '')).trim();
 
-          const record = {
-            code: targetCode,
-            eventFunction: fnVal || 'Main Reception',
-            side: canonicalCategory(sideVal),
-            relation: relVal,
-            name: nameVal,
-            place: String(placeIdx !== -1 && row[placeIdx] !== undefined ? row[placeIdx] : (row[4] || '')).trim(),
-            phone: String(phoneIdx !== -1 && row[phoneIdx] !== undefined ? row[phoneIdx] : (row[5] || '')).trim(),
-            gents: g,
-            ladies: l,
-            kids: k,
-            kidNames: '',
-            invitation: parsedStatus,
-            comingCount: (parsedStatus === 'Not Invited') ? 0 : totalHead,
-            giftAmount: giftAmt,
-            giftDescription: giftDesc,
-            isBlocked: false,
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-          };
+        const record = {
+          code: targetCode,
+          eventFunction: fnVal || 'Main Reception',
+          side: canonicalCategory(sideVal),
+          relation: relVal,
+          name: nameVal,
+          place: String(placeIdx !== -1 && row[placeIdx] !== undefined ? row[placeIdx] : (row[4] || '')).trim(),
+          phone: String(phoneIdx !== -1 && row[phoneIdx] !== undefined ? row[phoneIdx] : (row[5] || '')).trim(),
+          gents: g,
+          ladies: l,
+          kids: k,
+          kidNames: '',
+          invitation: parsedStatus,
+          comingCount: (parsedStatus === 'Not Invited') ? 0 : totalHead,
+          giftAmount: giftAmt,
+          giftDescription: giftDesc,
+          isBlocked: false,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
 
+        if (mode === 'update') {
           const matchIndex = existingDocs.findIndex(f => {
             const sameCode = (f.code || '').toUpperCase() === targetCode;
             const sameFn = (f.eventFunction || 'Main Reception').toLowerCase() === (fnVal || 'Main Reception').toLowerCase();
@@ -2194,19 +2278,22 @@
             batch.set(newRef, record);
             newInsertedCount++;
           }
-        }
-
-        if (overwrittenCount > 0 || newInsertedCount > 0) {
-          await batch.commit();
-          alert(`Import complete in Overwrite Mode!\n• Updated: ${overwrittenCount}\n• Newly Added: ${newInsertedCount}`);
         } else {
-          alert('No valid readable rows were parsed.');
+          // Replace Mode: directly insert fresh records
+          const newRef = collectionRef.doc();
+          batch.set(newRef, record);
+          newInsertedCount++;
         }
-      } catch (err) {
-        console.error(err);
-        alert('Error processing file.');
-      } finally {
-        event.target.value = '';
+      }
+
+      await batch.commit();
+      document.getElementById('importModeModal').classList.add('hidden');
+      pendingImportPayload = null;
+
+      if (mode === 'replace') {
+        alert(`Successfully overwritten all data!\n• Cleared ${deletedCount} previous records.\n• Added ${newInsertedCount} fresh records.`);
+      } else {
+        alert(`Successfully merged & updated data!\n• Updated: ${overwrittenCount} records\n• Added: ${newInsertedCount} new records.`);
       }
     }
 
