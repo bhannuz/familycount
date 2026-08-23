@@ -371,7 +371,7 @@
         </div>
       </div>
 
-      <!-- PRIMARY FUNCTION FILTER + ADD GUEST BUTTON SIDE-BY-SIDE -->
+      <!-- PRIMARY FUNCTION FILTER + ADD GUEST BUTTON SIDE-BY-SIDE (Add Guest on Left, Function on Right) -->
       <div class="flex items-center gap-1.5 pt-1 border-t border-slate-100">
         <button type="button" onclick="openAddGuestModal()" class="px-2.5 sm:px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1 shrink-0 transition">
           <i class="fa-solid fa-plus text-[10px]"></i>
@@ -409,7 +409,7 @@
           </div>
         </div>
 
-        <!-- Left-Aligned G / L / K Counts below (Breakdown text removed) -->
+        <!-- Left-Aligned G / L / K Counts below -->
         <div class="pt-2 border-t border-indigo-800/80 flex items-center justify-start text-xs">
           <div class="flex items-center gap-3 bg-indigo-950/60 px-2.5 py-1 rounded-lg border border-indigo-800">
             <span class="text-blue-300 font-bold text-xs">G: <b id="statGents" class="text-white">0</b></span>
@@ -516,7 +516,7 @@
           <span id="historyActionText" class="text-[11px] font-semibold text-indigo-600 ml-1">Tap to Expand</span>
         </div>
 
-        <!-- Toolstrip (Columns Dropdown & View Mode Switcher: Table, Tiles, List) -->
+        <!-- Toolstrip -->
         <div class="flex items-center justify-between sm:justify-end gap-1.5 flex-nowrap">
           
           <!-- Column Customizer Dropdown -->
@@ -527,7 +527,6 @@
               <i class="fa-solid fa-chevron-down text-[8px] text-slate-400"></i>
             </button>
 
-            <!-- Correctly Positioned Dropdown to Prevent Screen Clipping -->
             <div id="columnPickerDropdown" class="hidden absolute left-0 sm:left-auto sm:right-0 mt-1 w-52 bg-white border border-slate-300 rounded-xl shadow-2xl p-3 z-50 space-y-2 text-xs">
               <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 pb-1 border-b border-slate-100">Toggle Visible Columns</div>
               <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600 py-0.5">
@@ -605,6 +604,7 @@
     let currentViewMode = localStorage.getItem('fc_view_mode') || 'table';
     let selectedTopFunction = 'All';
 
+    // Column Settings
     let colSettings = getStoredColSettings();
 
     function getStoredColSettings() {
@@ -665,11 +665,87 @@
       input.click();
     }
 
+    // Function Frequency Sticky Tracking Logic
+    function getFunctionTrackingKey() {
+      return `fc_func_track_${loggedCode || 'default'}`;
+    }
+
+    function recordFunctionUsage(funcName) {
+      if (!funcName) return;
+      const key = getFunctionTrackingKey();
+      let track = {};
+      try {
+        track = JSON.parse(localStorage.getItem(key) || '{}');
+      } catch (e) {}
+      
+      const lastFunc = track.lastFunc || '';
+      let streak = track.streak || 0;
+
+      if (lastFunc.toLowerCase() === funcName.toLowerCase()) {
+        streak += 1;
+      } else {
+        streak = 1;
+      }
+
+      track.lastFunc = funcName;
+      track.streak = streak;
+
+      // If used more than 2 times consecutively, set as sticky default
+      if (streak >= 2) {
+        track.stickyDefault = funcName;
+      }
+
+      localStorage.setItem(key, JSON.stringify(track));
+    }
+
+    function getStickyDefaultFunction() {
+      const key = getFunctionTrackingKey();
+      try {
+        const track = JSON.parse(localStorage.getItem(key) || '{}');
+        return track.stickyDefault || '';
+      } catch (e) {
+        return '';
+      }
+    }
+
+    function setStickyDefaultFunction(funcName) {
+      const key = getFunctionTrackingKey();
+      let track = {};
+      try {
+        track = JSON.parse(localStorage.getItem(key) || '{}');
+      } catch (e) {}
+      track.stickyDefault = funcName;
+      track.lastFunc = funcName;
+      track.streak = 2;
+      localStorage.setItem(key, JSON.stringify(track));
+    }
+
     function openAddGuestModal() {
       resetForm();
       document.getElementById('modalHeaderTitle').textContent = "Add Guest Entry & Gifts";
       document.getElementById('modalHeaderIcon').className = "fa-solid fa-user-plus text-amber-300";
       document.getElementById('saveBtnText').textContent = "Save Guest Entry";
+
+      // Select Sticky Default Function if Available
+      const stickyFunc = getStickyDefaultFunction();
+      const formFuncSelect = document.getElementById('funcSelect');
+      
+      let targetFnToSet = '';
+      if (selectedTopFunction !== 'All') {
+        targetFnToSet = selectedTopFunction;
+      } else if (stickyFunc) {
+        targetFnToSet = stickyFunc;
+      }
+
+      if (targetFnToSet) {
+        for (let opt of formFuncSelect.options) {
+          if (opt.value.toLowerCase() === targetFnToSet.toLowerCase()) {
+            formFuncSelect.value = opt.value;
+            break;
+          }
+        }
+      }
+
       document.getElementById('guestEntryModal').classList.remove('hidden');
     }
 
@@ -700,11 +776,11 @@
 
       if (isHidden) {
         container.classList.remove('hidden');
-        chevron.classList.add('rotate-90');
+        if (chevron) chevron.classList.add('rotate-90');
         if (text) text.textContent = 'Tap to Collapse';
       } else {
         container.classList.add('hidden');
-        chevron.classList.remove('rotate-90');
+        if (chevron) chevron.classList.remove('rotate-90');
         if (text) text.textContent = 'Tap to Expand';
       }
     }
@@ -1500,6 +1576,9 @@
       } else {
         await collectionRef.add(record);
       }
+
+      // Record Function Usage for Automatic Sticky Defaulting (If used > 2 times)
+      recordFunctionUsage(finalFunction);
 
       closeGuestModal();
     }
