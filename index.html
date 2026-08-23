@@ -523,7 +523,7 @@
       </div>
     </div>
 
-    <!-- 3. Showing Entries / Guest List (Auto-Adjusted Column Widths & Compact View Removed) -->
+    <!-- 3. Showing Entries / Guest List -->
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-visible">
       
       <!-- Accordion Header Bar -->
@@ -548,7 +548,7 @@
               <i class="fa-solid fa-chevron-down text-[8px] text-slate-400"></i>
             </button>
 
-            <div id="columnPickerDropdown" class="hidden absolute left-0 sm:left-auto sm:right-0 mt-1.5 w-52 bg-white border border-slate-300 rounded-xl shadow-2xl p-3 z-50 space-y-2 text-xs">
+            <div id="columnPickerDropdown" class="hidden absolute left-0 sm:left-auto sm:right-0 mt-1 w-52 bg-white border border-slate-300 rounded-xl shadow-2xl p-3 z-50 space-y-2 text-xs">
               <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 pb-1 border-b border-slate-100">Toggle Visible Columns</div>
               <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600 py-0.5">
                 <input type="checkbox" onchange="toggleColSetting('func')" id="colChk_func" class="w-3.5 h-3.5 rounded text-indigo-600 focus:ring-0" /> Function
@@ -577,7 +577,6 @@
             </div>
           </div>
 
-          <!-- View Switcher Tabs: Table, Tiles, List -->
           <div class="flex items-center bg-white border border-slate-200 rounded-lg p-0.5 text-xs font-semibold shrink-0">
             <button type="button" onclick="setViewMode('table')" id="btnViewTable" class="px-2.5 py-1 rounded transition text-indigo-600 bg-indigo-50 font-bold flex items-center gap-1" title="Table View">
               <i class="fa-solid fa-table"></i> <span class="hidden sm:inline text-[11px]">Table</span>
@@ -592,7 +591,6 @@
         </div>
       </div>
 
-      <!-- Collapsible Body Container -->
       <div id="historyContainer" class="hidden p-2.5 sm:p-3 overflow-x-auto">
         <div id="viewDisplayContainer"></div>
         <p id="emptyMessage" class="hidden text-center py-6 text-slate-400 text-xs">No matching entries found for this filter selection.</p>
@@ -626,7 +624,6 @@
     let selectedTopFunction = 'All';
     let pendingImportPayload = null;
 
-    // Column Settings
     let colSettings = getStoredColSettings();
 
     function getStoredColSettings() {
@@ -687,7 +684,6 @@
       input.click();
     }
 
-    // Function Frequency Sticky Tracking Logic
     function getFunctionTrackingKey() {
       return `fc_func_track_${loggedCode || 'default'}`;
     }
@@ -1547,8 +1543,13 @@
       const gents = parseInt(document.getElementById('gentsCount').value) || 0;
       const ladies = parseInt(document.getElementById('ladiesCount').value) || 0;
       const kids = parseInt(document.getElementById('kidsCount').value) || 0;
-      const giftAmount = parseFloat(document.getElementById('giftAmount').value) || 0;
-      const giftDescription = document.getElementById('giftDescription').value.trim();
+      
+      // Nullify if 0 or empty for giftAmount and giftDescription
+      const rawGiftAmount = parseFloat(document.getElementById('giftAmount').value);
+      const giftAmount = (!isNaN(rawGiftAmount) && rawGiftAmount > 0) ? rawGiftAmount : 0;
+      
+      const rawGiftDescription = document.getElementById('giftDescription').value.trim();
+      const giftDescription = (rawGiftDescription === '0' || rawGiftDescription === '') ? '' : rawGiftDescription;
 
       const record = {
         code: loggedCode || "A2KU",
@@ -1612,8 +1613,10 @@
       document.getElementById('gentsCount').value = (item.gents !== undefined) ? item.gents : 1;
       document.getElementById('ladiesCount').value = (item.ladies !== undefined) ? item.ladies : 1;
       document.getElementById('kidsCount').value = (item.kids !== undefined) ? item.kids : 0;
-      document.getElementById('giftAmount').value = item.giftAmount || '';
-      document.getElementById('giftDescription').value = item.giftDescription || '';
+      
+      // Null-safe zero filtering on edit
+      document.getElementById('giftAmount').value = (item.giftAmount && item.giftAmount > 0) ? item.giftAmount : '';
+      document.getElementById('giftDescription').value = (item.giftDescription && item.giftDescription !== '0') ? item.giftDescription : '';
 
       const formFuncSelect = document.getElementById('funcSelect');
       const targetFn = item.eventFunction || 'Main Reception';
@@ -1746,8 +1749,16 @@
           confirmedIndividualCount += totalFamilyMembers;
         }
 
-        if (f.giftAmount) totalCash += parseFloat(f.giftAmount) || 0;
-        if (f.giftDescription && f.giftDescription.trim().length > 0) totalGifts++;
+        // Strict non-zero gift & cash calculation (0 is treated as null)
+        const amt = parseFloat(f.giftAmount);
+        if (!isNaN(amt) && amt > 0) {
+          totalCash += amt;
+        }
+
+        const desc = (f.giftDescription || '').trim();
+        if (desc.length > 0 && desc !== '0' && desc.toLowerCase() !== 'null' && desc.toLowerCase() !== 'none' && desc.toLowerCase() !== 'nil') {
+          totalGifts++;
+        }
       });
 
       const totalHeadcount = gCount + lCount + kCount;
@@ -1827,8 +1838,14 @@
         filtG += item.gents || 0;
         filtL += item.ladies || 0;
         filtK += item.kids || 0;
-        if (item.giftAmount) filtCash += parseFloat(item.giftAmount) || 0;
-        if (item.giftDescription && item.giftDescription.trim().length > 0) filtGiftsCount++;
+        
+        const amt = parseFloat(item.giftAmount);
+        if (!isNaN(amt) && amt > 0) filtCash += amt;
+
+        const desc = (item.giftDescription || '').trim();
+        if (desc.length > 0 && desc !== '0' && desc.toLowerCase() !== 'null' && desc.toLowerCase() !== 'none') {
+          filtGiftsCount++;
+        }
       });
 
       document.getElementById('filteredResultsLabel').textContent = `Showing ${filtered.length} of ${target.length} entries`;
@@ -1899,10 +1916,15 @@
           </select>
         `;
 
+        // 0 or '0' is completely nullified in UI display
+        const hasValidCash = (item.giftAmount && parseFloat(item.giftAmount) > 0);
+        const rawDesc = (item.giftDescription || '').trim();
+        const hasValidGift = (rawDesc.length > 0 && rawDesc !== '0' && rawDesc.toLowerCase() !== 'null' && rawDesc.toLowerCase() !== 'none');
+
         const giftDisplay = `
           <div class="text-[10px] text-center whitespace-nowrap">
-            ${item.giftAmount ? `<span class="font-black text-emerald-800 block">₹${Number(item.giftAmount).toLocaleString('en-IN')}</span>` : ''}
-            ${item.giftDescription ? `<span class="text-slate-500 italic block truncate max-w-[130px]">${item.giftDescription}</span>` : (!item.giftAmount ? '<span class="text-slate-300">—</span>' : '')}
+            ${hasValidCash ? `<span class="font-black text-emerald-800 block">₹${Number(item.giftAmount).toLocaleString('en-IN')}</span>` : ''}
+            ${hasValidGift ? `<span class="text-slate-500 italic block truncate max-w-[130px]">${item.giftDescription}</span>` : (!hasValidCash ? '<span class="text-slate-300">—</span>' : '')}
           </div>
         `;
 
@@ -1960,6 +1982,10 @@
         if (status === 'Confirmed') statusStyle = 'bg-amber-50 text-amber-800 border-amber-300 font-bold';
         else if (status === 'Invited') statusStyle = 'bg-emerald-50 text-emerald-800 border-emerald-300';
 
+        const hasValidCash = (item.giftAmount && parseFloat(item.giftAmount) > 0);
+        const rawDesc = (item.giftDescription || '').trim();
+        const hasValidGift = (rawDesc.length > 0 && rawDesc !== '0' && rawDesc.toLowerCase() !== 'null' && rawDesc.toLowerCase() !== 'none');
+
         html += `
           <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between space-y-2.5 hover:shadow transition">
             <div class="flex items-start justify-between gap-1">
@@ -1988,8 +2014,8 @@
                 <span class="text-amber-700">K:${item.kids || 0}</span>
               </div>
               <div class="bg-emerald-50/70 p-1.5 rounded-lg border border-emerald-200 text-center font-bold text-emerald-900 truncate">
-                ${item.giftAmount ? `₹${Number(item.giftAmount).toLocaleString('en-IN')}` : ''}
-                ${item.giftDescription ? `<span class="text-[10px] text-emerald-700 block truncate">${item.giftDescription}</span>` : (!item.giftAmount ? '<span class="text-slate-400 font-normal">No gift logged</span>' : '')}
+                ${hasValidCash ? `₹${Number(item.giftAmount).toLocaleString('en-IN')}` : ''}
+                ${hasValidGift ? `<span class="text-[10px] text-emerald-700 block truncate">${item.giftDescription}</span>` : (!hasValidCash ? '<span class="text-slate-400 font-normal">No gift logged</span>' : '')}
               </div>
             </div>
 
@@ -2020,6 +2046,10 @@
         const total = (item.gents || 0) + (item.ladies || 0) + (item.kids || 0);
         const status = item.invitation || 'Invited';
 
+        const hasValidCash = (item.giftAmount && parseFloat(item.giftAmount) > 0);
+        const rawDesc = (item.giftDescription || '').trim();
+        const hasValidGift = (rawDesc.length > 0 && rawDesc !== '0' && rawDesc.toLowerCase() !== 'null' && rawDesc.toLowerCase() !== 'none');
+
         html += `
           <div class="bg-white p-2.5 sm:p-3 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-slate-50 transition">
             <div class="flex items-center gap-3">
@@ -2035,8 +2065,8 @@
                 <div class="text-[10px] text-slate-400 flex items-center gap-2 mt-0.5">
                   ${item.place ? `<span><i class="fa-solid fa-location-dot mr-0.5"></i>${item.place}</span>` : ''}
                   ${item.phone ? `<span><i class="fa-solid fa-phone mr-0.5"></i>${item.phone}</span>` : ''}
-                  ${item.giftAmount ? `<span class="text-emerald-700 font-bold"><i class="fa-solid fa-indian-rupee-sign mr-0.5"></i>${Number(item.giftAmount).toLocaleString('en-IN')}</span>` : ''}
-                  ${item.giftDescription ? `<span class="text-emerald-800 italic">🎁 ${item.giftDescription}</span>` : ''}
+                  ${hasValidCash ? `<span class="text-emerald-700 font-bold"><i class="fa-solid fa-indian-rupee-sign mr-0.5"></i>${Number(item.giftAmount).toLocaleString('en-IN')}</span>` : ''}
+                  ${hasValidGift ? `<span class="text-emerald-800 italic">🎁 ${item.giftDescription}</span>` : ''}
                 </div>
               </div>
             </div>
@@ -2088,8 +2118,8 @@
         f.kids || 0,
         (f.gents || 0) + (f.ladies || 0) + (f.kids || 0),
         f.invitation || 'Invited',
-        f.giftAmount || 0,
-        f.giftDescription || '',
+        (f.giftAmount && f.giftAmount > 0) ? f.giftAmount : '',
+        (f.giftDescription && f.giftDescription !== '0') ? f.giftDescription : '',
         f.code || ''
       ]);
 
@@ -2101,7 +2131,6 @@
       XLSX.writeFile(wb, `Event_Guests_Tracker_${dateStr}.xlsx`);
     }
 
-    // Step 1: File Picked -> Parse & Show Modal to Select Replace vs Update
     async function handleSpreadsheetFilePicked(event) {
       const file = event.target.files && event.target.files[0];
       if (!file) return;
@@ -2142,7 +2171,6 @@
           return;
         }
 
-        // Store payload in memory & prompt user via Modal
         pendingImportPayload = parsedRows;
         document.getElementById('importModeDesc').textContent = `Parsed ${parsedRows.length - 1} rows from "${file.name}". Choose whether to overwrite all existing data or update/merge.`;
         document.getElementById('importModeModal').classList.remove('hidden');
@@ -2160,7 +2188,6 @@
       document.getElementById('importModeModal').classList.add('hidden');
     }
 
-    // Step 2: Execute Import based on chosen mode ('replace' or 'update')
     async function executePendingImport(mode) {
       if (!pendingImportPayload || pendingImportPayload.length <= 1) {
         cancelPendingImport();
@@ -2196,7 +2223,6 @@
       let newInsertedCount = 0;
       let deletedCount = 0;
 
-      // MODE: REPLACE ALL DATA -> Delete existing items for this family code first
       if (mode === 'replace') {
         const targetCode = loggedCode ? loggedCode.toUpperCase() : 'A2KU';
         const docsToDelete = isAdmin 
@@ -2208,7 +2234,6 @@
           deletedCount++;
         });
 
-        // Clear existingDocs memory so all rows are inserted cleanly
         existingDocs.length = 0;
       }
 
@@ -2235,8 +2260,12 @@
         if (rawStatus.toLowerCase().includes('confirm')) parsedStatus = 'Confirmed';
         else if (rawStatus.toLowerCase().includes('not') || rawStatus.toLowerCase().includes('pend')) parsedStatus = 'Not Invited';
 
-        const giftAmt = parseFloat(giftAmtIdx !== -1 ? row[giftAmtIdx] : row[11]) || 0;
-        const giftDesc = String(giftDescIdx !== -1 && row[giftDescIdx] !== undefined ? row[giftDescIdx] : (row[12] || '')).trim();
+        // Strict 0 to null treatment on import
+        const rawAmt = parseFloat(giftAmtIdx !== -1 ? row[giftAmtIdx] : row[11]);
+        const giftAmt = (!isNaN(rawAmt) && rawAmt > 0) ? rawAmt : 0;
+        
+        const rawDesc = String(giftDescIdx !== -1 && row[giftDescIdx] !== undefined ? row[giftDescIdx] : (row[12] || '')).trim();
+        const giftDesc = (rawDesc === '0' || rawDesc.toLowerCase() === 'null' || rawDesc.toLowerCase() === 'none') ? '' : rawDesc;
 
         const record = {
           code: targetCode,
@@ -2279,7 +2308,6 @@
             newInsertedCount++;
           }
         } else {
-          // Replace Mode: directly insert fresh records
           const newRef = collectionRef.doc();
           batch.set(newRef, record);
           newInsertedCount++;
