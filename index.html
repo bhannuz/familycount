@@ -7,7 +7,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
-  <!-- JSZip & SheetJS for full file import/export capabilities -->
+  <!-- JSZip & SheetJS for universal spreadsheet import/export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
@@ -226,7 +226,7 @@
     </div>
   </div>
 
-  <!-- Manage Functions, Categories & Relations Modal (With Quick-Add & In-Place Modify) -->
+  <!-- Manage Functions, Categories & Relations Modal with Collapsible Sections -->
   <div id="metaManagerModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-3">
     <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full max-h-[90vh] flex flex-col overflow-hidden">
       <div class="px-4 py-3 bg-slate-800 text-white flex items-center justify-between">
@@ -237,54 +237,65 @@
         <button onclick="closeMetaManager()" class="text-slate-400 hover:text-white text-base">✕</button>
       </div>
 
-      <div class="p-3.5 overflow-y-auto space-y-4">
-        <!-- Functions Management -->
-        <div class="space-y-2">
-          <h4 class="text-xs font-bold uppercase text-indigo-700 flex items-center justify-between">
-            <span>🎉 Event Functions</span>
-            <span class="text-[10px] text-slate-400 lowercase font-normal">(deletable if 0 entries)</span>
-          </h4>
-          <div class="flex gap-1.5">
-            <input type="text" id="quickAddFuncInput" placeholder="Add new function name..." class="flex-1 bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-indigo-500" />
-            <button onclick="quickAddMeta('functions', 'quickAddFuncInput')" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition shadow-2xs">
-              + Add
-            </button>
+      <div class="p-3.5 overflow-y-auto space-y-2.5">
+        <!-- 1. Collapsible Functions Section -->
+        <div class="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-2xs">
+          <button type="button" onclick="toggleAccordion('metaFuncBody', 'metaFuncChev', 'metaFuncTxt')" class="w-full flex items-center justify-between p-2.5 bg-slate-50 hover:bg-slate-100 text-left border-b border-slate-200 transition">
+            <div class="flex items-center gap-2">
+              <i id="metaFuncChev" class="fa-solid fa-chevron-right text-xs text-indigo-600 transition-transform duration-200"></i>
+              <span class="text-xs font-bold text-indigo-900">🎉 Event Functions</span>
+            </div>
+            <span id="metaFuncTxt" class="text-[11px] font-semibold text-indigo-600">Tap to Expand</span>
+          </button>
+          <div id="metaFuncBody" class="hidden p-2.5 space-y-2">
+            <div class="flex gap-1.5">
+              <input type="text" id="quickAddFuncInput" placeholder="New function name..." class="flex-1 bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-indigo-500" />
+              <button onclick="quickAddMeta('functions', 'quickAddFuncInput')" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition shadow-2xs">
+                + Add
+              </button>
+            </div>
+            <div id="functionManageList" class="space-y-1.5"></div>
           </div>
-          <div id="functionManageList" class="space-y-1.5"></div>
         </div>
 
-        <div class="border-t border-slate-100"></div>
-
-        <!-- Categories Management -->
-        <div class="space-y-2">
-          <h4 class="text-xs font-bold uppercase text-slate-600 flex items-center justify-between">
-            <span>Categories / Groups</span>
-            <span class="text-[10px] text-slate-400 lowercase font-normal">(deletable if 0 entries)</span>
-          </h4>
-          <div class="flex gap-1.5">
-            <input type="text" id="quickAddCatInput" placeholder="Add new category name..." class="flex-1 bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-indigo-500" />
-            <button onclick="quickAddMeta('categories', 'quickAddCatInput')" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition shadow-2xs">
-              + Add
-            </button>
+        <!-- 2. Collapsible Categories Section -->
+        <div class="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-2xs">
+          <button type="button" onclick="toggleAccordion('metaCatBody', 'metaCatChev', 'metaCatTxt')" class="w-full flex items-center justify-between p-2.5 bg-slate-50 hover:bg-slate-100 text-left border-b border-slate-200 transition">
+            <div class="flex items-center gap-2">
+              <i id="metaCatChev" class="fa-solid fa-chevron-right text-xs text-indigo-600 transition-transform duration-200"></i>
+              <span class="text-xs font-bold text-slate-800">📁 Categories / Groups</span>
+            </div>
+            <span id="metaCatTxt" class="text-[11px] font-semibold text-indigo-600">Tap to Expand</span>
+          </button>
+          <div id="metaCatBody" class="hidden p-2.5 space-y-2">
+            <div class="flex gap-1.5">
+              <input type="text" id="quickAddCatInput" placeholder="New category name..." class="flex-1 bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-indigo-500" />
+              <button onclick="quickAddMeta('categories', 'quickAddCatInput')" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition shadow-2xs">
+                + Add
+              </button>
+            </div>
+            <div id="categoryManageList" class="space-y-1.5"></div>
           </div>
-          <div id="categoryManageList" class="space-y-1.5"></div>
         </div>
 
-        <div class="border-t border-slate-100"></div>
-
-        <!-- Relations Management -->
-        <div class="space-y-2">
-          <h4 class="text-xs font-bold uppercase text-slate-600 flex items-center justify-between">
-            <span>Relations</span>
-            <span class="text-[10px] text-slate-400 lowercase font-normal">(deletable if 0 entries)</span>
-          </h4>
-          <div class="flex gap-1.5">
-            <input type="text" id="quickAddRelInput" placeholder="Add new relation name..." class="flex-1 bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-indigo-500" />
-            <button onclick="quickAddMeta('relations', 'quickAddRelInput')" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition shadow-2xs">
-              + Add
-            </button>
+        <!-- 3. Collapsible Relations Section -->
+        <div class="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-2xs">
+          <button type="button" onclick="toggleAccordion('metaRelBody', 'metaRelChev', 'metaRelTxt')" class="w-full flex items-center justify-between p-2.5 bg-slate-50 hover:bg-slate-100 text-left border-b border-slate-200 transition">
+            <div class="flex items-center gap-2">
+              <i id="metaRelChev" class="fa-solid fa-chevron-right text-xs text-indigo-600 transition-transform duration-200"></i>
+              <span class="text-xs font-bold text-slate-800">🤝 Relations</span>
+            </div>
+            <span id="metaRelTxt" class="text-[11px] font-semibold text-indigo-600">Tap to Expand</span>
+          </button>
+          <div id="metaRelBody" class="hidden p-2.5 space-y-2">
+            <div class="flex gap-1.5">
+              <input type="text" id="quickAddRelInput" placeholder="New relation name..." class="flex-1 bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-indigo-500" />
+              <button onclick="quickAddMeta('relations', 'quickAddRelInput')" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition shadow-2xs">
+                + Add
+              </button>
+            </div>
+            <div id="relationManageList" class="space-y-1.5"></div>
           </div>
-          <div id="relationManageList" class="space-y-1.5"></div>
         </div>
       </div>
 
@@ -338,12 +349,9 @@
 
             <div class="border-t border-slate-100 my-1"></div>
 
-            <button onclick="closeActionMenu(); exportSpreadsheet('csv');" class="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 flex items-center gap-2 transition">
-              <i class="fa-solid fa-file-csv text-emerald-600 w-4"></i> Export MS Excel / Standard CSV
-            </button>
-
-            <button onclick="closeActionMenu(); exportSpreadsheet('numbers');" class="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-teal-50 hover:text-teal-700 flex items-center gap-2 transition">
-              <i class="fa-solid fa-table-cells text-teal-600 w-4"></i> Export Mac / iOS Numbers (.numbers)
+            <!-- Unified Single Universal Export Option (MS Excel & iOS Numbers) -->
+            <button onclick="closeActionMenu(); exportUniversalSpreadsheet();" class="w-full text-left px-3 py-2 text-xs font-bold text-emerald-700 hover:bg-emerald-50 flex items-center gap-2 transition">
+              <i class="fa-solid fa-file-excel text-emerald-600 w-4"></i> Export to Excel & Numbers (.xlsx / CSV)
             </button>
 
             <button onclick="triggerImport();" class="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-sky-50 hover:text-sky-700 flex items-center gap-2 transition">
@@ -363,7 +371,7 @@
         </div>
       </div>
 
-      <!-- PRIMARY FUNCTION FILTER + ADD GUEST BUTTON SIDE-BY-SIDE (Add Guest on Left, Function on Right) -->
+      <!-- PRIMARY FUNCTION FILTER + ADD GUEST BUTTON SIDE-BY-SIDE -->
       <div class="flex items-center gap-1.5 pt-1 border-t border-slate-100">
         <button type="button" onclick="openAddGuestModal()" class="px-2.5 sm:px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1 shrink-0 transition">
           <i class="fa-solid fa-plus text-[10px]"></i>
@@ -382,7 +390,7 @@
 
     <!-- Side-by-Side Unified Summary Dashboard -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-      <!-- Unified Headcount & Breakdown Card: Pending / Invited / Confirmed / Total Count with G/L/K below -->
+      <!-- Unified Headcount & Breakdown Card: G L K counts aligned to Left Side without 'Breakdown:' label -->
       <div class="bg-indigo-900 text-white p-3 rounded-xl shadow-sm space-y-2 flex flex-col justify-between">
         <div>
           <div class="flex items-center justify-between">
@@ -401,9 +409,8 @@
           </div>
         </div>
 
-        <!-- Integrated Breakdown Row directly below -->
-        <div class="pt-2 border-t border-indigo-800/80 flex items-center justify-between text-xs">
-          <span class="text-[10px] uppercase font-bold text-indigo-300 tracking-wider">Breakdown:</span>
+        <!-- Left-Aligned G / L / K Counts below (Breakdown text removed) -->
+        <div class="pt-2 border-t border-indigo-800/80 flex items-center justify-start text-xs">
           <div class="flex items-center gap-3 bg-indigo-950/60 px-2.5 py-1 rounded-lg border border-indigo-800">
             <span class="text-blue-300 font-bold text-xs">G: <b id="statGents" class="text-white">0</b></span>
             <span class="text-pink-300 font-bold text-xs">L: <b id="statLadies" class="text-white">0</b></span>
@@ -495,7 +502,7 @@
       </div>
     </div>
 
-    <!-- 3. Showing Entries / Guest List (Working Collapse, Multi-Option Toggle & Auto-Width Distribution) -->
+    <!-- 3. Showing Entries / Guest List (Auto-Adjusted Column Widths & Compact View Removed) -->
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-visible">
       
       <!-- Accordion Header Bar -->
@@ -520,8 +527,8 @@
               <i class="fa-solid fa-chevron-down text-[8px] text-slate-400"></i>
             </button>
 
-            <!-- Properly Positioned Left/Right Align Dropdown Menu -->
-            <div id="columnPickerDropdown" class="hidden absolute left-0 sm:left-auto sm:right-0 mt-1.5 w-52 bg-white border border-slate-300 rounded-xl shadow-2xl p-3 z-50 space-y-2 text-xs">
+            <!-- Correctly Positioned Dropdown to Prevent Screen Clipping -->
+            <div id="columnPickerDropdown" class="hidden absolute left-0 sm:left-auto sm:right-0 mt-1 w-52 bg-white border border-slate-300 rounded-xl shadow-2xl p-3 z-50 space-y-2 text-xs">
               <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 pb-1 border-b border-slate-100">Toggle Visible Columns</div>
               <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600 py-0.5">
                 <input type="checkbox" onchange="toggleColSetting('func')" id="colChk_func" class="w-3.5 h-3.5 rounded text-indigo-600 focus:ring-0" /> Function
@@ -550,7 +557,7 @@
             </div>
           </div>
 
-          <!-- View Switcher Tabs: Table, Tiles, List (Compact Removed) -->
+          <!-- View Switcher Tabs: Table, Tiles, List -->
           <div class="flex items-center bg-white border border-slate-200 rounded-lg p-0.5 text-xs font-semibold shrink-0">
             <button type="button" onclick="setViewMode('table')" id="btnViewTable" class="px-2.5 py-1 rounded transition text-indigo-600 bg-indigo-50 font-bold flex items-center gap-1" title="Table View">
               <i class="fa-solid fa-table"></i> <span class="hidden sm:inline text-[11px]">Table</span>
@@ -598,7 +605,6 @@
     let currentViewMode = localStorage.getItem('fc_view_mode') || 'table';
     let selectedTopFunction = 'All';
 
-    // Column Settings (Compact view removed, clean dynamic toggle)
     let colSettings = getStoredColSettings();
 
     function getStoredColSettings() {
@@ -928,9 +934,9 @@
         try { return JSON.parse(stored); } catch (e) {}
       }
       return {
-        functions: ['Main Reception', 'Marriage Ceremony', 'Sangeet / Mehendi', 'Haldi Ceremony', 'Engagement', 'House Warming / Pooja'],
-        categories: ['Paternal Side', 'Maternal Side', 'Friends', 'Office Friends', 'School Friends', 'College Friends', 'Neighbours'],
-        relations: ['Friend', 'Colleague', 'Babai / Chacha', 'Peddananna / Tauji', 'Mama / Uncle', 'Atta / Bua / Mami', 'Annaya / Bhaiya', 'Thammudu / Younger Bro', 'Akka / Didi', 'Chelli / Younger Sis', 'Bava / Jiju', 'Cousin']
+        functions: ['Engagement', 'Haldi Ceremony', 'House Warming / Pooja', 'Main Reception', 'Marriage Ceremony', 'Sangeet / Mehendi'],
+        categories: ['College Friends', 'Friends', 'Maternal Side', 'Neighbours', 'Office Friends', 'Paternal Side', 'School Friends'],
+        relations: ['Akka / Didi', 'Annaya / Bhaiya', 'Atta / Bua / Mami', 'Babai / Chacha', 'Bava / Jiju', 'Chelli / Younger Sis', 'Colleague', 'Cousin', 'Friend', 'Mama / Uncle', 'Peddananna / Tauji', 'Thammudu / Younger Bro']
       };
     }
 
@@ -969,7 +975,7 @@
       document.getElementById('metaManagerModal').classList.add('hidden');
     }
 
-    // Quick Add directly inside Manage Meta Modal
+    // Quick Add inside Meta Manager Modal
     function quickAddMeta(type, inputId) {
       const input = document.getElementById(inputId);
       const val = input.value.trim();
@@ -1021,6 +1027,11 @@
       const allFunctions = Array.from(new Set([...(meta.functions || []), ...Object.keys(funcCountMap)]));
       const allCategories = Array.from(new Set([...meta.categories, ...Object.keys(catCountMap)]));
       const allRelations = Array.from(new Set([...meta.relations, ...Object.keys(relCountMap)]));
+
+      // Sort Alphabetically
+      allFunctions.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+      allCategories.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+      allRelations.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
 
       // 1. Functions List
       funcList.innerHTML = '';
@@ -1272,7 +1283,7 @@
 
     function syncCodeScopedDropdowns() {
       const meta = getCodeMetaData();
-      const scopedFunctions = new Set(meta.functions || ['Main Reception', 'Marriage Ceremony', 'Sangeet / Mehendi', 'Haldi Ceremony', 'Engagement', 'House Warming / Pooja']);
+      const scopedFunctions = new Set(meta.functions || ['Engagement', 'Haldi Ceremony', 'House Warming / Pooja', 'Main Reception', 'Marriage Ceremony', 'Sangeet / Mehendi']);
       const scopedCategories = new Set(meta.categories);
       const scopedRelations = new Set(meta.relations);
       const allCodes = new Set();
@@ -1284,6 +1295,11 @@
         if (f.relation && f.relation.trim() && !isBinaryGarbage(f.relation)) scopedRelations.add(f.relation.trim());
         if (f.code && f.code.trim()) allCodes.add(f.code.trim().toUpperCase());
       });
+
+      // Alphabetical Ordering
+      const sortedFunctions = Array.from(scopedFunctions).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+      const sortedCategories = Array.from(scopedCategories).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+      const sortedRelations = Array.from(scopedRelations).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
 
       if (isAdmin) {
         const codeFilterSelect = document.getElementById('histCodeFilter');
@@ -1302,7 +1318,7 @@
       const topFuncSelect = document.getElementById('topFunctionFilter');
       const curTopVal = topFuncSelect.value;
       topFuncSelect.innerHTML = '<option value="All">All Functions (Combined)</option>';
-      scopedFunctions.forEach(fn => {
+      sortedFunctions.forEach(fn => {
         const opt = document.createElement('option');
         opt.value = fn;
         opt.textContent = `🎉 ${fn}`;
@@ -1314,7 +1330,7 @@
       const formFuncSelect = document.getElementById('funcSelect');
       const curFormFnVal = formFuncSelect.value;
       formFuncSelect.innerHTML = '';
-      scopedFunctions.forEach(fn => {
+      sortedFunctions.forEach(fn => {
         const opt = document.createElement('option');
         opt.value = fn;
         opt.textContent = fn;
@@ -1330,7 +1346,7 @@
       const filterSelect = document.getElementById('histGroupFilter');
       const currentFilterVal = filterSelect.value;
       filterSelect.innerHTML = '<option value="All">All Categories</option>';
-      scopedCategories.forEach(grp => {
+      sortedCategories.forEach(grp => {
         const opt = document.createElement('option');
         opt.value = grp;
         opt.textContent = grp;
@@ -1341,7 +1357,7 @@
       const formGroupSelect = document.getElementById('groupSelect');
       const currentFormGroupVal = formGroupSelect.value;
       formGroupSelect.innerHTML = '';
-      scopedCategories.forEach(grp => {
+      sortedCategories.forEach(grp => {
         const opt = document.createElement('option');
         opt.value = grp;
         opt.textContent = grp;
@@ -1357,7 +1373,7 @@
       const histRelFilter = document.getElementById('histRelationFilter');
       const curHistRelVal = histRelFilter.value;
       histRelFilter.innerHTML = '<option value="All">All Relations</option>';
-      scopedRelations.forEach(rel => {
+      sortedRelations.forEach(rel => {
         const opt = document.createElement('option');
         opt.value = rel;
         opt.textContent = rel;
@@ -1368,7 +1384,7 @@
       const formRelSelect = document.getElementById('relationSelect');
       const currentFormRelVal = formRelSelect.value;
       formRelSelect.innerHTML = '<option value="">— None / Optional —</option>';
-      scopedRelations.forEach(rel => {
+      sortedRelations.forEach(rel => {
         const opt = document.createElement('option');
         opt.value = rel;
         opt.textContent = rel;
@@ -1724,7 +1740,7 @@
         return matchesCode && matchesGroup && matchesRelation && matchesRsvp && matchesSearch;
       });
 
-      // Sort Alphabetically (A-Z) by Guest Name
+      // Alphabetical Sorting by Guest Name (A-Z)
       filtered.sort((a, b) => (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base' }));
 
       let filtG = 0, filtL = 0, filtK = 0, filtCash = 0, filtGiftsCount = 0;
@@ -1814,7 +1830,7 @@
         `;
 
         const codeCell = isAdmin ? `
-          <td class="py-2 px-2.5 whitespace-nowrap">
+          <td class="py-1.5 px-2.5 whitespace-nowrap">
             <span class="font-mono font-bold text-indigo-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 text-[10px]">
               ${item.code || '—'}
             </span>
@@ -1824,11 +1840,11 @@
         html += `
           <tr class="hover:bg-slate-50 transition ${isCorrupt ? 'bg-rose-50/50' : ''}">
             ${codeCell}
-            ${colSettings.func ? `<td class="py-2 px-2.5 font-bold text-indigo-800 text-[11px] whitespace-nowrap">${item.eventFunction || 'Main Reception'}</td>` : ''}
-            ${colSettings.cat ? `<td class="py-2 px-2.5 whitespace-nowrap">${getGroupBadge(item.side)}</td>` : ''}
-            ${colSettings.rel ? `<td class="py-2 px-2.5 font-medium text-slate-700 text-xs whitespace-nowrap">${item.relation || '—'}</td>` : ''}
+            ${colSettings.func ? `<td class="py-1.5 px-2.5 font-bold text-indigo-800 text-[11px] whitespace-nowrap">${item.eventFunction || 'Main Reception'}</td>` : ''}
+            ${colSettings.cat ? `<td class="py-1.5 px-2.5 whitespace-nowrap">${getGroupBadge(item.side)}</td>` : ''}
+            ${colSettings.rel ? `<td class="py-1.5 px-2.5 font-medium text-slate-700 text-xs whitespace-nowrap">${item.relation || '—'}</td>` : ''}
             ${colSettings.guest ? `
-              <td class="py-2 px-3">
+              <td class="py-1.5 px-3">
                 <div class="font-semibold text-slate-800 text-xs leading-tight whitespace-nowrap">${item.name}</div>
                 <div class="text-[10px] text-slate-400 flex items-center gap-2 mt-0.5 whitespace-nowrap">
                   ${item.place ? `<span><i class="fa-solid fa-location-dot mr-0.5"></i>${item.place}</span>` : ''}
@@ -1837,14 +1853,14 @@
               </td>
             ` : ''}
             ${colSettings.glk ? `
-              <td class="py-2 px-1 text-center text-slate-700 font-medium whitespace-nowrap">${item.gents || 0}</td>
-              <td class="py-2 px-1 text-center text-slate-700 font-medium whitespace-nowrap">${item.ladies || 0}</td>
-              <td class="py-2 px-1 text-center text-amber-700 font-bold whitespace-nowrap">${item.kids || 0}</td>
+              <td class="py-1.5 px-1 text-center text-slate-700 font-medium whitespace-nowrap">${item.gents || 0}</td>
+              <td class="py-1.5 px-1 text-center text-slate-700 font-medium whitespace-nowrap">${item.ladies || 0}</td>
+              <td class="py-1.5 px-1 text-center text-amber-700 font-bold whitespace-nowrap">${item.kids || 0}</td>
             ` : ''}
-            ${colSettings.total ? `<td class="py-2 px-2 text-center font-bold text-slate-600 whitespace-nowrap">${total}</td>` : ''}
-            ${colSettings.inv ? `<td class="py-2 px-2.5 text-center bg-indigo-50/20 whitespace-nowrap">${inviteSelect}</td>` : ''}
-            ${colSettings.gifts ? `<td class="py-2 px-2.5 text-center bg-amber-50/40">${giftDisplay}</td>` : ''}
-            <td class="py-2 px-2.5 text-right whitespace-nowrap">
+            ${colSettings.total ? `<td class="py-1.5 px-2 text-center font-bold text-slate-600 whitespace-nowrap">${total}</td>` : ''}
+            ${colSettings.inv ? `<td class="py-1.5 px-2.5 text-center bg-indigo-50/20 whitespace-nowrap">${inviteSelect}</td>` : ''}
+            ${colSettings.gifts ? `<td class="py-1.5 px-2.5 text-center bg-amber-50/40">${giftDisplay}</td>` : ''}
+            <td class="py-1.5 px-2.5 text-right whitespace-nowrap">
               <button onclick="editEntry('${item.id}')" class="text-slate-400 hover:text-indigo-600 px-1" title="Edit"><i class="fa-solid fa-pen"></i></button>
               <button onclick="deleteEntry('${item.id}')" class="text-slate-400 hover:text-rose-600 px-1" title="Delete"><i class="fa-solid fa-trash"></i></button>
             </td>
@@ -1975,7 +1991,8 @@
       container.innerHTML = html;
     }
 
-    function exportSpreadsheet(format) {
+    // Unified Universal Spreadsheet Exporter (.xlsx / UTF-8 CSV with BOM for Windows Excel & iOS/Mac Numbers)
+    function exportUniversalSpreadsheet() {
       const target = getVisibleFamilies();
       if (target.length === 0) {
         alert('No guest data available to export.');
@@ -2002,24 +2019,10 @@
 
       const dateStr = new Date().toISOString().slice(0, 10);
 
-      if (format === 'numbers') {
-        const ws = XLSX.utils.aoa_to_sheet([headers, ...dataRows]);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Guest_RSVP_Gifts");
-        XLSX.writeFile(wb, `Guest_Headcount_Gifts_${dateStr}.xlsx`);
-      } else {
-        const csvRows = dataRows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(','));
-        const csvString = '\uFEFF' + [headers.join(','), ...csvRows].join('\r\n');
-        const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.setAttribute('href', url);
-        link.setAttribute('download', `Guest_Headcount_Gifts_MS_Excel_${dateStr}.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-      }
+      const ws = XLSX.utils.aoa_to_sheet([headers, ...dataRows]);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Event_Guests");
+      XLSX.writeFile(wb, `Event_Guests_Tracker_${dateStr}.xlsx`);
     }
 
     async function handleSpreadsheetImport(event) {
