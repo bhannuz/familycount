@@ -256,7 +256,7 @@
     </div>
   </div>
 
-  <!-- POPUP MODAL: Add / Edit Event Task Window (With Due Date, Payment Tracking & Priority) -->
+  <!-- POPUP MODAL: Add / Edit Event Task Window -->
   <div id="taskModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-3">
     <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[92vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
       
@@ -283,7 +283,7 @@
               <select id="taskFuncSelect" required class="w-full bg-indigo-50/50 border border-indigo-200 rounded-lg px-2 py-1.5 text-xs font-semibold text-indigo-900 focus:outline-none focus:border-indigo-500"></select>
             </div>
 
-            <!-- Task Category (Supports Custom Task Categories) -->
+            <!-- Task Category -->
             <div class="col-span-1">
               <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Task Category *</label>
               <select id="taskCategorySelect" required class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs font-semibold text-slate-700 focus:outline-none focus:border-indigo-500"></select>
@@ -363,7 +363,7 @@
     </div>
   </div>
 
-  <!-- Manage Functions, Categories, Task Categories & Relations Modal (All Sections Collapsible & Manageable) -->
+  <!-- Manage Functions, Categories, Task Categories & Relations Modal (All Sections Open & Editable by Default) -->
   <div id="metaManagerModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-3">
     <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full max-h-[90vh] flex flex-col overflow-hidden">
       <div class="px-4 py-3 bg-slate-800 text-white flex items-center justify-between">
@@ -374,19 +374,19 @@
         <button onclick="closeMetaManager()" class="text-slate-400 hover:text-white text-base">✕</button>
       </div>
 
-      <div class="p-3.5 overflow-y-auto space-y-2.5">
-        <!-- 1. Collapsible Functions Section -->
-        <div class="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-2xs">
-          <button type="button" onclick="toggleAccordion('metaFuncBody', 'metaFuncChev', 'metaFuncTxt')" class="w-full flex items-center justify-between p-2.5 bg-slate-50 hover:bg-slate-100 text-left border-b border-slate-200 transition">
+      <div class="p-3.5 overflow-y-auto space-y-3.5">
+        <!-- 1. Functions Section -->
+        <div class="border border-indigo-200 rounded-xl overflow-hidden bg-indigo-50/20 shadow-2xs">
+          <button type="button" onclick="toggleAccordion('metaFuncBody', 'metaFuncChev', 'metaFuncTxt')" class="w-full flex items-center justify-between p-2.5 bg-indigo-50/80 hover:bg-indigo-100 text-left border-b border-indigo-200 transition">
             <div class="flex items-center gap-2">
-              <i id="metaFuncChev" class="fa-solid fa-chevron-right text-xs text-indigo-600 transition-transform duration-200"></i>
-              <span class="text-xs font-bold text-indigo-900">🎉 Event Functions</span>
+              <i id="metaFuncChev" class="fa-solid fa-chevron-right text-xs text-indigo-600 transition-transform duration-200 rotate-90"></i>
+              <span class="text-xs font-black text-indigo-950">🎉 Event Functions</span>
             </div>
-            <span id="metaFuncTxt" class="text-[11px] font-semibold text-indigo-600">Tap to Expand</span>
+            <span id="metaFuncTxt" class="text-[11px] font-semibold text-indigo-600">Tap to Collapse</span>
           </button>
-          <div id="metaFuncBody" class="hidden p-2.5 space-y-2">
+          <div id="metaFuncBody" class="p-2.5 space-y-2">
             <div class="flex gap-1.5">
-              <input type="text" id="quickAddFuncInput" placeholder="New function name..." class="flex-1 bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-indigo-500" />
+              <input type="text" id="quickAddFuncInput" placeholder="New function name (e.g. Sangeet)..." class="flex-1 bg-white border border-indigo-200 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-indigo-500" />
               <button onclick="quickAddMeta('functions', 'quickAddFuncInput')" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition shadow-2xs">
                 + Add
               </button>
@@ -395,18 +395,18 @@
           </div>
         </div>
 
-        <!-- 2. Collapsible Guest Categories Section -->
+        <!-- 2. Guest Categories Section -->
         <div class="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-2xs">
           <button type="button" onclick="toggleAccordion('metaCatBody', 'metaCatChev', 'metaCatTxt')" class="w-full flex items-center justify-between p-2.5 bg-slate-50 hover:bg-slate-100 text-left border-b border-slate-200 transition">
             <div class="flex items-center gap-2">
-              <i id="metaCatChev" class="fa-solid fa-chevron-right text-xs text-indigo-600 transition-transform duration-200"></i>
-              <span class="text-xs font-bold text-slate-800">📁 Guest Categories / Groups</span>
+              <i id="metaCatChev" class="fa-solid fa-chevron-right text-xs text-indigo-600 transition-transform duration-200 rotate-90"></i>
+              <span class="text-xs font-black text-slate-900">📁 Guest Categories / Groups</span>
             </div>
-            <span id="metaCatTxt" class="text-[11px] font-semibold text-indigo-600">Tap to Expand</span>
+            <span id="metaCatTxt" class="text-[11px] font-semibold text-indigo-600">Tap to Collapse</span>
           </button>
-          <div id="metaCatBody" class="hidden p-2.5 space-y-2">
+          <div id="metaCatBody" class="p-2.5 space-y-2">
             <div class="flex gap-1.5">
-              <input type="text" id="quickAddCatInput" placeholder="New category name..." class="flex-1 bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-indigo-500" />
+              <input type="text" id="quickAddCatInput" placeholder="New category name (e.g. VIP Guests)..." class="flex-1 bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-indigo-500" />
               <button onclick="quickAddMeta('categories', 'quickAddCatInput')" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition shadow-2xs">
                 + Add
               </button>
@@ -415,16 +415,16 @@
           </div>
         </div>
 
-        <!-- 3. Collapsible Task Categories Section (Custom Items Manager for Planner) -->
-        <div class="border border-amber-200 rounded-xl overflow-hidden bg-amber-50/20 shadow-2xs">
-          <button type="button" onclick="toggleAccordion('metaTaskCatBody', 'metaTaskCatChev', 'metaTaskCatTxt')" class="w-full flex items-center justify-between p-2.5 bg-amber-50 hover:bg-amber-100/80 text-left border-b border-amber-200 transition">
+        <!-- 3. Task Categories Section (Custom Items Manager for Planner) -->
+        <div class="border border-amber-300 rounded-xl overflow-hidden bg-amber-50/20 shadow-2xs">
+          <button type="button" onclick="toggleAccordion('metaTaskCatBody', 'metaTaskCatChev', 'metaTaskCatTxt')" class="w-full flex items-center justify-between p-2.5 bg-amber-100/70 hover:bg-amber-100 text-left border-b border-amber-300 transition">
             <div class="flex items-center gap-2">
-              <i id="metaTaskCatChev" class="fa-solid fa-chevron-right text-xs text-amber-700 transition-transform duration-200"></i>
-              <span class="text-xs font-bold text-amber-950">📋 Task & Vendor Categories (Catering, Stage, DJ, etc.)</span>
+              <i id="metaTaskCatChev" class="fa-solid fa-chevron-right text-xs text-amber-700 transition-transform duration-200 rotate-90"></i>
+              <span class="text-xs font-black text-amber-950">📋 Task & Vendor Categories (Catering, Stage, DJ, Decor...)</span>
             </div>
-            <span id="metaTaskCatTxt" class="text-[11px] font-semibold text-amber-700">Tap to Expand</span>
+            <span id="metaTaskCatTxt" class="text-[11px] font-semibold text-amber-700">Tap to Collapse</span>
           </button>
-          <div id="metaTaskCatBody" class="hidden p-2.5 space-y-2">
+          <div id="metaTaskCatBody" class="p-2.5 space-y-2">
             <div class="flex gap-1.5">
               <input type="text" id="quickAddTaskCatInput" placeholder="New task category (e.g. Return Gifts, Valet Parking)..." class="flex-1 bg-white border border-amber-300 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-amber-600" />
               <button onclick="quickAddMeta('taskCategories', 'quickAddTaskCatInput')" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-lg transition shadow-2xs">
@@ -435,18 +435,18 @@
           </div>
         </div>
 
-        <!-- 4. Collapsible Relations Section -->
+        <!-- 4. Relations Section -->
         <div class="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-2xs">
           <button type="button" onclick="toggleAccordion('metaRelBody', 'metaRelChev', 'metaRelTxt')" class="w-full flex items-center justify-between p-2.5 bg-slate-50 hover:bg-slate-100 text-left border-b border-slate-200 transition">
             <div class="flex items-center gap-2">
-              <i id="metaRelChev" class="fa-solid fa-chevron-right text-xs text-indigo-600 transition-transform duration-200"></i>
-              <span class="text-xs font-bold text-slate-800">🤝 Relations</span>
+              <i id="metaRelChev" class="fa-solid fa-chevron-right text-xs text-indigo-600 transition-transform duration-200 rotate-90"></i>
+              <span class="text-xs font-black text-slate-900">🤝 Relations</span>
             </div>
-            <span id="metaRelTxt" class="text-[11px] font-semibold text-indigo-600">Tap to Expand</span>
+            <span id="metaRelTxt" class="text-[11px] font-semibold text-indigo-600">Tap to Collapse</span>
           </button>
-          <div id="metaRelBody" class="hidden p-2.5 space-y-2">
+          <div id="metaRelBody" class="p-2.5 space-y-2">
             <div class="flex gap-1.5">
-              <input type="text" id="quickAddRelInput" placeholder="New relation name..." class="flex-1 bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-indigo-500" />
+              <input type="text" id="quickAddRelInput" placeholder="New relation name..." class="flex-1 bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-indigo-500" />
               <button onclick="quickAddMeta('relations', 'quickAddRelInput')" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition shadow-2xs">
                 + Add
               </button>
@@ -750,10 +750,10 @@
       </div>
     </div>
 
-    <!-- ==================== MODULE 2: EVENT FUNCTION TASKS MANAGER (With Progress Bar, Budget & Dates) ==================== -->
+    <!-- ==================== MODULE 2: EVENT FUNCTION TASKS MANAGER ==================== -->
     <div id="tasksModule" class="hidden space-y-2.5">
       
-      <!-- Progress Bar & Analytics Card -->
+      <!-- Overall Progress Bar & Analytics Card -->
       <div class="bg-gradient-to-r from-slate-900 to-indigo-950 text-white p-3.5 rounded-2xl shadow-sm space-y-3">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
@@ -791,6 +791,17 @@
             <span class="font-black text-emerald-400 text-sm">₹<span id="taskStatPaid">0</span></span>
           </div>
         </div>
+      </div>
+
+      <!-- Item-Wise Category Progress Matrix Card -->
+      <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm space-y-2.5">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+            <i class="fa-solid fa-chart-pie text-amber-600"></i> Category / Item-wise Progress Breakdown
+          </span>
+          <span class="text-[10px] text-slate-400 font-semibold">Auto-calculated</span>
+        </div>
+        <div id="categoryProgressMatrix" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2"></div>
       </div>
 
       <!-- Task Filters Bar -->
@@ -1375,6 +1386,28 @@
       return false;
     }
 
+    // Default Categories & Task Categories are Uniform for all Families
+    function getStandardDefaultMetaData() {
+      return {
+        functions: ['Engagement', 'Haldi Ceremony', 'House Warming / Pooja', 'Main Reception', 'Marriage Ceremony', 'Sangeet / Mehendi'],
+        categories: ['College Friends', 'Friends', 'Maternal Side', 'Neighbours', 'Office Friends', 'Paternal Side', 'School Friends'],
+        taskCategories: [
+          '🍽️ Catering & Food Menu',
+          '🌸 Stage & Decoration',
+          '🎵 DJ, Band & Dancers',
+          '💡 Lighting & Sound',
+          '📸 Photography & Video',
+          '👗 Family Costumes & Attire',
+          '💌 Invitation & Logistics',
+          '🪔 Pooja & Rituals',
+          '🎁 Return Gifts & Hampers',
+          '🚗 Travel & Accommodation',
+          '📝 General Checklist'
+        ],
+        relations: ['Akka / Didi', 'Annaya / Bhaiya', 'Atta / Bua / Mami', 'Babai / Chacha', 'Bava / Jiju', 'Chelli / Younger Sis', 'Colleague', 'Cousin', 'Friend', 'Mama / Uncle', 'Peddananna / Tauji', 'Thammudu / Younger Bro']
+      };
+    }
+
     function getCodeMetaStorageKey() {
       return `fc_meta_${loggedCode || 'default'}`;
     }
@@ -1382,15 +1415,20 @@
     function getCodeMetaData() {
       const key = getCodeMetaStorageKey();
       const stored = localStorage.getItem(key);
+      const defaults = getStandardDefaultMetaData();
+
       if (stored) {
-        try { return JSON.parse(stored); } catch (e) {}
+        try {
+          const parsed = JSON.parse(stored);
+          return {
+            functions: Array.from(new Set([...(defaults.functions || []), ...(parsed.functions || [])])),
+            categories: Array.from(new Set([...(defaults.categories || []), ...(parsed.categories || [])])),
+            taskCategories: Array.from(new Set([...(defaults.taskCategories || []), ...(parsed.taskCategories || [])])),
+            relations: Array.from(new Set([...(defaults.relations || []), ...(parsed.relations || [])]))
+          };
+        } catch (e) {}
       }
-      return {
-        functions: ['Engagement', 'Haldi Ceremony', 'House Warming / Pooja', 'Main Reception', 'Marriage Ceremony', 'Sangeet / Mehendi'],
-        categories: ['College Friends', 'Friends', 'Maternal Side', 'Neighbours', 'Office Friends', 'Paternal Side', 'School Friends'],
-        taskCategories: ['🍽️ Catering & Food Menu', '🌸 Stage & Decoration', '🎵 DJ, Band & Dancers', '💡 Lighting & Sound', '📸 Photography & Video', '👗 Family Costumes & Attire', '💌 Invitation & Logistics', '🪔 Pooja & Rituals', '🎁 Return Gifts & Hampers', '🚗 Travel & Accommodation', '📝 General Checklist'],
-        relations: ['Akka / Didi', 'Annaya / Bhaiya', 'Atta / Bua / Mami', 'Babai / Chacha', 'Bava / Jiju', 'Chelli / Younger Sis', 'Colleague', 'Cousin', 'Friend', 'Mama / Uncle', 'Peddananna / Tauji', 'Thammudu / Younger Bro']
-      };
+      return defaults;
     }
 
     function saveCodeMetaData(meta) {
@@ -1436,7 +1474,7 @@
 
       const meta = getCodeMetaData();
       if (!meta.taskCategories) {
-        meta.taskCategories = ['🍽️ Catering & Food Menu', '🌸 Stage & Decoration', '🎵 DJ, Band & Dancers', '💡 Lighting & Sound', '📸 Photography & Video', '👗 Family Costumes & Attire', '💌 Invitation & Logistics', '🪔 Pooja & Rituals', '🎁 Return Gifts & Hampers', '🚗 Travel & Accommodation', '📝 General Checklist'];
+        meta.taskCategories = getStandardDefaultMetaData().taskCategories;
       }
 
       if (type === 'functions') {
@@ -1495,13 +1533,13 @@
 
       const meta = getCodeMetaData();
       if (!meta.taskCategories) {
-        meta.taskCategories = ['🍽️ Catering & Food Menu', '🌸 Stage & Decoration', '🎵 DJ, Band & Dancers', '💡 Lighting & Sound', '📸 Photography & Video', '👗 Family Costumes & Attire', '💌 Invitation & Logistics', '🪔 Pooja & Rituals', '🎁 Return Gifts & Hampers', '🚗 Travel & Accommodation', '📝 General Checklist'];
+        meta.taskCategories = getStandardDefaultMetaData().taskCategories;
       }
 
       const allFunctions = Array.from(new Set([...(meta.functions || []), ...Object.keys(funcCountMap)]));
-      const allCategories = Array.from(new Set([...meta.categories, ...Object.keys(catCountMap)]));
-      const allTaskCategories = Array.from(new Set([...meta.taskCategories, ...Object.keys(taskCatCountMap)]));
-      const allRelations = Array.from(new Set([...meta.relations, ...Object.keys(relCountMap)]));
+      const allCategories = Array.from(new Set([...(meta.categories || []), ...Object.keys(catCountMap)]));
+      const allTaskCategories = Array.from(new Set([...(meta.taskCategories || []), ...Object.keys(taskCatCountMap)]));
+      const allRelations = Array.from(new Set([...(meta.relations || []), ...Object.keys(relCountMap)]));
 
       allFunctions.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
       allCategories.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
@@ -1824,10 +1862,10 @@
 
     function syncCodeScopedDropdowns() {
       const meta = getCodeMetaData();
-      const scopedFunctions = new Set(meta.functions || ['Engagement', 'Haldi Ceremony', 'House Warming / Pooja', 'Main Reception', 'Marriage Ceremony', 'Sangeet / Mehendi']);
-      const scopedCategories = new Set(meta.categories);
-      const scopedTaskCategories = new Set(meta.taskCategories || ['🍽️ Catering & Food Menu', '🌸 Stage & Decoration', '🎵 DJ, Band & Dancers', '💡 Lighting & Sound', '📸 Photography & Video', '👗 Family Costumes & Attire', '💌 Invitation & Logistics', '🪔 Pooja & Rituals', '🎁 Return Gifts & Hampers', '🚗 Travel & Accommodation', '📝 General Checklist']);
-      const scopedRelations = new Set(meta.relations);
+      const scopedFunctions = new Set(meta.functions || []);
+      const scopedCategories = new Set(meta.categories || []);
+      const scopedTaskCategories = new Set(meta.taskCategories || []);
+      const scopedRelations = new Set(meta.relations || []);
       const allCodes = new Set();
 
       const targetFamilies = getVisibleFamilies();
@@ -2186,10 +2224,11 @@
       return result;
     }
 
-    // Dynamic Progress Bar & Tasks Dashboard Rendering
+    // Dynamic Overall & Category-Wise Progress Matrix Rendering
     function renderTasksList() {
       const container = document.getElementById('tasksListContainer');
       const emptyMsg = document.getElementById('tasksEmptyMessage');
+      const catProgressMatrix = document.getElementById('categoryProgressMatrix');
       const catFilter = document.getElementById('taskCatFilter').value;
       const statusFilter = document.getElementById('taskStatusFilter').value;
       const search = document.getElementById('taskSearchInput').value.toLowerCase();
@@ -2197,7 +2236,18 @@
       const visible = getVisibleTasks();
 
       let pCount = 0, inProgCount = 0, dCount = 0, totalBudget = 0, totalPaid = 0;
+      const catStats = {};
+
       visible.forEach(t => {
+        const cat = t.category || 'General Checklist';
+        if (!catStats[cat]) {
+          catStats[cat] = { total: 0, completed: 0, budget: 0, paid: 0 };
+        }
+        catStats[cat].total += 1;
+        if (t.status === 'Completed') catStats[cat].completed += 1;
+        if (t.budget) catStats[cat].budget += parseFloat(t.budget) || 0;
+        if (t.paid) catStats[cat].paid += parseFloat(t.paid) || 0;
+
         if (t.status === 'Pending') pCount++;
         else if (t.status === 'In Progress') inProgCount++;
         else if (t.status === 'Completed') dCount++;
@@ -2205,7 +2255,7 @@
         if (t.paid) totalPaid += parseFloat(t.paid) || 0;
       });
 
-      // Progress Calculation
+      // Overall Progress Calculation
       const totalTasksCount = visible.length;
       const progressPercent = totalTasksCount > 0 ? Math.round((dCount / totalTasksCount) * 100) : 0;
 
@@ -2216,6 +2266,36 @@
       document.getElementById('taskStatPaid').textContent = totalPaid.toLocaleString('en-IN');
       document.getElementById('tabCountTasks').textContent = visible.length;
 
+      // Item-Wise Category Progress Matrix Generation
+      catProgressMatrix.innerHTML = '';
+      const catKeys = Object.keys(catStats).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+
+      if (catKeys.length === 0) {
+        catProgressMatrix.innerHTML = '<div class="col-span-full text-center py-2 text-slate-400 text-xs italic">No task categories logged yet. Click "+ New Task" to begin.</div>';
+      } else {
+        catKeys.forEach(catName => {
+          const data = catStats[catName];
+          const catPercent = data.total > 0 ? Math.round((data.completed / data.total) * 100) : 0;
+          const card = document.createElement('div');
+          card.className = "p-2.5 rounded-xl border border-slate-200 bg-slate-50/70 space-y-1.5 hover:bg-slate-50 transition";
+          card.innerHTML = `
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-bold text-slate-800 truncate" title="${catName}">${catName}</span>
+              <span class="font-black ${catPercent === 100 ? 'text-emerald-600' : 'text-amber-600'} text-[11px]">${catPercent}%</span>
+            </div>
+            <div class="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
+              <div class="h-1.5 rounded-full transition-all duration-300 ${catPercent === 100 ? 'bg-emerald-500' : 'bg-amber-500'}" style="width: ${catPercent}%"></div>
+            </div>
+            <div class="flex items-center justify-between text-[10px] text-slate-500 font-semibold pt-0.5">
+              <span>${data.completed} / ${data.total} Done</span>
+              <span class="text-slate-700">₹${data.budget.toLocaleString('en-IN')}</span>
+            </div>
+          `;
+          catProgressMatrix.appendChild(card);
+        });
+      }
+
+      // Filtered Tasks Rendering
       const filtered = visible.filter(t => {
         const matchesCat = (catFilter === 'All') || (t.category === catFilter);
         const matchesStatus = (statusFilter === 'All') || (t.status === statusFilter);
@@ -2732,7 +2812,7 @@
             ${colSettings.total ? `<td class="py-1.5 px-2 text-center font-bold text-slate-600 whitespace-nowrap">${total}</td>` : ''}
             ${colSettings.coming ? `<td class="py-1.5 px-2 text-center bg-emerald-50/40 whitespace-nowrap">${attendingStepper}</td>` : ''}
             ${colSettings.inv ? `<td class="py-1.5 px-2.5 text-center bg-indigo-50/20 whitespace-nowrap">${inviteSelect}</td>` : ''}
-            ${colSettings.gifts ? `<td class="py-1.5 px-2.5 text-center bg-amber-50/40">${giftDisplay}</td>` : ''}
+            ${colSettings.gifts ? `<td class="py-1.5 px-2.5 text-center bg-amber-50/40 whitespace-nowrap">${giftDisplay}</td>` : ''}
             ${actionMenuCell}
           </tr>
         `;
