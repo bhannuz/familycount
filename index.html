@@ -802,6 +802,13 @@
           <!-- Toolstrip (Columns Dropdown & View Mode Switcher: Table, Tiles, List) -->
           <div class="flex items-center justify-between sm:justify-end gap-1.5 flex-nowrap">
             
+            <!-- Task Filters -->
+            <button type="button" onclick="toggleAccordion('taskFilterContainer', 'taskFilterChevron', 'taskFilterActionText')" class="px-2.5 py-1 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-1.5 shadow-2xs" title="Show / Hide Filters">
+              <i id="taskFilterChevron" class="fa-solid fa-filter text-amber-600 text-[11px] transition-transform duration-200"></i>
+              <span class="text-[11px]">Filters</span>
+              <span id="taskFilterActionText" class="hidden">Tap to Expand</span>
+            </button>
+
             <!-- Column Customizer Dropdown -->
             <div class="relative inline-block">
               <button type="button" onclick="toggleTaskColumnPicker(event)" class="px-2.5 py-1 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-1.5 shadow-2xs">
@@ -857,8 +864,9 @@
           </div>
         </div>
 
-        <!-- Task Filters Bar -->
-        <div class="p-2.5 bg-slate-50/60 border-b border-slate-200 grid grid-cols-2 md:grid-cols-4 gap-2">
+        <!-- Task Filters (collapsed by default, same interaction as Guest Filters) -->
+        <div id="taskFilterContainer" class="hidden p-2.5 sm:p-3 space-y-2 bg-white border-b border-slate-200">
+          <div class="bg-slate-50 p-2 sm:p-2.5 rounded-lg border border-slate-200 grid grid-cols-2 md:grid-cols-4 gap-2">
           <div class="col-span-1">
             <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Category Filter:</label>
             <select id="taskCatFilter" onchange="renderTasksList()" class="w-full bg-white border border-slate-300 text-xs font-semibold text-slate-700 px-2 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500">
@@ -879,6 +887,7 @@
           <div class="col-span-2">
             <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Search Tasks:</label>
             <input type="text" id="taskSearchInput" oninput="renderTasksList()" placeholder="Search task items, menu, caterer, photographer..." class="w-full bg-white border border-slate-300 text-xs px-2.5 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500" />
+          </div>
           </div>
         </div>
 
@@ -1518,9 +1527,15 @@
       };
     }
 
+    // Categories, Functions, Task Categories & Relations are shared, global
+    // lists that must stay identical for every user on every device,
+    // regardless of which family code (or Admin) they log in with.
+    // (Returned as a literal, not a module-level const, so there's no risk
+    // of a temporal-dead-zone error if this is called before the script has
+    // finished running top-to-bottom, e.g. showApp() firing immediately on
+    // an already-logged-in session.)
     function getMetaDocId() {
-      const code = String(loggedCode || '').trim().toUpperCase();
-      return code ? `__meta__${code}` : '';
+      return '__meta__GLOBAL';
     }
 
     function normalizeMetaData(meta) {
@@ -1547,25 +1562,23 @@
 
       codeMetaData = null;
       const metaDocId = getMetaDocId();
-      if (!metaDocId || isAdmin) {
-        codeMetaData = getStandardDefaultMetaData();
-        syncCodeScopedDropdowns();
-        return;
-      }
 
       const cloudRef = collectionRef.doc(metaDocId);
       codeMetaUnsubscribe = cloudRef.onSnapshot(async (doc) => {
         if (doc.exists && doc.data().isMeta === true) {
           codeMetaData = normalizeMetaData(doc.data());
           localStorage.setItem(getCodeMetaStorageKey(), JSON.stringify(codeMetaData));
-          localStorage.setItem(`fc_meta_${loggedCode}`, JSON.stringify(codeMetaData));
         } else {
-          // First device: migrate any old local metadata for this family code,
-          // otherwise create the standard defaults in Firestore.
-          const codeKey = `fc_meta_${loggedCode}`;
+          // First device ever to load the app: migrate any old local
+          // metadata (legacy per-code or global cache) if present,
+          // otherwise seed Firestore with the standard defaults. From this
+          // point on, this single global document is the source of truth
+          // for every family code and for Admin, on every device.
           let localMeta = null;
           try {
-            const stored = localStorage.getItem(codeKey) || localStorage.getItem('fc_meta_global_categories');
+            const stored = localStorage.getItem(getCodeMetaStorageKey())
+              || localStorage.getItem(`fc_meta_${loggedCode}`)
+              || localStorage.getItem('fc_meta_global_categories');
             if (stored) localMeta = JSON.parse(stored);
           } catch (e) {}
 
@@ -1573,12 +1586,12 @@
           try {
             await cloudRef.set({
               isMeta: true,
-              code: loggedCode,
+              scope: 'global',
               ...codeMetaData,
               updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             }, { merge: true });
           } catch (err) {
-            console.error('Unable to create family metadata:', err);
+            console.error('Unable to create global metadata:', err);
           }
         }
 
@@ -1599,9 +1612,11 @@
     }
 
     function getCodeMetaStorageKey() {
-      // Keep a code-specific local cache for fast/offline rendering. The
-      // authoritative copy is the Firestore metadata document for this code.
-      return `fc_meta_${String(loggedCode || 'default').trim().toUpperCase()}`;
+      // Local cache only, for fast/offline rendering before the Firestore
+      // snapshot arrives. The authoritative copy is the single global
+      // metadata document in Firestore (GLOBAL_META_DOC_ID), shared by
+      // every family code and Admin alike.
+      return 'fc_meta_GLOBAL';
     }
 
     function getCodeMetaData() {
@@ -1634,22 +1649,23 @@
       codeMetaData = normalizeMetaData(meta);
       const key = getCodeMetaStorageKey();
       localStorage.setItem(key, JSON.stringify(codeMetaData));
-      // Keep the legacy cache updated for backward compatibility, but never
-      // use it as the authoritative cross-device source.
-      localStorage.setItem('fc_meta_global_categories', JSON.stringify(codeMetaData));
 
-      const metaDocId = getMetaDocId();
-      if (metaDocId && !isAdmin) {
-        collectionRef.doc(metaDocId).set({
-          isMeta: true,
-          code: loggedCode,
-          ...codeMetaData,
-          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        }, { merge: true }).catch(err => {
-          console.error('Unable to save family metadata to Firestore:', err);
-          alert('Category list was saved locally, but could not sync to the cloud: ' + err.message);
-        });
-      }
+      // Always write to the single global Firestore document so every
+      // device — any family code, and Admin — stays in sync. This is a
+      // `set()` (not `merge` on arrays) so deletions actually remove
+      // entries instead of Firestore re-merging the old array back in.
+      collectionRef.doc(getMetaDocId()).set({
+        isMeta: true,
+        scope: 'global',
+        functions: codeMetaData.functions,
+        categories: codeMetaData.categories,
+        taskCategories: codeMetaData.taskCategories,
+        relations: codeMetaData.relations,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }).catch(err => {
+        console.error('Unable to save global metadata to Firestore:', err);
+        alert('Category list was saved locally, but could not sync to the cloud: ' + err.message);
+      });
 
       syncCodeScopedDropdowns();
       renderDashboard();
@@ -2974,7 +2990,7 @@
         `;
 
         html += `
-          <tr class="hover:bg-slate-50 transition">
+          <tr class="${item.status === 'Completed' ? 'bg-emerald-50 hover:bg-emerald-100' : (item.status === 'In Progress' ? 'bg-amber-50 hover:bg-amber-100' : 'hover:bg-slate-50')} transition">
             ${taskColSettings.func ? `<td class="py-1 px-2 font-bold text-indigo-800 text-[10px] whitespace-nowrap">${item.eventFunction || 'Main Reception'}</td>` : ''}
             ${taskColSettings.cat ? `<td class="py-1 px-2 whitespace-nowrap font-bold text-amber-900 text-[10px]">${item.category}</td>` : ''}
             ${taskColSettings.title ? `
@@ -2987,10 +3003,9 @@
               const progress = item.status === 'Completed' ? 100 : (item.status === 'In Progress' ? 50 : 0);
               return `<td class="py-1 px-1.5 w-[90px]">
                 <div class="flex items-center gap-1.5 justify-center">
-                  <div class="w-[52px] h-1.5 bg-slate-200 rounded-full overflow-hidden border border-slate-300">
-                    <div class="h-full rounded-full transition-all duration-300 ${progress === 100 ? 'bg-emerald-500' : (progress === 50 ? 'bg-sky-500' : 'bg-slate-400')}" style="width:${progress}%"></div>
+                  <div class="w-[56px] h-1.5 bg-slate-200 rounded-full overflow-hidden border border-slate-300" title="${progress}%">
+                    <div class="h-full rounded-full transition-all duration-300 ${progress === 100 ? 'bg-emerald-500' : (progress === 50 ? 'bg-amber-400' : 'bg-slate-400')}" style="width:${progress}%"></div>
                   </div>
-                  <span class="text-[9px] font-black text-slate-700 w-7 text-right">${progress}%</span>
                 </div>
               </td>`;
             })() : ''}
@@ -3021,9 +3036,9 @@
                 ${taskColSettings.assignee ? `<td class="py-2 px-2"></td>` : ''}
                 ${taskColSettings.budget ? `
                   <td class="py-2 px-2 text-right whitespace-nowrap">
-                    <span class="font-black text-slate-900 block">Budget: ₹${filteredBudgetTotal.toLocaleString('en-IN')}</span>
-                    <span class="text-[10px] text-emerald-700 block">Paid: ₹${filteredPaidTotal.toLocaleString('en-IN')}</span>
-                    <span class="text-[9px] text-slate-500 block">Balance: ₹${filteredBalanceTotal.toLocaleString('en-IN')}</span>
+                    <span class="font-black text-slate-900 block text-[11px]">Budget: ₹${filteredBudgetTotal.toLocaleString('en-IN')}</span>
+                    <span class="font-black text-emerald-700 block text-[12px]">Paid: ₹${filteredPaidTotal.toLocaleString('en-IN')}</span>
+                    <span class="font-bold text-slate-700 block text-[11px]">Balance: ₹${filteredBalanceTotal.toLocaleString('en-IN')}</span>
                   </td>
                 ` : ''}
                 ${taskColSettings.status ? `<td class="py-2 px-1.5"></td>` : ''}
