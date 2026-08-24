@@ -592,21 +592,16 @@
           </div>
         </div>
 
-        <div class="bg-emerald-900 text-white p-3 rounded-xl shadow-sm flex flex-col justify-between space-y-2">
-          <div class="flex items-center justify-between">
-            <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-200 block">Total Gifts / Cash Received</span>
-            <i class="fa-solid fa-gift text-emerald-300 text-lg opacity-80"></i>
+        <div class="inline-flex items-center gap-2 bg-emerald-900/90 text-white px-3 py-2 rounded-xl shadow-sm border border-emerald-700/70 shrink-0" title="Total Gifts / Cash Received">
+          <div class="w-7 h-7 rounded-lg bg-emerald-700/70 flex items-center justify-center">
+            <i class="fa-solid fa-wallet text-emerald-200 text-xs"></i>
           </div>
-          
-          <div class="flex items-baseline gap-2 my-auto">
-            <span class="text-2xl font-black text-emerald-300">₹<span id="statTotalCash">0</span></span>
-            <span class="text-emerald-400 font-light text-xl">|</span>
-            <span class="text-sm font-bold text-white"><span id="statGiftsCount">0</span> Gifts</span>
-          </div>
-
-          <div class="text-[10px] text-emerald-300/80 pt-1 border-t border-emerald-800/80 flex items-center justify-between">
-            <span>Function-Specific Cash & Gifts Log</span>
-            <span class="text-emerald-200 font-semibold">Active Tracker</span>
+          <div class="leading-tight">
+            <div class="text-[9px] font-bold uppercase tracking-wide text-emerald-200">Gifts / Cash</div>
+            <div class="flex items-baseline gap-1.5">
+              <span class="text-base font-black text-emerald-200">₹<span id="statTotalCash">0</span></span>
+              <span class="text-[10px] font-semibold text-emerald-100">(<span id="statGiftsCount">0</span>)</span>
+            </div>
           </div>
         </div>
       </div>
@@ -655,9 +650,6 @@
                 </label>
                 <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600 py-0.5">
                   <input type="checkbox" onchange="toggleColSetting('glk')" id="colChk_glk" class="w-3.5 h-3.5 rounded text-indigo-600 focus:ring-0" /> G / L / K Counts
-                </label>
-                <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600 py-0.5">
-                  <input type="checkbox" onchange="toggleColSetting('total')" id="colChk_total" class="w-3.5 h-3.5 rounded text-indigo-600 focus:ring-0" /> Total Inv.
                 </label>
                 <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600 py-0.5">
                   <input type="checkbox" onchange="toggleColSetting('coming')" id="colChk_coming" class="w-3.5 h-3.5 rounded text-indigo-600 focus:ring-0" /> Attending / Total
@@ -940,7 +932,12 @@
     function getStoredColSettings() {
       const stored = localStorage.getItem('fc_col_settings');
       if (stored) {
-        try { return JSON.parse(stored); } catch (e) {}
+        try {
+          const parsed = JSON.parse(stored);
+          parsed.total = false;
+          parsed.coming = parsed.coming !== false;
+          return parsed;
+        } catch (e) {}
       }
       return {
         func: true,
@@ -948,7 +945,7 @@
         rel: true,
         guest: true,
         glk: true,
-        total: true,
+        total: false,
         coming: true,
         inv: true,
         gifts: true
@@ -1950,6 +1947,35 @@
       `;
     }
 
+    function guestInvitationIcon(status) {
+      const s = String(status || 'Invited').trim().toLowerCase();
+      if (s === 'confirmed') {
+        return '<span class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700" title="Confirmed"><i class="fa-solid fa-circle-check text-sm"></i></span>';
+      }
+      if (s === 'invited') {
+        return '<span class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-indigo-100 text-indigo-700" title="Invited"><i class="fa-solid fa-envelope text-sm"></i></span>';
+      }
+      return '<span class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-slate-100 text-slate-500" title="Not Invited"><i class="fa-solid fa-envelope-open text-sm"></i></span>';
+    }
+
+    async function adjustGuestComing(guestId, delta) {
+      const item = families.find(f => f.id === guestId);
+      if (!item) return;
+      const total = getGuestTotal(item);
+      const current = getGuestComing(item);
+      const next = Math.max(0, Math.min(total, current + Number(delta || 0)));
+      if (next === current) return;
+      try {
+        await collectionRef.doc(guestId).update({
+          comingCount: next,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      } catch (err) {
+        console.error('Error updating attending count:', err);
+        alert('Unable to update attending count: ' + (err.message || err));
+      }
+    }
+
     function renderGuestTableView(items, container) {
       const safe = value => String(value ?? '').replace(/[&<>"']/g, ch => ({
         '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
@@ -1965,8 +1991,7 @@
                 ${colSettings.rel ? '<th class="py-2 px-2.5 whitespace-nowrap">Relation</th>' : ''}
                 ${colSettings.guest ? '<th class="py-2 px-2.5 whitespace-nowrap">Guest / Place</th>' : ''}
                 ${colSettings.glk ? '<th class="py-2 px-2 text-center whitespace-nowrap">G / L / K</th>' : ''}
-                ${colSettings.total ? '<th class="py-2 px-2 text-center whitespace-nowrap">Total Inv.</th>' : ''}
-                ${colSettings.coming ? '<th class="py-2 px-2 text-center whitespace-nowrap">Attending</th>' : ''}
+                ${colSettings.coming ? '<th class="py-2 px-2 text-center whitespace-nowrap">Attending / Total</th>' : ''}
                 ${colSettings.inv ? '<th class="py-2 px-2 text-center whitespace-nowrap">Invitation</th>' : ''}
                 ${colSettings.gifts ? '<th class="py-1 px-2 text-right whitespace-nowrap">Gift / Cash</th>' : ''}
               </tr>
@@ -1987,9 +2012,14 @@
             ${colSettings.rel ? `<td class="py-1.5 px-2.5 whitespace-nowrap">${safe(item.relation || '')}</td>` : ''}
             ${colSettings.guest ? `<td class="py-1.5 px-2.5"><div class="font-bold text-slate-800">${safe(item.name || '')}</div><div class="text-[10px] text-slate-500">${safe(item.place || '')}</div></td>` : ''}
             ${colSettings.glk ? `<td class="py-1.5 px-2 text-center whitespace-nowrap"><span class="text-blue-700 font-bold">${toNumber(item.gents)}</span> / <span class="text-pink-700 font-bold">${toNumber(item.ladies)}</span> / <span class="text-amber-700 font-bold">${toNumber(item.kids)}</span></td>` : ''}
-            ${colSettings.total ? `<td class="py-1.5 px-2 text-center font-black">${total}</td>` : ''}
-            ${colSettings.coming ? `<td class="py-1.5 px-2 text-center font-bold text-emerald-700">${coming}</td>` : ''}
-            ${colSettings.inv ? `<td class="py-1.5 px-2 text-center"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${status.toLowerCase() === 'confirmed' ? 'bg-emerald-100 text-emerald-800' : status.toLowerCase() === 'invited' ? 'bg-indigo-100 text-indigo-800' : 'bg-slate-100 text-slate-700'}">${safe(status)}</span></td>` : ''}
+            ${colSettings.coming ? `<td class="py-1 px-1.5 text-center whitespace-nowrap">
+              <div class="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 px-1 py-0.5">
+                <button type="button" onclick="adjustGuestComing(${JSON.stringify(item.id)}, -1)" class="w-5 h-5 rounded-md bg-white border border-slate-200 text-slate-500 hover:text-rose-600 hover:border-rose-200 font-black leading-none" title="Decrease attending">−</button>
+                <span class="min-w-[42px] text-center font-black text-emerald-700">${coming} / ${total}</span>
+                <button type="button" onclick="adjustGuestComing(${JSON.stringify(item.id)}, 1)" class="w-5 h-5 rounded-md bg-white border border-slate-200 text-slate-500 hover:text-emerald-600 hover:border-emerald-200 font-black leading-none" title="Increase attending">+</button>
+              </div>
+            </td>` : ''}
+            ${colSettings.inv ? `<td class="py-1 px-2 text-center">${guestInvitationIcon(status)}</td>` : ''}
             ${colSettings.gifts ? `<td class="py-1.5 px-2 text-right">${gift > 0 ? '₹' + gift.toLocaleString('en-IN') : ''}${item.giftDescription ? `<div class="text-[10px] text-slate-500">${safe(item.giftDescription)}</div>` : ''}</td>` : ''}
           </tr>
         `;
@@ -2021,7 +2051,10 @@
                   <span>K <b>${toNumber(item.kids)}</b></span>
                   <span>Total <b>${total}</b></span>
                 </div>
-                <div class="mt-2 text-[10px] text-emerald-700 font-bold">Attending: ${coming} · ${safe(item.invitation || 'Invited')}</div>
+                <div class="mt-2 flex items-center justify-between text-[10px] font-bold">
+                  <span class="text-emerald-700">Attending / Total: ${coming} / ${total}</span>
+                  ${guestInvitationIcon(item.invitation)}
+                </div>
                 ${gift > 0 ? `<div class="mt-1 text-[10px] text-emerald-800">Gift: ₹${gift.toLocaleString('en-IN')}</div>` : ''}
               </div>
             `;
@@ -2044,11 +2077,11 @@
                   <div class="text-xs font-bold text-slate-800">${safe(item.name || 'Guest')}</div>
                   <div class="text-[10px] text-slate-500">${safe(item.place || '')} · ${safe(item.eventFunction || 'Main Reception')}</div>
                 </div>
-                <span class="text-[10px] font-bold text-indigo-700">${safe(item.invitation || 'Invited')}</span>
+                ${guestInvitationIcon(item.invitation)}
               </div>
               <div class="text-[10px] text-slate-600 mt-1">
                 G:${toNumber(item.gents)} · L:${toNumber(item.ladies)} · K:${toNumber(item.kids)}
-                · Total:${getGuestTotal(item)} · Attending:${getGuestComing(item)}
+                · Attending / Total:${getGuestComing(item)} / ${getGuestTotal(item)}
               </div>
             </div>
           `).join('')}
