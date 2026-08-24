@@ -283,7 +283,7 @@
               <select id="taskFuncSelect" required class="w-full bg-indigo-50/50 border border-indigo-200 rounded-lg px-2 py-1.5 text-xs font-semibold text-indigo-900 focus:outline-none focus:border-indigo-500"></select>
             </div>
 
-            <!-- Task Category -->
+            <!-- Task Category with Custom Support -->
             <div class="col-span-1">
               <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Task Category *</label>
               <div id="taskCatSelectWrapper">
@@ -330,7 +330,7 @@
 
             <div class="col-span-1">
               <label class="block text-[10px] font-bold uppercase text-emerald-800 mb-0.5">Advance / Paid (₹)</label>
-              <input type="number" id="taskPaid" min="0" step="100" placeholder="e.g. 15000" class="w-full bg-white border border-emerald-300 rounded-lg px-2 py-1.5 text-xs font-bold text-emerald-900 focus:outline-none focus:border-indigo-500" />
+              <input type="number" id="taskPaid" min="0" step="100" placeholder="e.g. 15000" class="w-full bg-white border border-emerald-300 rounded-lg px-2.5 py-1.5 text-xs font-bold text-emerald-900 focus:outline-none focus:border-indigo-500" />
             </div>
 
             <!-- Vendor / Contact Details -->
@@ -360,7 +360,7 @@
     </div>
   </div>
 
-  <!-- Manage Functions, Categories, Task Categories & Relations Modal (All Sections Collapsible & Sorted Alphabetically) -->
+  <!-- Manage Functions, Categories, Task Categories & Relations Modal -->
   <div id="metaManagerModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-3">
     <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full max-h-[90vh] flex flex-col overflow-hidden">
       <div class="px-4 py-3 bg-slate-800 text-white flex items-center justify-between">
@@ -412,7 +412,7 @@
           </div>
         </div>
 
-        <!-- 3. Task Categories Section (Catering, Stage, DJ, etc. - Fully Manageable / Renamable / Deletable) -->
+        <!-- 3. Task Categories Section -->
         <div class="border border-amber-300 rounded-xl overflow-hidden bg-amber-50/20 shadow-2xs">
           <button type="button" onclick="toggleAccordion('metaTaskCatBody', 'metaTaskCatChev', 'metaTaskCatTxt')" class="w-full flex items-center justify-between p-2.5 bg-amber-100/70 hover:bg-amber-100 text-left border-b border-amber-300 transition">
             <div class="flex items-center gap-2">
@@ -750,7 +750,7 @@
     <!-- ==================== MODULE 2: EVENT FUNCTION TASKS MANAGER ==================== -->
     <div id="tasksModule" class="hidden space-y-2.5">
       
-      <!-- Overall Progress Bar & Analytics Card -->
+      <!-- Overall Progress Bar & Analytics Card (Replacing Category breakdown with overall summary) -->
       <div class="bg-gradient-to-r from-slate-900 to-indigo-950 text-white p-3.5 rounded-2xl shadow-sm space-y-3">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
@@ -1554,24 +1554,6 @@
       });
 
       renderFilteredHistory();
-    }
-
-    function setTaskViewMode(mode) {
-      currentTaskViewMode = mode;
-      localStorage.setItem('fc_task_view_mode', currentTaskViewMode);
-
-      ['table', 'tiles', 'list'].forEach(m => {
-        const btn = document.getElementById(`btnTaskView${m.charAt(0).toUpperCase() + m.slice(1)}`);
-        if (btn) {
-          if (m === currentTaskViewMode) {
-            btn.className = "px-2.5 py-1 rounded transition text-amber-700 bg-amber-50 font-bold flex items-center gap-1";
-          } else {
-            btn.className = "px-2.5 py-1 rounded transition text-slate-500 hover:text-slate-800 flex items-center gap-1";
-          }
-        }
-      });
-
-      renderTasksList();
     }
 
     function openMetaManager() {
@@ -2401,11 +2383,10 @@
       return result;
     }
 
-    // Dynamic Overall & Category-Wise Progress Matrix Rendering (Alphabetically Sorted)
+    // Dynamic Overall Progress Rendering & View Support (Table, Tiles, List)
     function renderTasksList() {
-      const displayContainer = document.getElementById('tasksDisplayContainer');
+      const container = document.getElementById('tasksDisplayContainer');
       const emptyMsg = document.getElementById('tasksEmptyMessage');
-      const catProgressMatrix = document.getElementById('categoryProgressMatrix');
       const catFilter = document.getElementById('taskCatFilter').value;
       const statusFilter = document.getElementById('taskStatusFilter').value;
       const search = document.getElementById('taskSearchInput').value.toLowerCase();
@@ -2413,18 +2394,8 @@
       const visible = getVisibleTasks();
 
       let pCount = 0, inProgCount = 0, dCount = 0, totalBudget = 0, totalPaid = 0;
-      const catStats = {};
 
       visible.forEach(t => {
-        const cat = t.category || '📝 General Checklist';
-        if (!catStats[cat]) {
-          catStats[cat] = { total: 0, completed: 0, budget: 0, paid: 0 };
-        }
-        catStats[cat].total += 1;
-        if (t.status === 'Completed') catStats[cat].completed += 1;
-        if (t.budget) catStats[cat].budget += parseFloat(t.budget) || 0;
-        if (t.paid) catStats[cat].paid += parseFloat(t.paid) || 0;
-
         if (t.status === 'Pending') pCount++;
         else if (t.status === 'In Progress') inProgCount++;
         else if (t.status === 'Completed') dCount++;
@@ -2442,36 +2413,6 @@
       document.getElementById('taskStatPaid').textContent = totalPaid.toLocaleString('en-IN');
       document.getElementById('tabCountTasks').textContent = visible.length;
 
-      // Category / Item-wise Progress Matrix (Alphabetically Sorted)
-      catProgressMatrix.innerHTML = '';
-      const catKeys = Object.keys(catStats).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
-
-      if (catKeys.length === 0) {
-        catProgressMatrix.innerHTML = '<div class="col-span-full text-center py-2 text-slate-400 text-xs italic">No task categories logged yet. Click "+ Add Task" to begin.</div>';
-      } else {
-        catKeys.forEach(catName => {
-          const data = catStats[catName];
-          const catPercent = data.total > 0 ? Math.round((data.completed / data.total) * 100) : 0;
-          const card = document.createElement('div');
-          card.className = "p-2.5 rounded-xl border border-slate-200 bg-slate-50/70 space-y-1.5 hover:bg-slate-50 transition";
-          card.innerHTML = `
-            <div class="flex items-center justify-between text-xs">
-              <span class="font-bold text-slate-800 truncate" title="${catName}">${catName}</span>
-              <span class="font-black ${catPercent === 100 ? 'text-emerald-600' : 'text-amber-600'} text-[11px]">${catPercent}%</span>
-            </div>
-            <div class="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
-              <div class="h-1.5 rounded-full transition-all duration-300 ${catPercent === 100 ? 'bg-emerald-500' : 'bg-amber-500'}" style="width: ${catPercent}%"></div>
-            </div>
-            <div class="flex items-center justify-between text-[10px] text-slate-500 font-semibold pt-0.5">
-              <span>${data.completed} / ${data.total} Done</span>
-              <span class="text-slate-700 font-bold">₹${data.budget.toLocaleString('en-IN')}</span>
-            </div>
-          `;
-          catProgressMatrix.appendChild(card);
-        });
-      }
-
-      // Filtered Tasks Rendering (Alphabetically Sorted by Title)
       const filtered = visible.filter(t => {
         const matchesCat = (catFilter === 'All') || (t.category === catFilter);
         const matchesStatus = (statusFilter === 'All') || (t.status === statusFilter);
@@ -2484,12 +2425,13 @@
         return matchesCat && matchesStatus && matchesSearch;
       });
 
+      // Alphabetical Sorting by Title (A-Z)
       filtered.sort((a, b) => (a.title || '').localeCompare(b.title || '', undefined, { sensitivity: 'base' }));
 
       document.getElementById('tasksBadgeCount').textContent = `${filtered.length} Tasks`;
 
       if (filtered.length === 0) {
-        displayContainer.innerHTML = '';
+        container.innerHTML = '';
         emptyMsg.classList.remove('hidden');
         return;
       } else {
@@ -2497,11 +2439,11 @@
       }
 
       if (currentTaskViewMode === 'table') {
-        renderTaskTableView(filtered, displayContainer);
+        renderTaskTableView(filtered, container);
       } else if (currentTaskViewMode === 'tiles') {
-        renderTaskTilesView(filtered, displayContainer);
+        renderTaskTilesView(filtered, container);
       } else if (currentTaskViewMode === 'list') {
-        renderTaskListView(filtered, displayContainer);
+        renderTaskListView(filtered, container);
       }
     }
 
@@ -2534,8 +2476,6 @@
         } else {
           statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-900 border border-amber-300">⏳ Pending</span>';
         }
-
-        const balance = (parseFloat(item.budget) || 0) - (parseFloat(item.paid) || 0);
 
         const actionMenuCell = `
           <td class="py-1.5 px-2 text-center whitespace-nowrap relative">
@@ -2596,8 +2536,6 @@
         } else {
           statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-900 border border-amber-300">⏳ Pending</span>';
         }
-
-        const balance = (parseFloat(item.budget) || 0) - (parseFloat(item.paid) || 0);
 
         html += `
           <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between space-y-2.5 hover:shadow transition">
