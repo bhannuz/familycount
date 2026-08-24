@@ -910,8 +910,13 @@
     const db = firebase.firestore();
     const collectionRef = db.collection("family_count");
 
+    // Metadata is stored in the same Firestore collection as a dedicated document
+    // so every device opening the same family code receives the same Functions,
+    // Guest Categories, Task Categories and Relations.
     let families = [];
     let tasks = [];
+    let codeMetaData = null;
+    let codeMetaUnsubscribe = null;
     let loggedCode = localStorage.getItem('fc_user_code') || '';
     let isAdmin = (loggedCode.toUpperCase() === ADMIN_CODE);
     let currentViewMode = localStorage.getItem('fc_view_mode') || 'table';
@@ -1090,6 +1095,11 @@
 
         snapshot.forEach((doc) => {
           const data = doc.data();
+
+          // Metadata documents live in the same collection but must never appear
+          // as guest/task records.
+          if (data.isMeta === true) return;
+
           if (data.isTask === true) {
             tasks.push({ id: doc.id, ...data });
           } else {
@@ -1364,6 +1374,11 @@
     }
 
     function logoutSession() {
+      if (codeMetaUnsubscribe) {
+        try { codeMetaUnsubscribe(); } catch (e) {}
+        codeMetaUnsubscribe = null;
+      }
+      codeMetaData = null;
       localStorage.removeItem('fc_user_code');
       loggedCode = '';
       isAdmin = false;
@@ -1397,6 +1412,7 @@
       updateTaskColumnPickerCheckboxes();
       setViewMode(currentViewMode === 'compact' ? 'table' : currentViewMode);
       setTaskViewMode(currentTaskViewMode);
+      listenCodeMeta();
       listenData();
     }
 
@@ -1502,32 +1518,139 @@
       };
     }
 
+    function getMetaDocId() {
+      const code = String(loggedCode || '').trim().toUpperCase();
+      return code ? `__meta__${code}` : '';
+    }
+
+    function normalizeMetaData(meta) {
+      const defaults = getStandardDefaultMetaData();
+      const src = meta || {};
+      const clean = (value, fallback) => {
+        const arr = Array.isArray(value) ? value : [];
+        const result = arr.map(v => String(v || '').trim()).filter(Boolean);
+        return result.length ? [...new Set(result)] : [...fallback];
+      };
+      return {
+        functions: clean(src.functions, defaults.functions),
+        categories: clean(src.categories, defaults.categories),
+        taskCategories: clean(src.taskCategories, defaults.taskCategories),
+        relations: clean(src.relations, defaults.relations)
+      };
+    }
+
+    function listenCodeMeta() {
+      if (codeMetaUnsubscribe) {
+        try { codeMetaUnsubscribe(); } catch (e) {}
+        codeMetaUnsubscribe = null;
+      }
+
+      codeMetaData = null;
+      const metaDocId = getMetaDocId();
+      if (!metaDocId || isAdmin) {
+        codeMetaData = getStandardDefaultMetaData();
+        syncCodeScopedDropdowns();
+        return;
+      }
+
+      const cloudRef = collectionRef.doc(metaDocId);
+      codeMetaUnsubscribe = cloudRef.onSnapshot(async (doc) => {
+        if (doc.exists && doc.data().isMeta === true) {
+          codeMetaData = normalizeMetaData(doc.data());
+          localStorage.setItem(getCodeMetaStorageKey(), JSON.stringify(codeMetaData));
+          localStorage.setItem(`fc_meta_${loggedCode}`, JSON.stringify(codeMetaData));
+        } else {
+          // First device: migrate any old local metadata for this family code,
+          // otherwise create the standard defaults in Firestore.
+          const codeKey = `fc_meta_${loggedCode}`;
+          let localMeta = null;
+          try {
+            const stored = localStorage.getItem(codeKey) || localStorage.getItem('fc_meta_global_categories');
+            if (stored) localMeta = JSON.parse(stored);
+          } catch (e) {}
+
+          codeMetaData = normalizeMetaData(localMeta || getStandardDefaultMetaData());
+          try {
+            await cloudRef.set({
+              isMeta: true,
+              code: loggedCode,
+              ...codeMetaData,
+              updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true });
+          } catch (err) {
+            console.error('Unable to create family metadata:', err);
+          }
+        }
+
+        syncCodeScopedDropdowns();
+        renderDashboard();
+        renderFilteredHistory();
+        renderTasksList();
+        if (!document.getElementById('metaManagerModal').classList.contains('hidden')) {
+          renderMetaManagerLists();
+        }
+      }, (err) => {
+        console.error('Family metadata listener error:', err);
+        // Keep the app usable with local/default metadata if Firestore rules
+        // temporarily prevent the metadata document from being read.
+        codeMetaData = normalizeMetaData(codeMetaData || getStandardDefaultMetaData());
+        syncCodeScopedDropdowns();
+      });
+    }
+
     function getCodeMetaStorageKey() {
-      return `fc_meta_global_categories`;
+      // Keep a code-specific local cache for fast/offline rendering. The
+      // authoritative copy is the Firestore metadata document for this code.
+      return `fc_meta_${String(loggedCode || 'default').trim().toUpperCase()}`;
     }
 
     function getCodeMetaData() {
+      if (codeMetaData) return normalizeMetaData(codeMetaData);
+
       const key = getCodeMetaStorageKey();
       const stored = localStorage.getItem(key);
-      const defaults = getStandardDefaultMetaData();
-
       if (stored) {
         try {
-          const parsed = JSON.parse(stored);
-          return {
-            functions: parsed.functions && parsed.functions.length > 0 ? parsed.functions : defaults.functions,
-            categories: parsed.categories && parsed.categories.length > 0 ? parsed.categories : defaults.categories,
-            taskCategories: parsed.taskCategories && parsed.taskCategories.length > 0 ? parsed.taskCategories : defaults.taskCategories,
-            relations: parsed.relations && parsed.relations.length > 0 ? parsed.relations : defaults.relations
-          };
+          codeMetaData = normalizeMetaData(JSON.parse(stored));
+          return codeMetaData;
         } catch (e) {}
       }
-      return defaults;
+
+      // Backward-compatible migration source only. This is no longer shared
+      // across family codes once Firestore metadata has been loaded.
+      const legacy = localStorage.getItem('fc_meta_global_categories');
+      if (legacy) {
+        try {
+          codeMetaData = normalizeMetaData(JSON.parse(legacy));
+          return codeMetaData;
+        } catch (e) {}
+      }
+
+      codeMetaData = getStandardDefaultMetaData();
+      return codeMetaData;
     }
 
     function saveCodeMetaData(meta) {
+      codeMetaData = normalizeMetaData(meta);
       const key = getCodeMetaStorageKey();
-      localStorage.setItem(key, JSON.stringify(meta));
+      localStorage.setItem(key, JSON.stringify(codeMetaData));
+      // Keep the legacy cache updated for backward compatibility, but never
+      // use it as the authoritative cross-device source.
+      localStorage.setItem('fc_meta_global_categories', JSON.stringify(codeMetaData));
+
+      const metaDocId = getMetaDocId();
+      if (metaDocId && !isAdmin) {
+        collectionRef.doc(metaDocId).set({
+          isMeta: true,
+          code: loggedCode,
+          ...codeMetaData,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true }).catch(err => {
+          console.error('Unable to save family metadata to Firestore:', err);
+          alert('Category list was saved locally, but could not sync to the cloud: ' + err.message);
+        });
+      }
+
       syncCodeScopedDropdowns();
       renderDashboard();
       renderFilteredHistory();
@@ -2793,6 +2916,12 @@
     }
 
     function renderTaskTableView(items, container) {
+      // Subtotals are calculated from the exact filtered rows being rendered,
+      // so Category/Status/Search filters immediately update Budget and Paid.
+      const filteredBudgetTotal = items.reduce((sum, item) => sum + (parseFloat(item.budget) || 0), 0);
+      const filteredPaidTotal = items.reduce((sum, item) => sum + (parseFloat(item.paid) || 0), 0);
+      const filteredBalanceTotal = filteredBudgetTotal - filteredPaidTotal;
+
       let html = `
         <div class="w-full overflow-x-auto border border-slate-200 rounded-lg">
           <table class="w-full text-left table-auto border-collapse text-xs">
@@ -2880,7 +3009,29 @@
         `;
       });
 
-      html += `</tbody></table></div>`;
+      html += `
+            </tbody>
+            <tfoot>
+              <tr class="bg-amber-50 border-t-2 border-amber-200 font-bold">
+                ${taskColSettings.func ? `<td class="py-2 px-2"></td>` : ''}
+                ${taskColSettings.cat ? `<td class="py-2 px-2"></td>` : ''}
+                ${taskColSettings.title ? `<td class="py-2 px-3 text-right text-[10px] uppercase tracking-wide text-slate-600">Filtered Subtotal</td>` : ''}
+                ${taskColSettings.progress ? `<td class="py-2 px-1.5"></td>` : ''}
+                ${taskColSettings.due ? `<td class="py-2 px-2"></td>` : ''}
+                ${taskColSettings.assignee ? `<td class="py-2 px-2"></td>` : ''}
+                ${taskColSettings.budget ? `
+                  <td class="py-2 px-2 text-right whitespace-nowrap">
+                    <span class="font-black text-slate-900 block">Budget: ₹${filteredBudgetTotal.toLocaleString('en-IN')}</span>
+                    <span class="text-[10px] text-emerald-700 block">Paid: ₹${filteredPaidTotal.toLocaleString('en-IN')}</span>
+                    <span class="text-[9px] text-slate-500 block">Balance: ₹${filteredBalanceTotal.toLocaleString('en-IN')}</span>
+                  </td>
+                ` : ''}
+                ${taskColSettings.status ? `<td class="py-2 px-1.5"></td>` : ''}
+                ${taskColSettings.vendor ? `<td class="py-2 px-2"></td>` : ''}
+                <td class="py-2 px-2.5"></td>
+              </tr>
+            </tfoot>
+          </table></div>`;
       container.innerHTML = html;
     }
 
