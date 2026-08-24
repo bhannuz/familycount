@@ -592,15 +592,18 @@
           </div>
         </div>
 
-        <div class="inline-flex items-center gap-2 bg-emerald-900/90 text-white px-3 py-2 rounded-xl shadow-sm border border-emerald-700/70 shrink-0" title="Total Gifts / Cash Received">
+        <div class="inline-flex items-center gap-2 bg-emerald-900/90 text-white px-3 py-2 rounded-xl shadow-sm border border-emerald-700/70 shrink-0" title="Gift and cash summary">
           <div class="w-7 h-7 rounded-lg bg-emerald-700/70 flex items-center justify-center">
             <i class="fa-solid fa-wallet text-emerald-200 text-xs"></i>
           </div>
-          <div class="leading-tight">
-            <div class="text-[9px] font-bold uppercase tracking-wide text-emerald-200">Gifts / Cash</div>
-            <div class="flex items-baseline gap-1.5">
-              <span class="text-base font-black text-emerald-200">₹<span id="statTotalCash">0</span></span>
-              <span class="text-[10px] font-semibold text-emerald-100">(<span id="statGiftsCount">0</span>)</span>
+          <div class="leading-tight min-w-[145px]">
+            <div class="text-[9px] font-bold uppercase tracking-wide text-emerald-200">Gifts & Cash Summary</div>
+            <div class="flex items-center gap-2 mt-0.5">
+              <span class="text-[11px] font-semibold text-emerald-100">Cash</span>
+              <span class="text-sm font-black text-emerald-200">₹<span id="statTotalCash">0</span></span>
+              <span class="text-emerald-500/70">|</span>
+              <span class="text-[11px] font-semibold text-emerald-100">Gifts</span>
+              <span class="text-sm font-black text-white" id="statGiftsCount">0</span>
             </div>
           </div>
         </div>
@@ -1165,6 +1168,49 @@
       } catch (e) {
         return '';
       }
+    }
+
+    function resetForm() {
+      const form = document.getElementById('familyForm');
+      if (form) form.reset();
+
+      const docId = document.getElementById('docId');
+      if (docId) docId.value = '';
+
+      // Restore the normal select controls after Add/Edit operations.
+      const funcSelectWrapper = document.getElementById('funcSelectWrapper');
+      const customFuncWrapper = document.getElementById('customFuncWrapper');
+      const groupSelectWrapper = document.getElementById('groupSelectWrapper');
+      const customGroupWrapper = document.getElementById('customGroupWrapper');
+      const relationSelectWrapper = document.getElementById('relationSelectWrapper');
+      const customRelWrapper = document.getElementById('customRelWrapper');
+
+      if (funcSelectWrapper) funcSelectWrapper.classList.remove('hidden');
+      if (customFuncWrapper) customFuncWrapper.classList.add('hidden');
+      if (groupSelectWrapper) groupSelectWrapper.classList.remove('hidden');
+      if (customGroupWrapper) customGroupWrapper.classList.add('hidden');
+      if (relationSelectWrapper) relationSelectWrapper.classList.remove('hidden');
+      if (customRelWrapper) customRelWrapper.classList.add('hidden');
+
+      const customFuncInput = document.getElementById('customFuncInput');
+      const customGroupInput = document.getElementById('customGroupInput');
+      const customRelationInput = document.getElementById('customRelationInput');
+      if (customFuncInput) customFuncInput.value = '';
+      if (customGroupInput) customGroupInput.value = '';
+      if (customRelationInput) customRelationInput.value = '';
+
+      // New guest defaults. Existing edit values are populated by the edit handler.
+      const gents = document.getElementById('gentsCount');
+      const ladies = document.getElementById('ladiesCount');
+      const kids = document.getElementById('kidsCount');
+      if (gents) gents.value = '1';
+      if (ladies) ladies.value = '1';
+      if (kids) kids.value = '0';
+
+      const giftAmount = document.getElementById('giftAmount');
+      const giftDescription = document.getElementById('giftDescription');
+      if (giftAmount) giftAmount.value = '';
+      if (giftDescription) giftDescription.value = '';
     }
 
     function openAddGuestModal() {
