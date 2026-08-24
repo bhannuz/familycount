@@ -2648,7 +2648,15 @@
 
     function editTask(taskId) {
       const item = tasks.find(t => t.id === taskId);
-      if (!item) return;
+      if (!item) {
+        alert('Task record could not be found. Please refresh the page and try again.');
+        return;
+      }
+
+      if (!item.isTask) {
+        alert('This record is not an Event Checklist task.');
+        return;
+      }
 
       document.getElementById('taskDocId').value = item.id;
       document.getElementById('taskFuncSelect').value = item.eventFunction || "Main Reception";
@@ -2688,8 +2696,24 @@
 
     async function deleteTask(taskId) {
       const item = tasks.find(t => t.id === taskId);
-      if (confirm(`Delete task "${item ? item.title : 'this task'}"?`)) {
+      if (!item) {
+        alert('Task record could not be found. Please refresh the page and try again.');
+        return;
+      }
+      if (!item.isTask) {
+        alert('This record is not an Event Checklist task.');
+        return;
+      }
+
+      if (!confirm(`Delete task "${item.title || 'this task'}"?`)) return;
+
+      try {
         await collectionRef.doc(taskId).delete();
+        const menu = document.getElementById(`rowActionMenu_task_${taskId}`);
+        if (menu) menu.classList.add('hidden');
+      } catch (err) {
+        console.error('Error deleting task:', err);
+        alert('Unable to delete this task: ' + (err.message || err));
       }
     }
 
@@ -2808,11 +2832,11 @@
               <button onclick="toggleRowActionMenu(event, 'task_${item.id}')" class="w-7 h-7 rounded-lg hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition">
                 <i class="fa-solid fa-ellipsis-vertical text-xs"></i>
               </button>
-              <div id="rowActionMenu_task_${item.id}" class="row-action-menu hidden absolute right-0 mt-1 w-28 bg-white border border-slate-200 rounded-xl shadow-xl py-1 z-30 text-left">
-                <button onclick="editTask('${item.id}')" class="w-full px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 flex items-center gap-2 transition">
+              <div id="rowActionMenu_task_${item.id}" class="row-action-menu hidden absolute right-0 mt-1 w-28 bg-white border border-slate-200 rounded-xl shadow-2xl py-1 z-[100] text-left" onclick="event.stopPropagation()">
+                <button type="button" onclick="event.stopPropagation(); editTask('${item.id}')" class="w-full px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 flex items-center gap-2 transition">
                   <i class="fa-solid fa-pen text-[10px] w-3"></i> Edit
                 </button>
-                <button onclick="deleteTask('${item.id}')" class="w-full px-3 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 flex items-center gap-2 transition">
+                <button type="button" onclick="event.stopPropagation(); deleteTask('${item.id}')" class="w-full px-3 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 flex items-center gap-2 transition">
                   <i class="fa-solid fa-trash text-[10px] w-3"></i> Delete
                 </button>
               </div>
@@ -2916,10 +2940,10 @@
                   <i class="fa-solid fa-ellipsis-vertical text-xs"></i>
                 </button>
                 <div id="rowActionMenu_task_tile_${item.id}" class="row-action-menu hidden absolute right-0 bottom-8 w-28 bg-white border border-slate-200 rounded-xl shadow-xl py-1 z-30 text-left">
-                  <button onclick="editTask('${item.id}')" class="w-full px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 flex items-center gap-2 transition">
+                  <button type="button" onclick="event.stopPropagation(); editTask('${item.id}')" class="w-full px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 flex items-center gap-2 transition">
                     <i class="fa-solid fa-pen text-[10px] w-3"></i> Edit
                   </button>
-                  <button onclick="deleteTask('${item.id}')" class="w-full px-3 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 flex items-center gap-2 transition">
+                  <button type="button" onclick="event.stopPropagation(); deleteTask('${item.id}')" class="w-full px-3 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 flex items-center gap-2 transition">
                     <i class="fa-solid fa-trash text-[10px] w-3"></i> Delete
                   </button>
                 </div>
@@ -2973,10 +2997,10 @@
                   <i class="fa-solid fa-ellipsis-vertical text-xs"></i>
                 </button>
                 <div id="rowActionMenu_task_list_${item.id}" class="row-action-menu hidden absolute right-0 mt-1 w-28 bg-white border border-slate-200 rounded-xl shadow-xl py-1 z-30 text-left">
-                  <button onclick="editTask('${item.id}')" class="w-full px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 flex items-center gap-2 transition">
+                  <button type="button" onclick="event.stopPropagation(); editTask('${item.id}')" class="w-full px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 flex items-center gap-2 transition">
                     <i class="fa-solid fa-pen text-[10px] w-3"></i> Edit
                   </button>
-                  <button onclick="deleteTask('${item.id}')" class="w-full px-3 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 flex items-center gap-2 transition">
+                  <button type="button" onclick="event.stopPropagation(); deleteTask('${item.id}')" class="w-full px-3 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 flex items-center gap-2 transition">
                     <i class="fa-solid fa-trash text-[10px] w-3"></i> Delete
                   </button>
                 </div>
