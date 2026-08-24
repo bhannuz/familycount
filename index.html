@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Event Headcount, Multi-Function & Gift Tracker</title>
+  <title>Event Headcount, Multi-Function & Task Tracker</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
@@ -24,7 +24,7 @@
         <div class="w-12 h-12 bg-indigo-600 text-white rounded-full flex items-center justify-center mx-auto text-xl font-bold">
           <i class="fa-solid fa-lock"></i>
         </div>
-        <h2 class="text-lg font-bold text-slate-900">Event RSVP & Gift Tracker</h2>
+        <h2 class="text-lg font-bold text-slate-900">Event Manager & Planner</h2>
         <p class="text-xs text-slate-500">Enter your 4-digit code or create a new family entry</p>
       </div>
 
@@ -256,6 +256,104 @@
     </div>
   </div>
 
+  <!-- POPUP MODAL: Add / Edit Event Task Window -->
+  <div id="taskModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-3">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[92vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+      
+      <div class="px-4 py-3 bg-gradient-to-r from-amber-700 to-amber-600 text-white flex items-center justify-between shadow-sm">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-lg bg-amber-500/60 flex items-center justify-center text-xs">
+            <i class="fa-solid fa-clipboard-check text-amber-200" id="taskModalIcon"></i>
+          </div>
+          <h3 class="text-xs sm:text-sm font-bold tracking-tight" id="taskModalTitle">Add Event Function Task</h3>
+        </div>
+        <button type="button" onclick="closeTaskModal()" class="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-xs transition">
+          ✕
+        </button>
+      </div>
+
+      <div class="p-3 sm:p-4 overflow-y-auto space-y-3">
+        <form id="taskForm" onsubmit="handleTaskSubmit(event)" class="space-y-3">
+          <input type="hidden" id="taskDocId" value="" />
+
+          <div class="grid grid-cols-2 gap-2">
+            <!-- Function -->
+            <div class="col-span-1">
+              <label class="block text-[10px] font-bold uppercase text-indigo-700 mb-0.5">Function *</label>
+              <select id="taskFuncSelect" required class="w-full bg-indigo-50/50 border border-indigo-200 rounded-lg px-2 py-1.5 text-xs font-semibold text-indigo-900 focus:outline-none focus:border-indigo-500"></select>
+            </div>
+
+            <!-- Task Category -->
+            <div class="col-span-1">
+              <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Category *</label>
+              <select id="taskCategorySelect" required class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs font-semibold text-slate-700 focus:outline-none focus:border-indigo-500">
+                <option value="Catering & Food Menu">🍽️ Catering & Food Menu</option>
+                <option value="Stage & Decoration">🌸 Stage & Decoration</option>
+                <option value="DJ, Band & Dancers">🎵 DJ, Band & Dancers</option>
+                <option value="Lighting & Sound">💡 Lighting & Sound</option>
+                <option value="Photography & Video">📸 Photography & Video</option>
+                <option value="Family Costumes & Attire">👗 Family Costumes & Attire</option>
+                <option value="Invitation & Logistics">💌 Invitation & Logistics</option>
+                <option value="Pooja & Rituals">🪔 Pooja & Rituals</option>
+                <option value="General Checklist">📝 General Checklist</option>
+              </select>
+            </div>
+
+            <!-- Task Title / Item -->
+            <div class="col-span-2">
+              <label class="block text-[10px] font-bold uppercase text-slate-600 mb-0.5">Task / Item Description *</label>
+              <input type="text" id="taskTitle" required placeholder="e.g. Finalize Sweet items for lunch, Book Sangeet Choreographer" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-indigo-500" />
+            </div>
+
+            <!-- Assigned Person -->
+            <div class="col-span-1">
+              <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Responsible Person</label>
+              <input type="text" id="taskAssignee" placeholder="e.g. Ramesh / Suresh" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-indigo-500" />
+            </div>
+
+            <!-- Status -->
+            <div class="col-span-1">
+              <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Status *</label>
+              <select id="taskStatus" required class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs font-semibold text-slate-700 focus:outline-none focus:border-indigo-500">
+                <option value="Pending">⏳ Pending</option>
+                <option value="In Progress">🔄 In Progress</option>
+                <option value="Completed">✅ Completed</option>
+              </select>
+            </div>
+
+            <!-- Estimated Cost -->
+            <div class="col-span-1">
+              <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Est. Budget (₹)</label>
+              <input type="number" id="taskBudget" min="0" step="100" placeholder="e.g. 50000" class="w-full bg-white border border-slate-300 rounded-lg px-2 py-1.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-indigo-500" />
+            </div>
+
+            <!-- Vendor / Contact Details -->
+            <div class="col-span-1">
+              <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Vendor / Contact No.</label>
+              <input type="text" id="taskVendor" placeholder="e.g. Sri Krishna Caterers (98490...)" class="w-full bg-white border border-slate-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-indigo-500" />
+            </div>
+
+            <!-- Additional Notes / Sub-items -->
+            <div class="col-span-2">
+              <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Detailed Items / Menu / Notes</label>
+              <textarea id="taskNotes" rows="2" placeholder="List item specifics: Welcome drinks, Paneer butter masala, Gulab jamun, LED wall setup, 4 spotlights..." class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs focus:outline-none focus:border-indigo-500"></textarea>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+            <button type="button" onclick="closeTaskModal()" class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition">
+              Cancel
+            </button>
+            <button type="submit" id="saveTaskBtn" class="px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-md transition flex items-center gap-1.5">
+              <i class="fa-solid fa-check"></i>
+              <span id="saveTaskBtnText">Save Task</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <!-- Manage Functions, Categories & Relations Modal with Collapsible Sections -->
   <div id="metaManagerModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-3">
     <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full max-h-[90vh] flex flex-col overflow-hidden">
@@ -339,7 +437,7 @@
   <!-- Main App Screen -->
   <div id="appScreen" class="hidden max-w-6xl mx-auto space-y-2.5">
     
-    <!-- Top Header Bar with Top Function Filter & Add Guest Button next to it -->
+    <!-- Top Header Bar with Top Function Filter & Add Button next to it -->
     <header class="bg-white p-2.5 sm:p-3 rounded-xl border border-slate-200 shadow-sm space-y-2 relative">
       <div class="flex items-center justify-between gap-2">
         <div class="flex items-center gap-2">
@@ -347,7 +445,7 @@
             <i class="fa-solid fa-users"></i>
           </div>
           <div>
-            <h1 class="text-xs sm:text-sm font-bold text-slate-900 leading-tight">Guest Headcount, Function & Gift Tracker</h1>
+            <h1 class="text-xs sm:text-sm font-bold text-slate-900 leading-tight">Guest Headcount, Functions & Task Tracker</h1>
             <span id="roleBadge" class="text-[10px] font-bold text-indigo-600">Guest Mode</span>
           </div>
         </div>
@@ -397,11 +495,11 @@
         </div>
       </div>
 
-      <!-- PRIMARY FUNCTION FILTER + ADD GUEST BUTTON SIDE-BY-SIDE -->
+      <!-- PRIMARY FUNCTION FILTER + DYNAMIC ACTION BUTTON (Guest or Task) + REFRESH BUTTON -->
       <div class="flex items-center gap-1.5 pt-1 border-t border-slate-100">
-        <button type="button" onclick="openAddGuestModal()" class="px-2.5 sm:px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1 shrink-0 transition">
-          <i class="fa-solid fa-plus text-[10px]"></i>
-          <span>Add Guest</span>
+        <button type="button" id="topAddButton" onclick="handleTopAddClick()" class="px-2.5 sm:px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1 shrink-0 transition">
+          <i class="fa-solid fa-plus text-[10px]" id="topAddButtonIcon"></i>
+          <span id="topAddButtonText">Add Guest</span>
         </button>
 
         <label class="text-[11px] font-bold text-slate-500 shrink-0 hidden sm:inline">
@@ -419,191 +517,296 @@
       </div>
     </header>
 
-    <!-- Side-by-Side Unified Summary Dashboard -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-      <div class="bg-indigo-900 text-white p-3 rounded-xl shadow-sm space-y-2 flex flex-col justify-between">
-        <div>
-          <div class="flex items-center justify-between">
-            <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-200 block" id="chipTitleHeadcount">Pending / Invited / Confirmed / Total Count</span>
-            <i class="fa-solid fa-users text-emerald-400 text-base opacity-80"></i>
-          </div>
-          
-          <div class="flex flex-wrap items-baseline gap-1 sm:gap-1.5 mt-1">
-            <span class="text-xs sm:text-sm font-bold text-slate-300"><span id="statPending" class="text-sm sm:text-base font-black text-slate-200">0</span> <span class="text-[9px] text-slate-400 font-normal">Pending</span></span>
-            <span class="text-indigo-400 font-light">/</span>
-            <span class="text-xs sm:text-sm font-bold text-indigo-200"><span id="statInvited" class="text-sm sm:text-base font-black text-white">0</span> <span class="text-[9px] text-indigo-300 font-normal">Invited</span></span>
-            <span class="text-indigo-400 font-light">/</span>
-            <span class="text-xs sm:text-sm font-bold text-amber-300"><span id="statConfirmed" class="text-sm sm:text-base font-black text-amber-300">0</span> <span class="text-[9px] text-amber-200 font-normal">Confirmed</span></span>
-            <span class="text-indigo-400 font-light">/</span>
-            <span class="text-sm sm:text-base font-black text-emerald-300"><span id="statTotalCount" class="text-base sm:text-lg">0</span> <span class="text-[9px] text-emerald-200 font-normal">Total Count</span></span>
-          </div>
-        </div>
-
-        <div class="pt-2 border-t border-indigo-800/80 flex items-center justify-start text-xs">
-          <div class="flex items-center gap-3 bg-indigo-950/60 px-2.5 py-1 rounded-lg border border-indigo-800">
-            <span class="text-blue-300 font-bold text-xs">G: <b id="statGents" class="text-white">0</b></span>
-            <span class="text-pink-300 font-bold text-xs">L: <b id="statLadies" class="text-white">0</b></span>
-            <span class="text-amber-300 font-bold text-xs">K: <b id="statKids" class="text-white">0</b></span>
-          </div>
-        </div>
-      </div>
-
-      <div class="bg-emerald-900 text-white p-3 rounded-xl shadow-sm flex flex-col justify-between space-y-2">
-        <div class="flex items-center justify-between">
-          <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-200 block">Total Gifts / Cash Received</span>
-          <i class="fa-solid fa-gift text-emerald-300 text-lg opacity-80"></i>
-        </div>
-        
-        <div class="flex items-baseline gap-2 my-auto">
-          <span class="text-2xl font-black text-emerald-300">₹<span id="statTotalCash">0</span></span>
-          <span class="text-emerald-400 font-light text-xl">|</span>
-          <span class="text-sm font-bold text-white"><span id="statGiftsCount">0</span> Gifts</span>
-        </div>
-
-        <div class="text-[10px] text-emerald-300/80 pt-1 border-t border-emerald-800/80 flex items-center justify-between">
-          <span>Function-Specific Cash & Gifts Log</span>
-          <span class="text-emerald-200 font-semibold">Active Tracker</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- 2. Collapsible Filters Panel (Clean 4-Field Controls: Category, Relation Type, Invitation/RSVP, and Search) -->
-    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-      <button type="button" onclick="toggleAccordion('filterContainer', 'filterChevron', 'filterActionText')" class="w-full flex items-center justify-between px-3 py-2.5 bg-slate-50 hover:bg-slate-100 border-b border-slate-200 transition text-left">
-        <div class="flex items-center gap-2">
-          <i id="filterChevron" class="fa-solid fa-chevron-right text-xs text-indigo-600 transition-transform duration-200"></i>
-          <span class="text-xs font-bold text-slate-800">Advanced Filter & Search Controls</span>
-        </div>
-        <span id="filterActionText" class="text-[11px] font-semibold text-indigo-600">Tap to Expand</span>
+    <!-- PRIMARY APP MODULE SWITCHER TABS (Guests List vs Function Tasks Manager) -->
+    <div class="flex items-center bg-slate-200/80 p-1 rounded-xl border border-slate-300 shadow-2xs gap-1">
+      <button type="button" onclick="switchAppTab('guests')" id="tabNavGuests" class="flex-1 py-1.5 sm:py-2 text-xs font-black rounded-lg transition bg-white text-indigo-900 shadow-sm flex items-center justify-center gap-1.5">
+        <i class="fa-solid fa-users text-indigo-600"></i>
+        <span>Guest List & RSVP</span>
+        <span id="tabCountGuests" class="text-[10px] px-1.5 py-0.2 rounded-full bg-indigo-100 text-indigo-800 font-bold ml-1">0</span>
       </button>
 
-      <div id="filterContainer" class="hidden p-2.5 sm:p-3 space-y-2">
-        <div class="bg-slate-50 p-2 sm:p-2.5 rounded-lg border border-slate-200 grid grid-cols-2 md:grid-cols-4 gap-2">
-          
-          <div id="adminCodeFilterCol" class="hidden col-span-2 md:col-span-4">
-            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Filter Code:</label>
-            <select id="histCodeFilter" onchange="renderFilteredHistory()" class="w-full bg-white border border-slate-300 text-xs font-semibold text-slate-700 px-2 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500">
-              <option value="All">All Codes</option>
-            </select>
-          </div>
-
-          <div class="col-span-1">
-            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Category:</label>
-            <select id="histGroupFilter" onchange="renderFilteredHistory()" class="w-full bg-white border border-slate-300 text-xs font-semibold text-slate-700 px-2 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500">
-              <option value="All">All Categories</option>
-            </select>
-          </div>
-
-          <div class="col-span-1">
-            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Relation Type:</label>
-            <select id="histRelationFilter" onchange="renderFilteredHistory()" class="w-full bg-white border border-slate-300 text-xs font-semibold text-slate-700 px-2 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500">
-              <option value="All">All Relations</option>
-            </select>
-          </div>
-
-          <div class="col-span-1">
-            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Invitation / RSVP:</label>
-            <select id="histRsvpFilter" onchange="renderFilteredHistory()" class="w-full bg-white border border-slate-300 text-xs font-semibold text-slate-700 px-2 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500">
-              <option value="All">All Statuses</option>
-              <option value="Confirmed">Confirmed</option>
-              <option value="Invited">Marked as Invited</option>
-              <option value="Not Invited">Pending / Not Invited</option>
-            </select>
-          </div>
-
-          <div class="col-span-1">
-            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Search:</label>
-            <input type="text" id="searchInput" oninput="renderFilteredHistory()" placeholder="Search name, place..." class="w-full bg-white border border-slate-300 text-xs px-2.5 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500" />
-          </div>
-        </div>
-
-        <div class="flex flex-wrap items-center justify-between gap-1.5 text-xs bg-indigo-50/60 border border-indigo-100 p-2 rounded-lg text-indigo-900 font-semibold">
-          <span id="filteredResultsLabel">Showing 0 entries</span>
-          <div class="flex flex-wrap items-center gap-3 text-[11px]">
-            <span class="text-blue-700">G: <b id="filtGents" class="text-xs">0</b></span>
-            <span class="text-pink-700">L: <b id="filtLadies" class="text-xs">0</b></span>
-            <span class="text-amber-700">K: <b id="filtKids" class="text-xs">0</b></span>
-            <span class="text-emerald-900 font-bold">Total: <b id="filtTotalHead" class="text-xs">0</b></span>
-          </div>
-        </div>
-      </div>
+      <button type="button" onclick="switchAppTab('tasks')" id="tabNavTasks" class="flex-1 py-1.5 sm:py-2 text-xs font-black rounded-lg transition text-slate-600 hover:text-slate-900 flex items-center justify-center gap-1.5">
+        <i class="fa-solid fa-list-check text-amber-600"></i>
+        <span>Event Function Tasks</span>
+        <span id="tabCountTasks" class="text-[10px] px-1.5 py-0.2 rounded-full bg-amber-100 text-amber-800 font-bold ml-1">0</span>
+      </button>
     </div>
 
-    <!-- 3. Showing Entries / Guest List -->
-    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-visible">
-      
-      <!-- Accordion Header Bar -->
-      <div class="w-full flex flex-col sm:flex-row sm:items-center justify-between p-2.5 sm:p-3 bg-slate-50 border-b border-slate-200 gap-2">
-        <div onclick="toggleAccordion('historyContainer', 'historyChevron', 'historyActionText')" class="flex items-center gap-2 hover:opacity-80 transition text-left cursor-pointer select-none">
-          <i id="historyChevron" class="fa-solid fa-chevron-right text-xs text-indigo-600 transition-transform duration-200"></i>
-          <span class="text-xs sm:text-sm font-bold text-slate-800 flex items-center gap-1.5">
-            <i class="fa-solid fa-list-check text-indigo-600"></i> Showing Entries
-          </span>
-          <span id="historyBadgeCount" class="text-[10px] font-bold bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full">0 Entries</span>
-          <span id="historyActionText" class="text-[11px] font-semibold text-indigo-600 ml-1">Tap to Expand</span>
-        </div>
-
-        <!-- Toolstrip -->
-        <div class="flex items-center justify-between sm:justify-end gap-1.5 flex-nowrap">
-          
-          <!-- Column Customizer Dropdown -->
-          <div class="relative inline-block">
-            <button type="button" onclick="toggleColumnPicker(event)" class="px-2.5 py-1 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-1.5 shadow-2xs">
-              <i class="fa-solid fa-sliders text-indigo-600 text-[11px]"></i>
-              <span class="text-[11px]">Columns</span>
-              <i class="fa-solid fa-chevron-down text-[8px] text-slate-400"></i>
-            </button>
-
-            <div id="columnPickerDropdown" class="hidden absolute left-0 sm:left-auto sm:right-0 mt-1 w-52 bg-white border border-slate-300 rounded-xl shadow-2xl p-3 z-50 space-y-2 text-xs">
-              <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 pb-1 border-b border-slate-100">Toggle Visible Columns</div>
-              <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600 py-0.5">
-                <input type="checkbox" onchange="toggleColSetting('func')" id="colChk_func" class="w-3.5 h-3.5 rounded text-indigo-600 focus:ring-0" /> Function
-              </label>
-              <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600 py-0.5">
-                <input type="checkbox" onchange="toggleColSetting('cat')" id="colChk_cat" class="w-3.5 h-3.5 rounded text-indigo-600 focus:ring-0" /> Category
-              </label>
-              <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600 py-0.5">
-                <input type="checkbox" onchange="toggleColSetting('rel')" id="colChk_rel" class="w-3.5 h-3.5 rounded text-indigo-600 focus:ring-0" /> Relation
-              </label>
-              <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600 py-0.5">
-                <input type="checkbox" onchange="toggleColSetting('guest')" id="colChk_guest" class="w-3.5 h-3.5 rounded text-indigo-600 focus:ring-0" /> Guest & Place
-              </label>
-              <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600 py-0.5">
-                <input type="checkbox" onchange="toggleColSetting('glk')" id="colChk_glk" class="w-3.5 h-3.5 rounded text-indigo-600 focus:ring-0" /> G / L / K Counts
-              </label>
-              <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600 py-0.5">
-                <input type="checkbox" onchange="toggleColSetting('total')" id="colChk_total" class="w-3.5 h-3.5 rounded text-indigo-600 focus:ring-0" /> Total Inv.
-              </label>
-              <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600 py-0.5">
-                <input type="checkbox" onchange="toggleColSetting('coming')" id="colChk_coming" class="w-3.5 h-3.5 rounded text-indigo-600 focus:ring-0" /> Attending / Total
-              </label>
-              <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600 py-0.5">
-                <input type="checkbox" onchange="toggleColSetting('inv')" id="colChk_inv" class="w-3.5 h-3.5 rounded text-indigo-600 focus:ring-0" /> Invitation
-              </label>
-              <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600 py-0.5">
-                <input type="checkbox" onchange="toggleColSetting('gifts')" id="colChk_gifts" class="w-3.5 h-3.5 rounded text-indigo-600 focus:ring-0" /> Gifts / Cash
-              </label>
+    <!-- ==================== MODULE 1: GUESTS & HEADCOUNT TRACKER ==================== -->
+    <div id="guestsModule" class="space-y-2.5">
+      <!-- Side-by-Side Unified Summary Dashboard -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+        <div class="bg-indigo-900 text-white p-3 rounded-xl shadow-sm space-y-2 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-200 block" id="chipTitleHeadcount">Pending / Invited / Confirmed / Total Count</span>
+              <i class="fa-solid fa-users text-emerald-400 text-base opacity-80"></i>
+            </div>
+            
+            <div class="flex flex-wrap items-baseline gap-1 sm:gap-1.5 mt-1">
+              <span class="text-xs sm:text-sm font-bold text-slate-300"><span id="statPending" class="text-sm sm:text-base font-black text-slate-200">0</span> <span class="text-[9px] text-slate-400 font-normal">Pending</span></span>
+              <span class="text-indigo-400 font-light">/</span>
+              <span class="text-xs sm:text-sm font-bold text-indigo-200"><span id="statInvited" class="text-sm sm:text-base font-black text-white">0</span> <span class="text-[9px] text-indigo-300 font-normal">Invited</span></span>
+              <span class="text-indigo-400 font-light">/</span>
+              <span class="text-xs sm:text-sm font-bold text-amber-300"><span id="statConfirmed" class="text-sm sm:text-base font-black text-amber-300">0</span> <span class="text-[9px] text-amber-200 font-normal">Confirmed</span></span>
+              <span class="text-indigo-400 font-light">/</span>
+              <span class="text-sm sm:text-base font-black text-emerald-300"><span id="statTotalCount" class="text-base sm:text-lg">0</span> <span class="text-[9px] text-emerald-200 font-normal">Total Count</span></span>
             </div>
           </div>
 
-          <div class="flex items-center bg-white border border-slate-200 rounded-lg p-0.5 text-xs font-semibold shrink-0">
-            <button type="button" onclick="setViewMode('table')" id="btnViewTable" class="px-2.5 py-1 rounded transition text-indigo-600 bg-indigo-50 font-bold flex items-center gap-1" title="Table View">
-              <i class="fa-solid fa-table"></i> <span class="hidden sm:inline text-[11px]">Table</span>
-            </button>
-            <button type="button" onclick="setViewMode('tiles')" id="btnViewTiles" class="px-2.5 py-1 rounded transition text-slate-500 hover:text-slate-800 flex items-center gap-1" title="Tiles View">
-              <i class="fa-solid fa-grip"></i> <span class="hidden sm:inline text-[11px]">Tiles</span>
-            </button>
-            <button type="button" onclick="setViewMode('list')" id="btnViewList" class="px-2.5 py-1 rounded transition text-slate-500 hover:text-slate-800 flex items-center gap-1" title="List View">
-              <i class="fa-solid fa-list-ul"></i> <span class="hidden sm:inline text-[11px]">List</span>
-            </button>
+          <div class="pt-2 border-t border-indigo-800/80 flex items-center justify-start text-xs">
+            <div class="flex items-center gap-3 bg-indigo-950/60 px-2.5 py-1 rounded-lg border border-indigo-800">
+              <span class="text-blue-300 font-bold text-xs">G: <b id="statGents" class="text-white">0</b></span>
+              <span class="text-pink-300 font-bold text-xs">L: <b id="statLadies" class="text-white">0</b></span>
+              <span class="text-amber-300 font-bold text-xs">K: <b id="statKids" class="text-white">0</b></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-emerald-900 text-white p-3 rounded-xl shadow-sm flex flex-col justify-between space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-200 block">Total Gifts / Cash Received</span>
+            <i class="fa-solid fa-gift text-emerald-300 text-lg opacity-80"></i>
+          </div>
+          
+          <div class="flex items-baseline gap-2 my-auto">
+            <span class="text-2xl font-black text-emerald-300">₹<span id="statTotalCash">0</span></span>
+            <span class="text-emerald-400 font-light text-xl">|</span>
+            <span class="text-sm font-bold text-white"><span id="statGiftsCount">0</span> Gifts</span>
+          </div>
+
+          <div class="text-[10px] text-emerald-300/80 pt-1 border-t border-emerald-800/80 flex items-center justify-between">
+            <span>Function-Specific Cash & Gifts Log</span>
+            <span class="text-emerald-200 font-semibold">Active Tracker</span>
           </div>
         </div>
       </div>
 
-      <!-- Collapsible Body Container -->
-      <div id="historyContainer" class="hidden p-2.5 sm:p-3 overflow-x-auto">
-        <div id="viewDisplayContainer"></div>
-        <p id="emptyMessage" class="hidden text-center py-6 text-slate-400 text-xs">No matching entries found for this filter selection.</p>
+      <!-- Advanced Filter & Search Controls -->
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <button type="button" onclick="toggleAccordion('filterContainer', 'filterChevron', 'filterActionText')" class="w-full flex items-center justify-between px-3 py-2.5 bg-slate-50 hover:bg-slate-100 border-b border-slate-200 transition text-left">
+          <div class="flex items-center gap-2">
+            <i id="filterChevron" class="fa-solid fa-chevron-right text-xs text-indigo-600 transition-transform duration-200"></i>
+            <span class="text-xs font-bold text-slate-800">Advanced Filter & Search Controls</span>
+          </div>
+          <span id="filterActionText" class="text-[11px] font-semibold text-indigo-600">Tap to Expand</span>
+        </button>
+
+        <div id="filterContainer" class="hidden p-2.5 sm:p-3 space-y-2">
+          <div class="bg-slate-50 p-2 sm:p-2.5 rounded-lg border border-slate-200 grid grid-cols-2 md:grid-cols-4 gap-2">
+            
+            <div id="adminCodeFilterCol" class="hidden col-span-2 md:col-span-4">
+              <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Filter Code:</label>
+              <select id="histCodeFilter" onchange="renderFilteredHistory()" class="w-full bg-white border border-slate-300 text-xs font-semibold text-slate-700 px-2 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500">
+                <option value="All">All Codes</option>
+              </select>
+            </div>
+
+            <div class="col-span-1">
+              <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Category:</label>
+              <select id="histGroupFilter" onchange="renderFilteredHistory()" class="w-full bg-white border border-slate-300 text-xs font-semibold text-slate-700 px-2 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500">
+                <option value="All">All Categories</option>
+              </select>
+            </div>
+
+            <div class="col-span-1">
+              <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Relation Type:</label>
+              <select id="histRelationFilter" onchange="renderFilteredHistory()" class="w-full bg-white border border-slate-300 text-xs font-semibold text-slate-700 px-2 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500">
+                <option value="All">All Relations</option>
+              </select>
+            </div>
+
+            <div class="col-span-1">
+              <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Invitation / RSVP:</label>
+              <select id="histRsvpFilter" onchange="renderFilteredHistory()" class="w-full bg-white border border-slate-300 text-xs font-semibold text-slate-700 px-2 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500">
+                <option value="All">All Statuses</option>
+                <option value="Confirmed">Confirmed</option>
+                <option value="Invited">Marked as Invited</option>
+                <option value="Not Invited">Pending / Not Invited</option>
+              </select>
+            </div>
+
+            <div class="col-span-1">
+              <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Search:</label>
+              <input type="text" id="searchInput" oninput="renderFilteredHistory()" placeholder="Search name, place..." class="w-full bg-white border border-slate-300 text-xs px-2.5 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500" />
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center justify-between gap-1.5 text-xs bg-indigo-50/60 border border-indigo-100 p-2 rounded-lg text-indigo-900 font-semibold">
+            <span id="filteredResultsLabel">Showing 0 entries</span>
+            <div class="flex flex-wrap items-center gap-3 text-[11px]">
+              <span class="text-blue-700">G: <b id="filtGents" class="text-xs">0</b></span>
+              <span class="text-pink-700">L: <b id="filtLadies" class="text-xs">0</b></span>
+              <span class="text-amber-700">K: <b id="filtKids" class="text-xs">0</b></span>
+              <span class="text-emerald-900 font-bold">Total: <b id="filtTotalHead" class="text-xs">0</b></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Showing Entries Table -->
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-visible">
+        <div class="w-full flex flex-col sm:flex-row sm:items-center justify-between p-2.5 sm:p-3 bg-slate-50 border-b border-slate-200 gap-2">
+          <div onclick="toggleAccordion('historyContainer', 'historyChevron', 'historyActionText')" class="flex items-center gap-2 hover:opacity-80 transition text-left cursor-pointer select-none">
+            <i id="historyChevron" class="fa-solid fa-chevron-right text-xs text-indigo-600 transition-transform duration-200"></i>
+            <span class="text-xs sm:text-sm font-bold text-slate-800 flex items-center gap-1.5">
+              <i class="fa-solid fa-list-check text-indigo-600"></i> Showing Entries
+            </span>
+            <span id="historyBadgeCount" class="text-[10px] font-bold bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full">0 Entries</span>
+            <span id="historyActionText" class="text-[11px] font-semibold text-indigo-600 ml-1">Tap to Expand</span>
+          </div>
+
+          <!-- Toolstrip -->
+          <div class="flex items-center justify-between sm:justify-end gap-1.5 flex-nowrap">
+            <div class="relative inline-block">
+              <button type="button" onclick="toggleColumnPicker(event)" class="px-2.5 py-1 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-1.5 shadow-2xs">
+                <i class="fa-solid fa-sliders text-indigo-600 text-[11px]"></i>
+                <span class="text-[11px]">Columns</span>
+                <i class="fa-solid fa-chevron-down text-[8px] text-slate-400"></i>
+              </button>
+
+              <div id="columnPickerDropdown" class="hidden absolute left-0 sm:left-auto sm:right-0 mt-1 w-52 bg-white border border-slate-300 rounded-xl shadow-2xl p-3 z-50 space-y-2 text-xs">
+                <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 pb-1 border-b border-slate-100">Toggle Visible Columns</div>
+                <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600 py-0.5">
+                  <input type="checkbox" onchange="toggleColSetting('func')" id="colChk_func" class="w-3.5 h-3.5 rounded text-indigo-600 focus:ring-0" /> Function
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600 py-0.5">
+                  <input type="checkbox" onchange="toggleColSetting('cat')" id="colChk_cat" class="w-3.5 h-3.5 rounded text-indigo-600 focus:ring-0" /> Category
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600 py-0.5">
+                  <input type="checkbox" onchange="toggleColSetting('rel')" id="colChk_rel" class="w-3.5 h-3.5 rounded text-indigo-600 focus:ring-0" /> Relation
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600 py-0.5">
+                  <input type="checkbox" onchange="toggleColSetting('guest')" id="colChk_guest" class="w-3.5 h-3.5 rounded text-indigo-600 focus:ring-0" /> Guest & Place
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600 py-0.5">
+                  <input type="checkbox" onchange="toggleColSetting('glk')" id="colChk_glk" class="w-3.5 h-3.5 rounded text-indigo-600 focus:ring-0" /> G / L / K Counts
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600 py-0.5">
+                  <input type="checkbox" onchange="toggleColSetting('total')" id="colChk_total" class="w-3.5 h-3.5 rounded text-indigo-600 focus:ring-0" /> Total Inv.
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600 py-0.5">
+                  <input type="checkbox" onchange="toggleColSetting('coming')" id="colChk_coming" class="w-3.5 h-3.5 rounded text-indigo-600 focus:ring-0" /> Attending / Total
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600 py-0.5">
+                  <input type="checkbox" onchange="toggleColSetting('inv')" id="colChk_inv" class="w-3.5 h-3.5 rounded text-indigo-600 focus:ring-0" /> Invitation
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600 py-0.5">
+                  <input type="checkbox" onchange="toggleColSetting('gifts')" id="colChk_gifts" class="w-3.5 h-3.5 rounded text-indigo-600 focus:ring-0" /> Gifts / Cash
+                </label>
+              </div>
+            </div>
+
+            <div class="flex items-center bg-white border border-slate-200 rounded-lg p-0.5 text-xs font-semibold shrink-0">
+              <button type="button" onclick="setViewMode('table')" id="btnViewTable" class="px-2.5 py-1 rounded transition text-indigo-600 bg-indigo-50 font-bold flex items-center gap-1" title="Table View">
+                <i class="fa-solid fa-table"></i> <span class="hidden sm:inline text-[11px]">Table</span>
+              </button>
+              <button type="button" onclick="setViewMode('tiles')" id="btnViewTiles" class="px-2.5 py-1 rounded transition text-slate-500 hover:text-slate-800 flex items-center gap-1" title="Tiles View">
+                <i class="fa-solid fa-grip"></i> <span class="hidden sm:inline text-[11px]">Tiles</span>
+              </button>
+              <button type="button" onclick="setViewMode('list')" id="btnViewList" class="px-2.5 py-1 rounded transition text-slate-500 hover:text-slate-800 flex items-center gap-1" title="List View">
+                <i class="fa-solid fa-list-ul"></i> <span class="hidden sm:inline text-[11px]">List</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div id="historyContainer" class="hidden p-2.5 sm:p-3 overflow-x-auto">
+          <div id="viewDisplayContainer"></div>
+          <p id="emptyMessage" class="hidden text-center py-6 text-slate-400 text-xs">No matching entries found for this filter selection.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== MODULE 2: EVENT FUNCTION TASKS MANAGER ==================== -->
+    <div id="tasksModule" class="hidden space-y-2.5">
+      
+      <!-- Tasks Summary Dashboard -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+        <!-- Card 1: Task Status Progress -->
+        <div class="bg-amber-900 text-white p-3 rounded-xl shadow-sm flex items-center justify-between">
+          <div>
+            <span class="text-[10px] font-bold uppercase tracking-wider text-amber-200 block">Tasks Progress</span>
+            <div class="flex items-baseline gap-1.5 mt-1">
+              <span class="text-xs sm:text-sm font-bold text-slate-300"><span id="taskStatPending" class="text-sm sm:text-base font-black text-amber-200">0</span> <span class="text-[9px] font-normal">Pending</span></span>
+              <span class="text-amber-400 font-light">/</span>
+              <span class="text-xs sm:text-sm font-bold text-sky-200"><span id="taskStatProgress" class="text-sm sm:text-base font-black text-sky-200">0</span> <span class="text-[9px] font-normal">In Progress</span></span>
+              <span class="text-amber-400 font-light">/</span>
+              <span class="text-sm sm:text-base font-black text-emerald-300"><span id="taskStatDone" class="text-base sm:text-lg">0</span> <span class="text-[9px] font-normal">Done</span></span>
+            </div>
+          </div>
+          <i class="fa-solid fa-list-check text-amber-300 text-xl opacity-80 shrink-0"></i>
+        </div>
+
+        <!-- Card 2: Estimated Budget -->
+        <div class="bg-indigo-900 text-white p-3 rounded-xl shadow-sm flex items-center justify-between">
+          <div>
+            <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-200 block">Total Estimated Tasks Budget</span>
+            <div class="text-xl font-black text-emerald-300 mt-1">
+              ₹<span id="taskStatBudget">0</span>
+            </div>
+          </div>
+          <i class="fa-solid fa-wallet text-indigo-300 text-xl opacity-80 shrink-0"></i>
+        </div>
+
+        <!-- Card 3: Quick Add Task Banner -->
+        <div class="bg-white border border-slate-200 p-2.5 rounded-xl shadow-sm flex items-center justify-between">
+          <div>
+            <span class="text-[10px] font-bold uppercase text-slate-500 block">Task Operations</span>
+            <div class="text-xs font-bold text-slate-800 mt-0.5">Caterers, Decor, DJ, Costumes & Menu</div>
+          </div>
+          <button type="button" onclick="openAddTaskModal()" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1 shrink-0 transition">
+            <i class="fa-solid fa-plus text-[10px]"></i>
+            <span>New Task</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Task Filters Bar -->
+      <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-sm grid grid-cols-2 md:grid-cols-4 gap-2">
+        <div class="col-span-1">
+          <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Category Filter:</label>
+          <select id="taskCatFilter" onchange="renderTasksList()" class="w-full bg-slate-50 border border-slate-300 text-xs font-semibold text-slate-700 px-2 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500">
+            <option value="All">All Task Categories</option>
+            <option value="Catering & Food Menu">🍽️ Catering & Food Menu</option>
+            <option value="Stage & Decoration">🌸 Stage & Decoration</option>
+            <option value="DJ, Band & Dancers">🎵 DJ, Band & Dancers</option>
+            <option value="Lighting & Sound">💡 Lighting & Sound</option>
+            <option value="Photography & Video">📸 Photography & Video</option>
+            <option value="Family Costumes & Attire">👗 Family Costumes & Attire</option>
+            <option value="Invitation & Logistics">💌 Invitation & Logistics</option>
+            <option value="Pooja & Rituals">🪔 Pooja & Rituals</option>
+            <option value="General Checklist">📝 General Checklist</option>
+          </select>
+        </div>
+
+        <div class="col-span-1">
+          <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Task Status:</label>
+          <select id="taskStatusFilter" onchange="renderTasksList()" class="w-full bg-slate-50 border border-slate-300 text-xs font-semibold text-slate-700 px-2 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500">
+            <option value="All">All Statuses</option>
+            <option value="Pending">⏳ Pending</option>
+            <option value="In Progress">🔄 In Progress</option>
+            <option value="Completed">✅ Completed</option>
+          </select>
+        </div>
+
+        <div class="col-span-2">
+          <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Search Tasks:</label>
+          <input type="text" id="taskSearchInput" oninput="renderTasksList()" placeholder="Search task items, menu, caterer, photographer..." class="w-full bg-slate-50 border border-slate-300 text-xs px-2.5 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500" />
+        </div>
+      </div>
+
+      <!-- Tasks List Display Container -->
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-3">
+        <div class="flex items-center justify-between pb-2 border-b border-slate-100 mb-2">
+          <span class="text-xs sm:text-sm font-bold text-slate-800 flex items-center gap-1.5">
+            <i class="fa-solid fa-list-check text-amber-600"></i> Event Checklist & Item Management
+          </span>
+          <span id="tasksBadgeCount" class="text-[10px] font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">0 Tasks</span>
+        </div>
+
+        <div id="tasksListContainer" class="space-y-2"></div>
+        <p id="tasksEmptyMessage" class="hidden text-center py-6 text-slate-400 text-xs">No tasks found for this function & filter.</p>
       </div>
     </div>
 
@@ -626,14 +829,18 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const collectionRef = db.collection("family_count");
+    const tasksCollectionRef = db.collection("event_tasks");
 
     let families = [];
+    let tasks = [];
     let loggedCode = localStorage.getItem('fc_user_code') || '';
     let isAdmin = (loggedCode.toUpperCase() === ADMIN_CODE);
     let currentViewMode = localStorage.getItem('fc_view_mode') || 'table';
+    let currentAppTab = 'guests'; // 'guests' or 'tasks'
     let selectedTopFunction = 'All';
     let pendingImportPayload = null;
 
+    // Column Settings
     let colSettings = getStoredColSettings();
 
     function getStoredColSettings() {
@@ -707,6 +914,45 @@
       input.click();
     }
 
+    // Tab Navigation Switcher between Guests & Tasks
+    function switchAppTab(tab) {
+      currentAppTab = tab;
+      const guestsMod = document.getElementById('guestsModule');
+      const tasksMod = document.getElementById('tasksModule');
+      const tabNavGuests = document.getElementById('tabNavGuests');
+      const tabNavTasks = document.getElementById('tabNavTasks');
+      const topAddButtonText = document.getElementById('topAddButtonText');
+      const topAddButtonIcon = document.getElementById('topAddButtonIcon');
+      const topAddButton = document.getElementById('topAddButton');
+
+      if (tab === 'guests') {
+        guestsMod.classList.remove('hidden');
+        tasksMod.classList.add('hidden');
+        tabNavGuests.className = "flex-1 py-1.5 sm:py-2 text-xs font-black rounded-lg transition bg-white text-indigo-900 shadow-sm flex items-center justify-center gap-1.5";
+        tabNavTasks.className = "flex-1 py-1.5 sm:py-2 text-xs font-black rounded-lg transition text-slate-600 hover:text-slate-900 flex items-center justify-center gap-1.5";
+        topAddButtonText.textContent = "Add Guest";
+        topAddButtonIcon.className = "fa-solid fa-plus text-[10px]";
+        topAddButton.className = "px-2.5 sm:px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1 shrink-0 transition";
+      } else {
+        guestsMod.classList.add('hidden');
+        tasksMod.classList.remove('hidden');
+        tabNavTasks.className = "flex-1 py-1.5 sm:py-2 text-xs font-black rounded-lg transition bg-white text-amber-900 shadow-sm flex items-center justify-center gap-1.5";
+        tabNavGuests.className = "flex-1 py-1.5 sm:py-2 text-xs font-black rounded-lg transition text-slate-600 hover:text-slate-900 flex items-center justify-center gap-1.5";
+        topAddButtonText.textContent = "Add Task";
+        topAddButtonIcon.className = "fa-solid fa-clipboard-check text-[10px]";
+        topAddButton.className = "px-2.5 sm:px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1 shrink-0 transition";
+        renderTasksList();
+      }
+    }
+
+    function handleTopAddClick() {
+      if (currentAppTab === 'guests') {
+        openAddGuestModal();
+      } else {
+        openAddTaskModal();
+      }
+    }
+
     async function refreshAppData() {
       const icon = document.getElementById('refreshIcon');
       if (icon) icon.classList.add('fa-spin');
@@ -717,9 +963,17 @@
         snapshot.forEach((doc) => {
           families.push({ id: doc.id, ...doc.data() });
         });
+
+        const taskSnapshot = await tasksCollectionRef.get();
+        tasks = [];
+        taskSnapshot.forEach((doc) => {
+          tasks.push({ id: doc.id, ...doc.data() });
+        });
+
         syncCodeScopedDropdowns();
         renderDashboard();
         renderFilteredHistory();
+        renderTasksList();
       } catch (err) {
         console.error('Error refreshing data:', err);
       } finally {
@@ -801,6 +1055,36 @@
     function closeGuestModal() {
       document.getElementById('guestEntryModal').classList.add('hidden');
       resetForm();
+    }
+
+    // Task Modal Controls
+    function openAddTaskModal() {
+      resetTaskForm();
+      document.getElementById('taskModalTitle').textContent = "Add Event Function Task";
+      document.getElementById('saveTaskBtnText').textContent = "Save Task";
+
+      const formFuncSelect = document.getElementById('taskFuncSelect');
+      if (selectedTopFunction !== 'All') {
+        for (let opt of formFuncSelect.options) {
+          if (opt.value.toLowerCase() === selectedTopFunction.toLowerCase()) {
+            formFuncSelect.value = opt.value;
+            break;
+          }
+        }
+      }
+
+      document.getElementById('taskModal').classList.remove('hidden');
+    }
+
+    function closeTaskModal() {
+      document.getElementById('taskModal').classList.add('hidden');
+      resetTaskForm();
+    }
+
+    function resetTaskForm() {
+      document.getElementById('taskForm').reset();
+      document.getElementById('taskDocId').value = '';
+      document.getElementById('taskStatus').value = 'Pending';
     }
 
     function stepFormField(fieldId, delta) {
@@ -982,6 +1266,7 @@
       updateColumnPickerCheckboxes();
       setViewMode(currentViewMode === 'compact' ? 'table' : currentViewMode);
       listenData();
+      listenTasks();
     }
 
     function listenData() {
@@ -1000,14 +1285,32 @@
       });
     }
 
+    function listenTasks() {
+      tasksCollectionRef.onSnapshot((snapshot) => {
+        tasks = [];
+        snapshot.forEach((doc) => {
+          tasks.push({ id: doc.id, ...doc.data() });
+        });
+        renderTasksList();
+      });
+    }
+
     function onTopFunctionChange(val) {
       selectedTopFunction = val;
 
       const formFuncSelect = document.getElementById('funcSelect');
+      const taskFuncSelect = document.getElementById('taskFuncSelect');
+
       if (val !== 'All') {
         for (let opt of formFuncSelect.options) {
           if (opt.value.toLowerCase() === val.toLowerCase()) {
             formFuncSelect.value = opt.value;
+            break;
+          }
+        }
+        for (let opt of taskFuncSelect.options) {
+          if (opt.value.toLowerCase() === val.toLowerCase()) {
+            taskFuncSelect.value = opt.value;
             break;
           }
         }
@@ -1019,6 +1322,7 @@
 
       renderDashboard();
       renderFilteredHistory();
+      renderTasksList();
     }
 
     async function purgeCorruptedEntries() {
@@ -1156,6 +1460,7 @@
       allCategories.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
       allRelations.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
 
+      // 1. Functions List
       funcList.innerHTML = '';
       allFunctions.forEach(fn => {
         const count = funcCountMap[fn] || 0;
@@ -1182,6 +1487,7 @@
         funcList.appendChild(row);
       });
 
+      // 2. Categories List
       catList.innerHTML = '';
       allCategories.forEach(cat => {
         const count = catCountMap[cat] || 0;
@@ -1208,6 +1514,7 @@
         catList.appendChild(row);
       });
 
+      // 3. Relations List
       relList.innerHTML = '';
       allRelations.forEach(rel => {
         const count = relCountMap[rel] || 0;
@@ -1445,7 +1752,7 @@
       });
       topFuncSelect.value = scopedFunctions.has(curTopVal) ? curTopVal : 'All';
 
-      // Sync Function in Form
+      // Sync Function in Guest Form
       const formFuncSelect = document.getElementById('funcSelect');
       const curFormFnVal = formFuncSelect.value;
       formFuncSelect.innerHTML = '';
@@ -1460,6 +1767,18 @@
       customFnOpt.textContent = '+ Add New Function...';
       formFuncSelect.appendChild(customFnOpt);
       if (scopedFunctions.has(curFormFnVal)) formFuncSelect.value = curFormFnVal;
+
+      // Sync Function in Task Form
+      const taskFuncSelect = document.getElementById('taskFuncSelect');
+      const curTaskFnVal = taskFuncSelect.value;
+      taskFuncSelect.innerHTML = '';
+      sortedFunctions.forEach(fn => {
+        const opt = document.createElement('option');
+        opt.value = fn;
+        opt.textContent = fn;
+        taskFuncSelect.appendChild(opt);
+      });
+      if (scopedFunctions.has(curTaskFnVal)) taskFuncSelect.value = curTaskFnVal;
 
       // Sync Categories in Filter & Form
       const filterSelect = document.getElementById('histGroupFilter');
@@ -1627,6 +1946,202 @@
 
       recordFunctionUsage(finalFunction);
       closeGuestModal();
+    }
+
+    // Task Form Handling (Save, Update, Toggle & Delete)
+    async function handleTaskSubmit(e) {
+      e.preventDefault();
+      const taskDocId = document.getElementById('taskDocId').value;
+      const func = document.getElementById('taskFuncSelect').value || "Main Reception";
+      const cat = document.getElementById('taskCategorySelect').value;
+      const title = document.getElementById('taskTitle').value.trim();
+      const assignee = document.getElementById('taskAssignee').value.trim();
+      const status = document.getElementById('taskStatus').value;
+      const budget = parseFloat(document.getElementById('taskBudget').value) || 0;
+      const vendor = document.getElementById('taskVendor').value.trim();
+      const notes = document.getElementById('taskNotes').value.trim();
+
+      const taskRecord = {
+        code: loggedCode || "A2KU",
+        eventFunction: func,
+        category: cat,
+        title: title,
+        assignee: assignee,
+        status: status,
+        budget: budget,
+        vendor: vendor,
+        notes: notes,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+
+      if (taskDocId) {
+        await tasksCollectionRef.doc(taskDocId).update(taskRecord);
+      } else {
+        await tasksCollectionRef.add(taskRecord);
+      }
+
+      closeTaskModal();
+    }
+
+    async function toggleTaskStatus(taskId, currentStatus) {
+      let nextStatus = 'Pending';
+      if (currentStatus === 'Pending') nextStatus = 'In Progress';
+      else if (currentStatus === 'In Progress') nextStatus = 'Completed';
+      else if (currentStatus === 'Completed') nextStatus = 'Pending';
+
+      await tasksCollectionRef.doc(taskId).update({
+        status: nextStatus,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    }
+
+    function editTask(taskId) {
+      const item = tasks.find(t => t.id === taskId);
+      if (!item) return;
+
+      document.getElementById('taskDocId').value = item.id;
+      document.getElementById('taskFuncSelect').value = item.eventFunction || "Main Reception";
+      document.getElementById('taskCategorySelect').value = item.category || "Catering & Food Menu";
+      document.getElementById('taskTitle').value = item.title || "";
+      document.getElementById('taskAssignee').value = item.assignee || "";
+      document.getElementById('taskStatus').value = item.status || "Pending";
+      document.getElementById('taskBudget').value = item.budget ? item.budget : "";
+      document.getElementById('taskVendor').value = item.vendor || "";
+      document.getElementById('taskNotes').value = item.notes || "";
+
+      document.getElementById('taskModalTitle').textContent = "Edit Event Function Task";
+      document.getElementById('saveTaskBtnText').textContent = "Update Task";
+      document.getElementById('taskModal').classList.remove('hidden');
+    }
+
+    async function deleteTask(taskId) {
+      const item = tasks.find(t => t.id === taskId);
+      if (confirm(`Delete task "${item ? item.title : 'this task'}"?`)) {
+        await tasksCollectionRef.doc(taskId).delete();
+      }
+    }
+
+    function getVisibleTasks() {
+      let result = tasks;
+      if (!isAdmin) {
+        result = result.filter(t => (t.code && t.code.toUpperCase() === loggedCode));
+      }
+      if (selectedTopFunction !== 'All') {
+        result = result.filter(t => (t.eventFunction || 'Main Reception').toLowerCase() === selectedTopFunction.toLowerCase());
+      }
+      return result;
+    }
+
+    function renderTasksList() {
+      const container = document.getElementById('tasksListContainer');
+      const emptyMsg = document.getElementById('tasksEmptyMessage');
+      const catFilter = document.getElementById('taskCatFilter').value;
+      const statusFilter = document.getElementById('taskStatusFilter').value;
+      const search = document.getElementById('taskSearchInput').value.toLowerCase();
+
+      const visible = getVisibleTasks();
+
+      let pCount = 0, inProgCount = 0, dCount = 0, totalBudget = 0;
+      visible.forEach(t => {
+        if (t.status === 'Pending') pCount++;
+        else if (t.status === 'In Progress') inProgCount++;
+        else if (t.status === 'Completed') dCount++;
+        if (t.budget) totalBudget += parseFloat(t.budget) || 0;
+      });
+
+      document.getElementById('taskStatPending').textContent = pCount;
+      document.getElementById('taskStatProgress').textContent = inProgCount;
+      document.getElementById('taskStatDone').textContent = dCount;
+      document.getElementById('taskStatBudget').textContent = totalBudget.toLocaleString('en-IN');
+      document.getElementById('tabCountTasks').textContent = visible.length;
+
+      const filtered = visible.filter(t => {
+        const matchesCat = (catFilter === 'All') || (t.category === catFilter);
+        const matchesStatus = (statusFilter === 'All') || (t.status === statusFilter);
+        const matchesSearch = (t.title && t.title.toLowerCase().includes(search)) ||
+                              (t.category && t.category.toLowerCase().includes(search)) ||
+                              (t.eventFunction && t.eventFunction.toLowerCase().includes(search)) ||
+                              (t.assignee && t.assignee.toLowerCase().includes(search)) ||
+                              (t.vendor && t.vendor.toLowerCase().includes(search)) ||
+                              (t.notes && t.notes.toLowerCase().includes(search));
+        return matchesCat && matchesStatus && matchesSearch;
+      });
+
+      document.getElementById('tasksBadgeCount').textContent = `${filtered.length} Tasks`;
+
+      if (filtered.length === 0) {
+        container.innerHTML = '';
+        emptyMsg.classList.remove('hidden');
+        return;
+      } else {
+        emptyMsg.classList.add('hidden');
+      }
+
+      let html = '';
+      filtered.forEach(item => {
+        let statusBadge = '';
+        let rowBg = 'bg-white border-slate-200';
+
+        if (item.status === 'Completed') {
+          statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300">✅ Completed</span>';
+          rowBg = 'bg-emerald-50/30 border-emerald-200';
+        } else if (item.status === 'In Progress') {
+          statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-sky-100 text-sky-800 border border-sky-300">🔄 In Progress</span>';
+          rowBg = 'bg-sky-50/30 border-sky-200';
+        } else {
+          statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-900 border border-amber-300">⏳ Pending</span>';
+          rowBg = 'bg-white border-slate-200';
+        }
+
+        html += `
+          <div class="p-3 rounded-xl border ${rowBg} shadow-2xs hover:shadow-xs transition space-y-2">
+            <div class="flex items-start justify-between gap-2">
+              <div class="space-y-1">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span class="text-[10px] font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">🎉 ${item.eventFunction || 'Main Reception'}</span>
+                  <span class="text-[10px] font-bold text-amber-900 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">${item.category}</span>
+                  ${statusBadge}
+                </div>
+                <h4 class="text-xs sm:text-sm font-bold text-slate-900 ${item.status === 'Completed' ? 'line-through text-slate-400' : ''}">${item.title}</h4>
+              </div>
+
+              <!-- Quick Status Stepper Button & Actions -->
+              <div class="flex items-center gap-1 shrink-0">
+                <button onclick="toggleTaskStatus('${item.id}', '${item.status || 'Pending'}')" class="px-2 py-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 rounded-lg text-[10px] font-bold transition shadow-2xs" title="Click to cycle status: Pending -> In Progress -> Completed">
+                  Change Status
+                </button>
+                <button onclick="editTask('${item.id}')" class="p-1.5 text-slate-400 hover:text-indigo-600 transition"><i class="fa-solid fa-pen text-xs"></i></button>
+                <button onclick="deleteTask('${item.id}')" class="p-1.5 text-slate-400 hover:text-rose-600 transition"><i class="fa-solid fa-trash text-xs"></i></button>
+              </div>
+            </div>
+
+            <!-- Task Meta Details: Assigned, Budget, Vendor, Sub-items -->
+            <div class="bg-slate-50/80 p-2 rounded-lg border border-slate-200 grid grid-cols-1 sm:grid-cols-3 gap-1.5 text-[11px]">
+              <div>
+                <span class="text-slate-400 text-[10px] font-bold uppercase block">Responsible:</span>
+                <span class="font-semibold text-slate-800">${item.assignee || '—'}</span>
+              </div>
+              <div>
+                <span class="text-slate-400 text-[10px] font-bold uppercase block">Budget:</span>
+                <span class="font-black text-emerald-800">${item.budget ? '₹' + Number(item.budget).toLocaleString('en-IN') : '—'}</span>
+              </div>
+              <div>
+                <span class="text-slate-400 text-[10px] font-bold uppercase block">Vendor / Contact:</span>
+                <span class="font-semibold text-slate-700 truncate block">${item.vendor || '—'}</span>
+              </div>
+            </div>
+
+            ${item.notes ? `
+              <div class="text-[11px] bg-amber-50/40 p-2 rounded-lg border border-amber-100 text-slate-700">
+                <span class="font-bold text-amber-900 block text-[10px] uppercase">Notes & Menu Items:</span>
+                <p class="whitespace-pre-wrap mt-0.5 text-slate-600 leading-relaxed">${item.notes}</p>
+              </div>
+            ` : ''}
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
     }
 
     async function updateInvitation(id, val) {
@@ -1831,6 +2346,7 @@
       document.getElementById('statGiftsCount').textContent = totalGifts;
 
       document.getElementById('historyBadgeCount').textContent = `${target.length} Entries`;
+      document.getElementById('tabCountGuests').textContent = target.length;
     }
 
     function getGroupBadge(group) {
@@ -1940,7 +2456,7 @@
                 ${colSettings.coming ? `<th class="py-2 px-2 text-center font-black bg-emerald-50 text-emerald-950 whitespace-nowrap">Attending / Total</th>` : ''}
                 ${colSettings.inv ? `<th class="py-2 px-2.5 text-center bg-indigo-50/60 text-indigo-900 font-bold whitespace-nowrap">Invitation</th>` : ''}
                 ${colSettings.gifts ? `<th class="py-2 px-2.5 text-center bg-amber-50 text-amber-900 font-bold whitespace-nowrap">Gifts / Cash</th>` : ''}
-                <th class="py-2 px-2 text-center whitespace-nowrap w-10">Actions</th>
+                <th class="py-2 px-2.5 text-center whitespace-nowrap w-10">Actions</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
@@ -2039,7 +2555,7 @@
             ${colSettings.total ? `<td class="py-1.5 px-2 text-center font-bold text-slate-600 whitespace-nowrap">${total}</td>` : ''}
             ${colSettings.coming ? `<td class="py-1.5 px-2 text-center bg-emerald-50/40 whitespace-nowrap">${attendingStepper}</td>` : ''}
             ${colSettings.inv ? `<td class="py-1.5 px-2.5 text-center bg-indigo-50/20 whitespace-nowrap">${inviteSelect}</td>` : ''}
-            ${colSettings.gifts ? `<td class="py-1.5 px-2.5 text-center bg-amber-50/40">${giftDisplay}</td>` : ''}
+            ${colSettings.gifts ? `<td class="py-1.5 px-2.5 text-center bg-amber-50/40 whitespace-nowrap">${giftDisplay}</td>` : ''}
             ${actionMenuCell}
           </tr>
         `;
@@ -2086,6 +2602,7 @@
               ${isAdmin ? `<span class="font-mono font-bold text-indigo-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 text-[10px]">${item.code || '—'}</span>` : ''}
             </div>
 
+            <!-- Members & Attendance Row -->
             <div class="grid grid-cols-2 gap-1 text-xs">
               <div class="bg-slate-50 p-1.5 rounded-lg border border-slate-100 flex items-center justify-around font-bold">
                 <span class="text-blue-700">G:${item.gents || 0}</span>
@@ -2102,6 +2619,7 @@
               </div>
             </div>
 
+            <!-- Gift Display Strip -->
             <div class="bg-amber-50/60 p-1.5 rounded-lg border border-amber-200 text-center font-bold text-amber-900 truncate text-xs">
               ${hasValidCash ? `₹${Number(item.giftAmount).toLocaleString('en-IN')}` : ''}
               ${hasValidGift ? `<span class="text-[10px] text-amber-800 block truncate">${item.giftDescription}</span>` : (!hasValidCash ? '<span class="text-slate-400 font-normal">No gift logged</span>' : '')}
