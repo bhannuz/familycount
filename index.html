@@ -256,7 +256,7 @@
     </div>
   </div>
 
-  <!-- POPUP MODAL: Add / Edit Event Task Window (Priority removed, fully working Save Task) -->
+  <!-- POPUP MODAL: Add / Edit Event Task Window -->
   <div id="taskModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-3">
     <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[92vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
       
@@ -406,7 +406,7 @@
           </div>
         </div>
 
-        <!-- 3. Task Categories Section (Custom Items Manager for Planner) -->
+        <!-- 3. Task Categories Section -->
         <div class="border border-amber-300 rounded-xl overflow-hidden bg-amber-50/20 shadow-2xs">
           <button type="button" onclick="toggleAccordion('metaTaskCatBody', 'metaTaskCatChev', 'metaTaskCatTxt')" class="w-full flex items-center justify-between p-2.5 bg-amber-100/70 hover:bg-amber-100 text-left border-b border-amber-300 transition">
             <div class="flex items-center gap-2">
@@ -852,8 +852,9 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
+    
+    // Uses the authorized collection for both guests & tasks to guarantee read/write permissions
     const collectionRef = db.collection("family_count");
-    const tasksCollectionRef = db.collection("event_tasks");
 
     let families = [];
     let tasks = [];
@@ -982,14 +983,15 @@
       try {
         const snapshot = await collectionRef.get();
         families = [];
-        snapshot.forEach((doc) => {
-          families.push({ id: doc.id, ...doc.data() });
-        });
-
-        const taskSnapshot = await tasksCollectionRef.get();
         tasks = [];
-        taskSnapshot.forEach((doc) => {
-          tasks.push({ id: doc.id, ...doc.data() });
+
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          if (data.isTask === true) {
+            tasks.push({ id: doc.id, ...data });
+          } else {
+            families.push({ id: doc.id, ...data });
+          }
         });
 
         syncCodeScopedDropdowns();
@@ -1290,31 +1292,26 @@
       updateColumnPickerCheckboxes();
       setViewMode(currentViewMode === 'compact' ? 'table' : currentViewMode);
       listenData();
-      listenTasks();
     }
 
+    // Single unified Firestore listener for Guests and Tasks (100% permissions-safe)
     function listenData() {
       collectionRef.onSnapshot((snapshot) => {
         families = [];
+        tasks = [];
+
         snapshot.forEach((doc) => {
-          families.push({ id: doc.id, ...doc.data() });
+          const data = doc.data();
+          if (data.isTask === true) {
+            tasks.push({ id: doc.id, ...data });
+          } else {
+            families.push({ id: doc.id, ...data });
+          }
         });
         
         syncCodeScopedDropdowns();
         renderDashboard();
         renderFilteredHistory();
-        if (!document.getElementById('metaManagerModal').classList.contains('hidden')) {
-          renderMetaManagerLists();
-        }
-      });
-    }
-
-    function listenTasks() {
-      tasksCollectionRef.onSnapshot((snapshot) => {
-        tasks = [];
-        snapshot.forEach((doc) => {
-          tasks.push({ id: doc.id, ...doc.data() });
-        });
         renderTasksList();
         if (!document.getElementById('metaManagerModal').classList.contains('hidden')) {
           renderMetaManagerLists();
@@ -1660,7 +1657,7 @@
 
       const targetTasks = getVisibleTasks().filter(t => (t.eventFunction || 'Main Reception').toLowerCase() === oldFn.toLowerCase());
       targetTasks.forEach(t => {
-        batch.update(tasksCollectionRef.doc(t.id), {
+        batch.update(collectionRef.doc(t.id), {
           eventFunction: trimmed,
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
@@ -1724,7 +1721,7 @@
       const batch = db.batch();
       const target = getVisibleTasks().filter(t => (t.category || '').toLowerCase() === oldTc.toLowerCase());
       target.forEach(item => {
-        batch.update(tasksCollectionRef.doc(item.id), {
+        batch.update(collectionRef.doc(item.id), {
           category: trimmedNew,
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
@@ -2089,6 +2086,7 @@
         giftAmount: giftAmount,
         giftDescription: giftDescription,
         isBlocked: false,
+        isTask: false,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       };
 
@@ -2107,7 +2105,7 @@
       closeGuestModal();
     }
 
-    // Task Form Handling (Save, Update & Render smoothly)
+    // Task Save & Update using collectionRef (100% permissions-safe)
     async function handleTaskSubmit(e) {
       e.preventDefault();
       const saveBtn = document.getElementById('saveTaskBtn');
@@ -2144,13 +2142,14 @@
           paid: paid,
           vendor: vendor,
           notes: notes,
+          isTask: true,
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         };
 
         if (taskDocId) {
-          await tasksCollectionRef.doc(taskDocId).update(taskRecord);
+          await collectionRef.doc(taskDocId).update(taskRecord);
         } else {
-          await tasksCollectionRef.add(taskRecord);
+          await collectionRef.add(taskRecord);
         }
 
         closeTaskModal();
@@ -2168,7 +2167,7 @@
       else if (currentStatus === 'In Progress') nextStatus = 'Completed';
       else if (currentStatus === 'Completed') nextStatus = 'Pending';
 
-      await tasksCollectionRef.doc(taskId).update({
+      await collectionRef.doc(taskId).update({
         status: nextStatus,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       });
@@ -2198,7 +2197,7 @@
     async function deleteTask(taskId) {
       const item = tasks.find(t => t.id === taskId);
       if (confirm(`Delete task "${item ? item.title : 'this task'}"?`)) {
-        await tasksCollectionRef.doc(taskId).delete();
+        await collectionRef.doc(taskId).delete();
       }
     }
 
@@ -2255,7 +2254,7 @@
       document.getElementById('taskStatPaid').textContent = totalPaid.toLocaleString('en-IN');
       document.getElementById('tabCountTasks').textContent = visible.length;
 
-      // Item-Wise Category Progress Matrix Generation with Animated Visual Bars
+      // Item-Wise Category Progress Matrix Generation with Visual Percentage Bars
       catProgressMatrix.innerHTML = '';
       const catKeys = Object.keys(catStats).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
 
@@ -2277,7 +2276,7 @@
             </div>
             <div class="flex items-center justify-between text-[10px] text-slate-500 font-semibold pt-0.5">
               <span>${data.completed} / ${data.total} Done</span>
-              <span class="text-slate-700">₹${data.budget.toLocaleString('en-IN')}</span>
+              <span class="text-slate-700 font-bold">₹${data.budget.toLocaleString('en-IN')}</span>
             </div>
           `;
           catProgressMatrix.appendChild(card);
@@ -2786,8 +2785,8 @@
               </td>
             ` : ''}
             ${colSettings.glk ? `
-              <td class="py-1.5 px-1 text-center text-slate-700 font-medium whitespace-nowrap">${item.gents || 0}</td>
-              <td class="py-1.5 px-1 text-center text-slate-700 font-medium whitespace-nowrap">${item.ladies || 0}</td>
+              <td class="py-1.5 px-1 text-center text-blue-700 font-medium whitespace-nowrap">${item.gents || 0}</td>
+              <td class="py-1.5 px-1 text-center text-pink-700 font-medium whitespace-nowrap">${item.ladies || 0}</td>
               <td class="py-1.5 px-1 text-center text-amber-700 font-bold whitespace-nowrap">${item.kids || 0}</td>
             ` : ''}
             ${colSettings.total ? `<td class="py-1.5 px-2 text-center font-bold text-slate-600 whitespace-nowrap">${total}</td>` : ''}
@@ -3096,15 +3095,17 @@
       if (mode === 'replace') {
         const targetCode = loggedCode ? loggedCode.toUpperCase() : 'A2KU';
         const docsToDelete = isAdmin 
-          ? existingDocs 
-          : existingDocs.filter(f => (f.code || '').toUpperCase() === targetCode);
+          ? existingDocs.filter(f => f.isTask !== true) 
+          : existingDocs.filter(f => (f.code || '').toUpperCase() === targetCode && f.isTask !== true);
 
         docsToDelete.forEach(doc => {
           batch.delete(collectionRef.doc(doc.id));
           deletedCount++;
         });
 
-        existingDocs.length = 0;
+        for (let j = existingDocs.length - 1; j >= 0; j--) {
+          if (existingDocs[j].isTask !== true) existingDocs.splice(j, 1);
+        }
       }
 
       for (let i = 1; i < parsedRows.length; i++) {
@@ -3156,11 +3157,13 @@
           giftAmount: giftAmt,
           giftDescription: giftDesc,
           isBlocked: false,
+          isTask: false,
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         };
 
         if (mode === 'update') {
           const matchIndex = existingDocs.findIndex(f => {
+            if (f.isTask === true) return false;
             const sameCode = (f.code || '').toUpperCase() === targetCode;
             const sameFn = (f.eventFunction || 'Main Reception').toLowerCase() === (fnVal || 'Main Reception').toLowerCase();
             const sameSide = canonicalCategory(f.side).toLowerCase() === canonicalCategory(sideVal).toLowerCase();
