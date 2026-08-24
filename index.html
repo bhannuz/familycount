@@ -823,6 +823,8 @@
                 </label>
                 <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-amber-600 py-0.5">
                   <input type="checkbox" onchange="toggleTaskColSetting('title')" id="taskColChk_title" class="w-3.5 h-3.5 rounded text-amber-600 focus:ring-0" /> Item
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-amber-600 py-0.5">
                   <input type="checkbox" onchange="toggleTaskColSetting('progress')" id="taskColChk_progress" class="w-3.5 h-3.5 rounded text-amber-600 focus:ring-0" checked /> Progress
                 </label>
                 <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-amber-600 py-0.5">
@@ -1830,7 +1832,7 @@
                 ${colSettings.total ? '<th class="py-2 px-2 text-center whitespace-nowrap">Total Inv.</th>' : ''}
                 ${colSettings.coming ? '<th class="py-2 px-2 text-center whitespace-nowrap">Attending</th>' : ''}
                 ${colSettings.inv ? '<th class="py-2 px-2 text-center whitespace-nowrap">Invitation</th>' : ''}
-                ${colSettings.gifts ? '<th class="py-2 px-2 text-right whitespace-nowrap">Gift / Cash</th>' : ''}
+                ${colSettings.gifts ? '<th class="py-1 px-2 text-right whitespace-nowrap">Gift / Cash</th>' : ''}
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
@@ -2778,10 +2780,10 @@
                 ${taskColSettings.func ? `<th class="py-2 px-2.5 whitespace-nowrap">Function</th>` : ''}
                 ${taskColSettings.cat ? `<th class="py-2 px-2.5 whitespace-nowrap">Category</th>` : ''}
                 ${taskColSettings.title ? `<th class="py-2 px-3 whitespace-nowrap">Item</th>` : ''}
-                ${taskColSettings.progress ? `<th class="py-2 px-3 whitespace-nowrap text-center min-w-[150px]">Progress</th>` : ''}
+                ${taskColSettings.progress ? `<th class="py-1 px-1.5 whitespace-nowrap text-center w-[90px]">Progress</th>` : ''}
                 ${taskColSettings.due ? `<th class="py-2 px-2 whitespace-nowrap text-center">Due Date</th>` : ''}
                 ${taskColSettings.assignee ? `<th class="py-2 px-2 whitespace-nowrap">Responsible</th>` : ''}
-                ${taskColSettings.budget ? `<th class="py-2 px-2 text-right whitespace-nowrap">Budget / Paid</th>` : ''}
+                ${taskColSettings.budget ? `<th class="py-1 px-2 text-right whitespace-nowrap">Budget / Paid</th>` : ''}
                 ${taskColSettings.status ? `<th class="py-2 px-2.5 text-center whitespace-nowrap">Status</th>` : ''}
                 ${taskColSettings.vendor ? `<th class="py-2 px-2.5 whitespace-nowrap">Vendor</th>` : ''}
                 <th class="py-2 px-2.5 text-center whitespace-nowrap w-10">Actions</th>
@@ -2794,17 +2796,17 @@
         const statusPercent = item.status === 'Completed' ? 100 : (item.status === 'In Progress' ? 50 : 0);
         let statusBadge = '';
         if (item.status === 'Completed') {
-          statusBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300">Completed ${statusPercent}%</span>`;
+          statusBadge = `<span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-300" title="Completed 100%" aria-label="Completed 100%"><i class="fa-solid fa-circle-check text-[12px]"></i></span>`;
         } else if (item.status === 'In Progress') {
-          statusBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-sky-100 text-sky-800 border border-sky-300">In Progress ${statusPercent}%</span>`;
+          statusBadge = `<span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-sky-100 text-sky-700 border border-sky-300" title="In Progress 50%" aria-label="In Progress 50%"><i class="fa-solid fa-spinner text-[12px]"></i></span>`;
         } else {
-          statusBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-900 border border-amber-300">Pending ${statusPercent}%</span>`;
+          statusBadge = `<span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-100 text-amber-700 border border-amber-300" title="Pending 0%" aria-label="Pending 0%"><i class="fa-regular fa-clock text-[12px]"></i></span>`;
         }
 
         const balance = (parseFloat(item.budget) || 0) - (parseFloat(item.paid) || 0);
 
         const actionMenuCell = `
-          <td class="py-1.5 px-2 text-center whitespace-nowrap relative">
+          <td class="py-1 px-1.5 text-center whitespace-nowrap relative">
             <div class="relative inline-block text-left">
               <button onclick="toggleRowActionMenu(event, 'task_${item.id}')" class="w-7 h-7 rounded-lg hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition">
                 <i class="fa-solid fa-ellipsis-vertical text-xs"></i>
@@ -2823,35 +2825,35 @@
 
         html += `
           <tr class="hover:bg-slate-50 transition">
-            ${taskColSettings.func ? `<td class="py-2 px-2.5 font-bold text-indigo-800 text-[11px] whitespace-nowrap">${item.eventFunction || 'Main Reception'}</td>` : ''}
-            ${taskColSettings.cat ? `<td class="py-2 px-2.5 whitespace-nowrap font-bold text-amber-900">${item.category}</td>` : ''}
+            ${taskColSettings.func ? `<td class="py-1 px-2 font-bold text-indigo-800 text-[10px] whitespace-nowrap">${item.eventFunction || 'Main Reception'}</td>` : ''}
+            ${taskColSettings.cat ? `<td class="py-1 px-2 whitespace-nowrap font-bold text-amber-900 text-[10px]">${item.category}</td>` : ''}
             ${taskColSettings.title ? `
-              <td class="py-2 px-3">
-                <div class="font-semibold text-slate-900 text-xs leading-tight ${item.status === 'Completed' ? 'line-through text-slate-400' : ''}">${item.title}</div>
+              <td class="py-1 px-2">
+                <div class="font-semibold text-slate-900 text-[11px] leading-tight ${item.status === 'Completed' ? 'line-through text-slate-400' : ''}">${item.title}</div>
                 ${item.notes ? `<div class="text-[10px] text-slate-500 italic truncate max-w-[200px] mt-0.5">${item.notes}</div>` : ''}
               </td>
             ` : ''}
             ${taskColSettings.progress ? (() => {
               const progress = item.status === 'Completed' ? 100 : (item.status === 'In Progress' ? 50 : 0);
-              return `<td class="py-2 px-3 min-w-[150px]">
-                <div class="flex items-center gap-2">
-                  <div class="flex-1 h-2.5 bg-slate-200 rounded-full overflow-hidden border border-slate-300">
+              return `<td class="py-1 px-1.5 w-[90px]">
+                <div class="flex items-center gap-1.5 justify-center">
+                  <div class="w-[52px] h-1.5 bg-slate-200 rounded-full overflow-hidden border border-slate-300">
                     <div class="h-full rounded-full transition-all duration-300 ${progress === 100 ? 'bg-emerald-500' : (progress === 50 ? 'bg-sky-500' : 'bg-slate-400')}" style="width:${progress}%"></div>
                   </div>
-                  <span class="text-[10px] font-black text-slate-700 w-8 text-right">${progress}%</span>
+                  <span class="text-[9px] font-black text-slate-700 w-7 text-right">${progress}%</span>
                 </div>
               </td>`;
             })() : ''}
-            ${taskColSettings.due ? `<td class="py-2 px-2 text-center text-slate-600 whitespace-nowrap font-medium">${item.dueDate || '—'}</td>` : ''}
-            ${taskColSettings.assignee ? `<td class="py-2 px-2 text-slate-700 whitespace-nowrap font-semibold">${item.assignee || '—'}</td>` : ''}
+            ${taskColSettings.due ? `<td class="py-1 px-2 text-center text-slate-600 whitespace-nowrap font-medium text-[10px]">${item.dueDate || '—'}</td>` : ''}
+            ${taskColSettings.assignee ? `<td class="py-1 px-2 text-slate-700 whitespace-nowrap font-semibold text-[10px]">${item.assignee || '—'}</td>` : ''}
             ${taskColSettings.budget ? `
-              <td class="py-2 px-2 text-right whitespace-nowrap">
+              <td class="py-1 px-2 text-right whitespace-nowrap">
                 <span class="font-black text-slate-900 block">${item.budget ? '₹' + Number(item.budget).toLocaleString('en-IN') : '—'}</span>
                 <span class="text-[10px] text-emerald-700 block">Paid: ₹${Number(item.paid || 0).toLocaleString('en-IN')}</span>
               </td>
             ` : ''}
-            ${taskColSettings.status ? `<td class="py-2 px-2.5 text-center whitespace-nowrap"><button onclick="toggleTaskStatus('${item.id}', '${item.status || 'Pending'}')" title="Click to cycle status">${statusBadge}</button></td>` : ''}
-            ${taskColSettings.vendor ? `<td class="py-2 px-2.5 text-slate-700 whitespace-nowrap truncate max-w-[120px]">${item.vendor || '—'}</td>` : ''}
+            ${taskColSettings.status ? `<td class="py-1 px-1.5 text-center whitespace-nowrap"><button onclick="toggleTaskStatus('${item.id}', '${item.status || 'Pending'}')" title="Click to cycle status">${statusBadge}</button></td>` : ''}
+            ${taskColSettings.vendor ? `<td class="py-1 px-2 text-slate-700 whitespace-nowrap truncate max-w-[120px] text-[10px]">${item.vendor || '—'}</td>` : ''}
             ${actionMenuCell}
           </tr>
         `;
