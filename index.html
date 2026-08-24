@@ -1521,10 +1521,12 @@
     // Categories, Functions, Task Categories & Relations are shared, global
     // lists that must stay identical for every user on every device,
     // regardless of which family code (or Admin) they log in with.
-    const GLOBAL_META_DOC_ID = '__meta__GLOBAL';
-
+    // (Returned as a literal, not a module-level const, so there's no risk
+    // of a temporal-dead-zone error if this is called before the script has
+    // finished running top-to-bottom, e.g. showApp() firing immediately on
+    // an already-logged-in session.)
     function getMetaDocId() {
-      return GLOBAL_META_DOC_ID;
+      return '__meta__GLOBAL';
     }
 
     function normalizeMetaData(meta) {
