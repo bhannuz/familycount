@@ -1959,21 +1959,79 @@
     }
 
     async function adjustGuestComing(guestId, delta) {
-      const item = families.find(f => f.id === guestId);
-      if (!item) return;
+      const id = String(guestId || '').trim();
+      const item = families.find(f => String(f.id || '') === id);
+      if (!item || !id) return;
+
       const total = getGuestTotal(item);
       const current = getGuestComing(item);
-      const next = Math.max(0, Math.min(total, current + Number(delta || 0)));
+      const step = Number(delta) || 0;
+      const next = Math.max(0, Math.min(total, current + step));
       if (next === current) return;
+
+      // Update the local model immediately so the UI responds without waiting
+      // for the Firestore listener to return.
+      item.comingCount = next;
+      renderDashboard();
+      renderFilteredHistory();
+
       try {
-        await collectionRef.doc(guestId).update({
+        await collectionRef.doc(id).set({
           comingCount: next,
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
+        }, { merge: true });
       } catch (err) {
+        // Revert the optimistic change if Firestore rejects the write.
+        item.comingCount = current;
+        renderDashboard();
+        renderFilteredHistory();
         console.error('Error updating attending count:', err);
         alert('Unable to update attending count: ' + (err.message || err));
       }
+    }
+
+    async function changeGuestInvitation(guestId, value) {
+      const id = String(guestId || '').trim();
+      const item = families.find(f => String(f.id || '') === id);
+      if (!item || !id) return;
+
+      const next = String(value || 'Invited');
+      const previous = String(item.invitation || 'Invited');
+      if (next === previous) return;
+
+      // Optimistic update keeps the dropdown and table in sync immediately.
+      item.invitation = next;
+      renderDashboard();
+      renderFilteredHistory();
+
+      try {
+        await collectionRef.doc(id).set({
+          invitation: next,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+      } catch (err) {
+        item.invitation = previous;
+        renderDashboard();
+        renderFilteredHistory();
+        console.error('Error updating invitation:', err);
+        alert('Unable to update invitation: ' + (err.message || err));
+      }
+    }
+
+    function guestInvitationSelect(item) {
+      const status = String(item.invitation || 'Invited');
+      const id = String(item.id || '');
+      return `
+        <select
+          class="bg-white border border-slate-300 rounded-md px-1.5 py-1 text-[10px] font-bold text-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-400 cursor-pointer"
+          onchange="event.stopPropagation(); changeGuestInvitation(${JSON.stringify(id)}, this.value)"
+          onclick="event.stopPropagation()"
+          title="Change invitation status">
+          <option value="Invited" ${status === 'Invited' ? 'selected' : ''}>Invited</option>
+          <option value="Confirmed" ${status === 'Confirmed' ? 'selected' : ''}>Confirmed</option>
+          <option value="Not Invited" ${status === 'Not Invited' ? 'selected' : ''}>Not Invited</option>
+        </select>
+      `;
     }
 
     function renderGuestTableView(items, container) {
@@ -2019,7 +2077,7 @@
                 <button type="button" onclick="adjustGuestComing(${JSON.stringify(item.id)}, 1)" class="w-5 h-5 rounded-md bg-white border border-slate-200 text-slate-500 hover:text-emerald-600 hover:border-emerald-200 font-black leading-none" title="Increase attending">+</button>
               </div>
             </td>` : ''}
-            ${colSettings.inv ? `<td class="py-1 px-2 text-center">${guestInvitationIcon(status)}</td>` : ''}
+            ${colSettings.inv ? `<td class="py-1 px-2 text-center">${guestInvitationSelect(item)}</td>` : ''}
             ${colSettings.gifts ? `<td class="py-1.5 px-2 text-right">${gift > 0 ? '₹' + gift.toLocaleString('en-IN') : ''}${item.giftDescription ? `<div class="text-[10px] text-slate-500">${safe(item.giftDescription)}</div>` : ''}</td>` : ''}
           </tr>
         `;
@@ -2053,7 +2111,7 @@
                 </div>
                 <div class="mt-2 flex items-center justify-between text-[10px] font-bold">
                   <span class="text-emerald-700">Attending / Total: ${coming} / ${total}</span>
-                  ${guestInvitationIcon(item.invitation)}
+                  <span class="text-[10px] font-bold text-slate-700">${safe(item.invitation || 'Invited')}</span>
                 </div>
                 ${gift > 0 ? `<div class="mt-1 text-[10px] text-emerald-800">Gift: ₹${gift.toLocaleString('en-IN')}</div>` : ''}
               </div>
@@ -2077,7 +2135,7 @@
                   <div class="text-xs font-bold text-slate-800">${safe(item.name || 'Guest')}</div>
                   <div class="text-[10px] text-slate-500">${safe(item.place || '')} · ${safe(item.eventFunction || 'Main Reception')}</div>
                 </div>
-                ${guestInvitationIcon(item.invitation)}
+                <span class="text-[10px] font-bold text-slate-700">${safe(item.invitation || 'Invited')}</span>
               </div>
               <div class="text-[10px] text-slate-600 mt-1">
                 G:${toNumber(item.gents)} · L:${toNumber(item.ladies)} · K:${toNumber(item.kids)}
