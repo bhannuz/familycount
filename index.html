@@ -825,6 +825,7 @@
                 </label>
                 <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-amber-600 py-0.5">
                   <input type="checkbox" onchange="toggleTaskColSetting('title')" id="taskColChk_title" class="w-3.5 h-3.5 rounded text-amber-600 focus:ring-0" /> Task Item
+                  <input type="checkbox" onchange="toggleTaskColSetting('progress')" id="taskColChk_progress" class="w-3.5 h-3.5 rounded text-amber-600 focus:ring-0" checked /> Progress
                 </label>
                 <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-amber-600 py-0.5">
                   <input type="checkbox" onchange="toggleTaskColSetting('due')" id="taskColChk_due" class="w-3.5 h-3.5 rounded text-amber-600 focus:ring-0" /> Due Date
@@ -952,6 +953,7 @@
         func: true,
         cat: true,
         title: true,
+        progress: true,
         due: true,
         assignee: true,
         budget: true,
@@ -2822,6 +2824,7 @@
                 ${taskColSettings.func ? `<th class="py-2 px-2.5 whitespace-nowrap">Function</th>` : ''}
                 ${taskColSettings.cat ? `<th class="py-2 px-2.5 whitespace-nowrap">Category</th>` : ''}
                 ${taskColSettings.title ? `<th class="py-2 px-3 whitespace-nowrap">Task Item / Description</th>` : ''}
+                ${taskColSettings.progress ? `<th class="py-2 px-3 whitespace-nowrap text-center min-w-[150px]">Progress</th>` : ''}
                 ${taskColSettings.due ? `<th class="py-2 px-2 whitespace-nowrap text-center">Due Date</th>` : ''}
                 ${taskColSettings.assignee ? `<th class="py-2 px-2 whitespace-nowrap">Responsible</th>` : ''}
                 ${taskColSettings.budget ? `<th class="py-2 px-2 text-right whitespace-nowrap">Budget / Paid</th>` : ''}
@@ -2873,6 +2876,17 @@
                 ${item.notes ? `<div class="text-[10px] text-slate-500 italic truncate max-w-[200px] mt-0.5">${item.notes}</div>` : ''}
               </td>
             ` : ''}
+            ${taskColSettings.progress ? (() => {
+              const progress = item.status === 'Completed' ? 100 : (item.status === 'In Progress' ? 50 : 0);
+              return `<td class="py-2 px-3 min-w-[150px]">
+                <div class="flex items-center gap-2">
+                  <div class="flex-1 h-2.5 bg-slate-200 rounded-full overflow-hidden border border-slate-300">
+                    <div class="h-full rounded-full transition-all duration-300 ${progress === 100 ? 'bg-emerald-500' : (progress === 50 ? 'bg-sky-500' : 'bg-slate-400')}" style="width:${progress}%"></div>
+                  </div>
+                  <span class="text-[10px] font-black text-slate-700 w-8 text-right">${progress}%</span>
+                </div>
+              </td>`;
+            })() : ''}
             ${taskColSettings.due ? `<td class="py-2 px-2 text-center text-slate-600 whitespace-nowrap font-medium">${item.dueDate || '—'}</td>` : ''}
             ${taskColSettings.assignee ? `<td class="py-2 px-2 text-slate-700 whitespace-nowrap font-semibold">${item.assignee || '—'}</td>` : ''}
             ${taskColSettings.budget ? `
