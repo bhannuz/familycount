@@ -256,7 +256,7 @@
     </div>
   </div>
 
-  <!-- POPUP MODAL: Add / Edit Event Task Window -->
+  <!-- POPUP MODAL: Add / Edit Event Task Window (Priority removed, fully working Save Task) -->
   <div id="taskModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-3">
     <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[92vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
       
@@ -286,7 +286,13 @@
             <!-- Task Category -->
             <div class="col-span-1">
               <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Task Category *</label>
-              <select id="taskCategorySelect" required class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs font-semibold text-slate-700 focus:outline-none focus:border-indigo-500"></select>
+              <div id="taskCatSelectWrapper">
+                <select id="taskCategorySelect" onchange="checkCustomTaskCat(this.value)" required class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs font-semibold text-slate-700 focus:outline-none focus:border-indigo-500"></select>
+              </div>
+              <div id="customTaskCatWrapper" class="hidden flex gap-1">
+                <input type="text" id="customTaskCatInput" placeholder="New Task Cat..." class="w-full bg-white border border-amber-500 rounded-lg px-1.5 py-1 text-xs font-semibold focus:outline-none" />
+                <button type="button" onclick="cancelCustomTaskCat()" class="px-1.5 py-1 bg-slate-200 hover:bg-slate-300 text-slate-600 rounded-lg text-xs">✕</button>
+              </div>
             </div>
 
             <!-- Task Title / Item -->
@@ -324,7 +330,7 @@
 
             <div class="col-span-1">
               <label class="block text-[10px] font-bold uppercase text-emerald-800 mb-0.5">Advance / Paid (₹)</label>
-              <input type="number" id="taskPaid" min="0" step="100" placeholder="e.g. 15000" class="w-full bg-white border border-emerald-300 rounded-lg px-2 py-1.5 text-xs font-bold text-emerald-900 focus:outline-none focus:border-emerald-500" />
+              <input type="number" id="taskPaid" min="0" step="100" placeholder="e.g. 15000" class="w-full bg-white border border-emerald-300 rounded-lg px-2 py-1.5 text-xs font-bold text-emerald-900 focus:outline-none focus:border-indigo-500" />
             </div>
 
             <!-- Vendor / Contact Details -->
@@ -354,7 +360,7 @@
     </div>
   </div>
 
-  <!-- Manage Functions, Categories, Task Categories & Relations Modal -->
+  <!-- Manage Functions, Categories, Task Categories & Relations Modal (All Sections Collapsible & Sorted Alphabetically) -->
   <div id="metaManagerModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-3">
     <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full max-h-[90vh] flex flex-col overflow-hidden">
       <div class="px-4 py-3 bg-slate-800 text-white flex items-center justify-between">
@@ -365,17 +371,17 @@
         <button onclick="closeMetaManager()" class="text-slate-400 hover:text-white text-base">✕</button>
       </div>
 
-      <div class="p-3.5 overflow-y-auto space-y-3.5">
+      <div class="p-3.5 overflow-y-auto space-y-2.5">
         <!-- 1. Functions Section -->
         <div class="border border-indigo-200 rounded-xl overflow-hidden bg-indigo-50/20 shadow-2xs">
           <button type="button" onclick="toggleAccordion('metaFuncBody', 'metaFuncChev', 'metaFuncTxt')" class="w-full flex items-center justify-between p-2.5 bg-indigo-50/80 hover:bg-indigo-100 text-left border-b border-indigo-200 transition">
             <div class="flex items-center gap-2">
-              <i id="metaFuncChev" class="fa-solid fa-chevron-right text-xs text-indigo-600 transition-transform duration-200 rotate-90"></i>
+              <i id="metaFuncChev" class="fa-solid fa-chevron-right text-xs text-indigo-600 transition-transform duration-200"></i>
               <span class="text-xs font-black text-indigo-950">🎉 Event Functions</span>
             </div>
-            <span id="metaFuncTxt" class="text-[11px] font-semibold text-indigo-600">Tap to Collapse</span>
+            <span id="metaFuncTxt" class="text-[11px] font-semibold text-indigo-600">Tap to Expand</span>
           </button>
-          <div id="metaFuncBody" class="p-2.5 space-y-2">
+          <div id="metaFuncBody" class="hidden p-2.5 space-y-2">
             <div class="flex gap-1.5">
               <input type="text" id="quickAddFuncInput" placeholder="New function name (e.g. Sangeet)..." class="flex-1 bg-white border border-indigo-200 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-indigo-500" />
               <button type="button" onclick="quickAddMeta('functions', 'quickAddFuncInput')" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition shadow-2xs">
@@ -390,12 +396,12 @@
         <div class="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-2xs">
           <button type="button" onclick="toggleAccordion('metaCatBody', 'metaCatChev', 'metaCatTxt')" class="w-full flex items-center justify-between p-2.5 bg-slate-50 hover:bg-slate-100 text-left border-b border-slate-200 transition">
             <div class="flex items-center gap-2">
-              <i id="metaCatChev" class="fa-solid fa-chevron-right text-xs text-indigo-600 transition-transform duration-200 rotate-90"></i>
+              <i id="metaCatChev" class="fa-solid fa-chevron-right text-xs text-indigo-600 transition-transform duration-200"></i>
               <span class="text-xs font-black text-slate-900">📁 Guest Categories / Groups</span>
             </div>
-            <span id="metaCatTxt" class="text-[11px] font-semibold text-indigo-600">Tap to Collapse</span>
+            <span id="metaCatTxt" class="text-[11px] font-semibold text-indigo-600">Tap to Expand</span>
           </button>
-          <div id="metaCatBody" class="p-2.5 space-y-2">
+          <div id="metaCatBody" class="hidden p-2.5 space-y-2">
             <div class="flex gap-1.5">
               <input type="text" id="quickAddCatInput" placeholder="New category name (e.g. VIP Guests)..." class="flex-1 bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-indigo-500" />
               <button type="button" onclick="quickAddMeta('categories', 'quickAddCatInput')" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition shadow-2xs">
@@ -406,16 +412,16 @@
           </div>
         </div>
 
-        <!-- 3. Task Categories Section -->
+        <!-- 3. Task Categories Section (Catering, Stage, DJ, etc. - Fully Manageable / Renamable / Deletable) -->
         <div class="border border-amber-300 rounded-xl overflow-hidden bg-amber-50/20 shadow-2xs">
           <button type="button" onclick="toggleAccordion('metaTaskCatBody', 'metaTaskCatChev', 'metaTaskCatTxt')" class="w-full flex items-center justify-between p-2.5 bg-amber-100/70 hover:bg-amber-100 text-left border-b border-amber-300 transition">
             <div class="flex items-center gap-2">
-              <i id="metaTaskCatChev" class="fa-solid fa-chevron-right text-xs text-amber-700 transition-transform duration-200 rotate-90"></i>
+              <i id="metaTaskCatChev" class="fa-solid fa-chevron-right text-xs text-amber-700 transition-transform duration-200"></i>
               <span class="text-xs font-black text-amber-950">📋 Task & Vendor Categories (Catering, Stage, DJ, Decor...)</span>
             </div>
-            <span id="metaTaskCatTxt" class="text-[11px] font-semibold text-amber-700">Tap to Collapse</span>
+            <span id="metaTaskCatTxt" class="text-[11px] font-semibold text-amber-700">Tap to Expand</span>
           </button>
-          <div id="metaTaskCatBody" class="p-2.5 space-y-2">
+          <div id="metaTaskCatBody" class="hidden p-2.5 space-y-2">
             <div class="flex gap-1.5">
               <input type="text" id="quickAddTaskCatInput" placeholder="New task category (e.g. Return Gifts, Valet Parking)..." class="flex-1 bg-white border border-amber-300 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-amber-600" />
               <button type="button" onclick="quickAddMeta('taskCategories', 'quickAddTaskCatInput')" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-lg transition shadow-2xs">
@@ -430,12 +436,12 @@
         <div class="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-2xs">
           <button type="button" onclick="toggleAccordion('metaRelBody', 'metaRelChev', 'metaRelTxt')" class="w-full flex items-center justify-between p-2.5 bg-slate-50 hover:bg-slate-100 text-left border-b border-slate-200 transition">
             <div class="flex items-center gap-2">
-              <i id="metaRelChev" class="fa-solid fa-chevron-right text-xs text-indigo-600 transition-transform duration-200 rotate-90"></i>
+              <i id="metaRelChev" class="fa-solid fa-chevron-right text-xs text-indigo-600 transition-transform duration-200"></i>
               <span class="text-xs font-black text-slate-900">🤝 Relations</span>
             </div>
-            <span id="metaRelTxt" class="text-[11px] font-semibold text-indigo-600">Tap to Collapse</span>
+            <span id="metaRelTxt" class="text-[11px] font-semibold text-indigo-600">Tap to Expand</span>
           </button>
-          <div id="metaRelBody" class="p-2.5 space-y-2">
+          <div id="metaRelBody" class="hidden p-2.5 space-y-2">
             <div class="flex gap-1.5">
               <input type="text" id="quickAddRelInput" placeholder="New relation name..." class="flex-1 bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-indigo-500" />
               <button type="button" onclick="quickAddMeta('relations', 'quickAddRelInput')" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition shadow-2xs">
@@ -784,53 +790,105 @@
         </div>
       </div>
 
-      <!-- Item-Wise Category Progress Matrix Card -->
-      <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm space-y-2.5">
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-            <i class="fa-solid fa-chart-pie text-amber-600"></i> Category / Item-wise Progress Breakdown
-          </span>
-          <span class="text-[10px] text-slate-400 font-semibold">Auto-calculated</span>
-        </div>
-        <div id="categoryProgressMatrix" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2"></div>
-      </div>
+      <!-- Event Checklist Collapsible Card (Collapsed by Default with View Mode Support: Table, Tiles, List & Column Customizer) -->
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-visible">
+        
+        <!-- Accordion Header Bar (Collapsed by Default) -->
+        <div class="w-full flex flex-col sm:flex-row sm:items-center justify-between p-2.5 sm:p-3 bg-slate-50 border-b border-slate-200 gap-2">
+          <div onclick="toggleAccordion('tasksContainer', 'tasksChevron', 'tasksActionText')" class="flex items-center gap-2 hover:opacity-80 transition text-left cursor-pointer select-none">
+            <i id="tasksChevron" class="fa-solid fa-chevron-right text-xs text-amber-600 transition-transform duration-200"></i>
+            <span class="text-xs sm:text-sm font-bold text-slate-800 flex items-center gap-1.5">
+              <i class="fa-solid fa-list-check text-amber-600"></i> Event Checklist & Item Management
+            </span>
+            <span id="tasksBadgeCount" class="text-[10px] font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">0 Tasks</span>
+            <span id="tasksActionText" class="text-[11px] font-semibold text-amber-600 ml-1">Tap to Expand</span>
+          </div>
 
-      <!-- Task Filters Bar -->
-      <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-sm grid grid-cols-2 md:grid-cols-4 gap-2">
-        <div class="col-span-1">
-          <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Category Filter:</label>
-          <select id="taskCatFilter" onchange="renderTasksList()" class="w-full bg-slate-50 border border-slate-300 text-xs font-semibold text-slate-700 px-2 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500">
-            <option value="All">All Task Categories</option>
-          </select>
+          <!-- Toolstrip (Columns Dropdown & View Mode Switcher: Table, Tiles, List) -->
+          <div class="flex items-center justify-between sm:justify-end gap-1.5 flex-nowrap">
+            
+            <!-- Column Customizer Dropdown -->
+            <div class="relative inline-block">
+              <button type="button" onclick="toggleTaskColumnPicker(event)" class="px-2.5 py-1 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-1.5 shadow-2xs">
+                <i class="fa-solid fa-sliders text-amber-600 text-[11px]"></i>
+                <span class="text-[11px]">Columns</span>
+                <i class="fa-solid fa-chevron-down text-[8px] text-slate-400"></i>
+              </button>
+
+              <div id="taskColumnPickerDropdown" class="hidden absolute left-0 sm:left-auto sm:right-0 mt-1 w-52 bg-white border border-slate-300 rounded-xl shadow-2xl p-3 z-50 space-y-2 text-xs">
+                <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 pb-1 border-b border-slate-100">Toggle Task Columns</div>
+                <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-amber-600 py-0.5">
+                  <input type="checkbox" onchange="toggleTaskColSetting('func')" id="taskColChk_func" class="w-3.5 h-3.5 rounded text-amber-600 focus:ring-0" /> Function
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-amber-600 py-0.5">
+                  <input type="checkbox" onchange="toggleTaskColSetting('cat')" id="taskColChk_cat" class="w-3.5 h-3.5 rounded text-amber-600 focus:ring-0" /> Category
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-amber-600 py-0.5">
+                  <input type="checkbox" onchange="toggleTaskColSetting('title')" id="taskColChk_title" class="w-3.5 h-3.5 rounded text-amber-600 focus:ring-0" /> Task Item
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-amber-600 py-0.5">
+                  <input type="checkbox" onchange="toggleTaskColSetting('due')" id="taskColChk_due" class="w-3.5 h-3.5 rounded text-amber-600 focus:ring-0" /> Due Date
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-amber-600 py-0.5">
+                  <input type="checkbox" onchange="toggleTaskColSetting('assignee')" id="taskColChk_assignee" class="w-3.5 h-3.5 rounded text-amber-600 focus:ring-0" /> Responsible
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-amber-600 py-0.5">
+                  <input type="checkbox" onchange="toggleTaskColSetting('budget')" id="taskColChk_budget" class="w-3.5 h-3.5 rounded text-amber-600 focus:ring-0" /> Budget & Paid
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-amber-600 py-0.5">
+                  <input type="checkbox" onchange="toggleTaskColSetting('status')" id="taskColChk_status" class="w-3.5 h-3.5 rounded text-amber-600 focus:ring-0" /> Status
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-amber-600 py-0.5">
+                  <input type="checkbox" onchange="toggleTaskColSetting('vendor')" id="taskColChk_vendor" class="w-3.5 h-3.5 rounded text-amber-600 focus:ring-0" /> Vendor
+                </label>
+              </div>
+            </div>
+
+            <!-- Task View Switcher Tabs -->
+            <div class="flex items-center bg-white border border-slate-200 rounded-lg p-0.5 text-xs font-semibold shrink-0">
+              <button type="button" onclick="setTaskViewMode('table')" id="btnTaskViewTable" class="px-2.5 py-1 rounded transition text-amber-700 bg-amber-50 font-bold flex items-center gap-1" title="Table View">
+                <i class="fa-solid fa-table"></i> <span class="hidden sm:inline text-[11px]">Table</span>
+              </button>
+              <button type="button" onclick="setTaskViewMode('tiles')" id="btnTaskViewTiles" class="px-2.5 py-1 rounded transition text-slate-500 hover:text-slate-800 flex items-center gap-1" title="Tiles View">
+                <i class="fa-solid fa-grip"></i> <span class="hidden sm:inline text-[11px]">Tiles</span>
+              </button>
+              <button type="button" onclick="setTaskViewMode('list')" id="btnTaskViewList" class="px-2.5 py-1 rounded transition text-slate-500 hover:text-slate-800 flex items-center gap-1" title="List View">
+                <i class="fa-solid fa-list-ul"></i> <span class="hidden sm:inline text-[11px]">List</span>
+              </button>
+            </div>
+          </div>
         </div>
 
-        <div class="col-span-1">
-          <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Task Status:</label>
-          <select id="taskStatusFilter" onchange="renderTasksList()" class="w-full bg-slate-50 border border-slate-300 text-xs font-semibold text-slate-700 px-2 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500">
-            <option value="All">All Statuses</option>
-            <option value="Pending">⏳ Pending</option>
-            <option value="In Progress">🔄 In Progress</option>
-            <option value="Completed">✅ Completed</option>
-          </select>
+        <!-- Task Filters Bar -->
+        <div class="p-2.5 bg-slate-50/60 border-b border-slate-200 grid grid-cols-2 md:grid-cols-4 gap-2">
+          <div class="col-span-1">
+            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Category Filter:</label>
+            <select id="taskCatFilter" onchange="renderTasksList()" class="w-full bg-white border border-slate-300 text-xs font-semibold text-slate-700 px-2 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500">
+              <option value="All">All Task Categories</option>
+            </select>
+          </div>
+
+          <div class="col-span-1">
+            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Task Status:</label>
+            <select id="taskStatusFilter" onchange="renderTasksList()" class="w-full bg-white border border-slate-300 text-xs font-semibold text-slate-700 px-2 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500">
+              <option value="All">All Statuses</option>
+              <option value="Pending">⏳ Pending</option>
+              <option value="In Progress">🔄 In Progress</option>
+              <option value="Completed">✅ Completed</option>
+            </select>
+          </div>
+
+          <div class="col-span-2">
+            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Search Tasks:</label>
+            <input type="text" id="taskSearchInput" oninput="renderTasksList()" placeholder="Search task items, menu, caterer, photographer..." class="w-full bg-white border border-slate-300 text-xs px-2.5 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500" />
+          </div>
         </div>
 
-        <div class="col-span-2">
-          <label class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Search Tasks:</label>
-          <input type="text" id="taskSearchInput" oninput="renderTasksList()" placeholder="Search task items, menu, caterer, photographer..." class="w-full bg-slate-50 border border-slate-300 text-xs px-2.5 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500" />
+        <!-- Collapsible Tasks Body Container (Starts hidden / collapsed by default) -->
+        <div id="tasksContainer" class="hidden p-2.5 sm:p-3 overflow-x-auto">
+          <div id="tasksDisplayContainer"></div>
+          <p id="tasksEmptyMessage" class="hidden text-center py-6 text-slate-400 text-xs">No tasks found for this function & filter.</p>
         </div>
-      </div>
-
-      <!-- Tasks List Display Container -->
-      <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-3">
-        <div class="flex items-center justify-between pb-2 border-b border-slate-100 mb-2">
-          <span class="text-xs sm:text-sm font-bold text-slate-800 flex items-center gap-1.5">
-            <i class="fa-solid fa-list-check text-amber-600"></i> Event Checklist & Item Management
-          </span>
-          <span id="tasksBadgeCount" class="text-[10px] font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">0 Tasks</span>
-        </div>
-
-        <div id="tasksListContainer" class="space-y-2"></div>
-        <p id="tasksEmptyMessage" class="hidden text-center py-6 text-slate-400 text-xs">No tasks found for this function & filter.</p>
       </div>
     </div>
 
@@ -852,8 +910,6 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
-    
-    // Uses the authorized collection for both guests & tasks to guarantee read/write permissions
     const collectionRef = db.collection("family_count");
 
     let families = [];
@@ -861,11 +917,13 @@
     let loggedCode = localStorage.getItem('fc_user_code') || '';
     let isAdmin = (loggedCode.toUpperCase() === ADMIN_CODE);
     let currentViewMode = localStorage.getItem('fc_view_mode') || 'table';
+    let currentTaskViewMode = localStorage.getItem('fc_task_view_mode') || 'table';
     let currentAppTab = 'guests';
     let selectedTopFunction = 'All';
     let pendingImportPayload = null;
 
     let colSettings = getStoredColSettings();
+    let taskColSettings = getStoredTaskColSettings();
 
     function getStoredColSettings() {
       const stored = localStorage.getItem('fc_col_settings');
@@ -885,6 +943,23 @@
       };
     }
 
+    function getStoredTaskColSettings() {
+      const stored = localStorage.getItem('fc_task_col_settings');
+      if (stored) {
+        try { return JSON.parse(stored); } catch (e) {}
+      }
+      return {
+        func: true,
+        cat: true,
+        title: true,
+        due: true,
+        assignee: true,
+        budget: true,
+        status: true,
+        vendor: true
+      };
+    }
+
     function saveColSettings(settings) {
       colSettings = settings;
       localStorage.setItem('fc_col_settings', JSON.stringify(colSettings));
@@ -892,9 +967,21 @@
       renderFilteredHistory();
     }
 
+    function saveTaskColSettings(settings) {
+      taskColSettings = settings;
+      localStorage.setItem('fc_task_col_settings', JSON.stringify(taskColSettings));
+      updateTaskColumnPickerCheckboxes();
+      renderTasksList();
+    }
+
     function toggleColSetting(key) {
       colSettings[key] = !colSettings[key];
       saveColSettings(colSettings);
+    }
+
+    function toggleTaskColSetting(key) {
+      taskColSettings[key] = !taskColSettings[key];
+      saveTaskColSettings(taskColSettings);
     }
 
     function updateColumnPickerCheckboxes() {
@@ -904,9 +991,22 @@
       });
     }
 
+    function updateTaskColumnPickerCheckboxes() {
+      Object.keys(taskColSettings).forEach(key => {
+        const chk = document.getElementById(`taskColChk_${key}`);
+        if (chk) chk.checked = !!taskColSettings[key];
+      });
+    }
+
     function toggleColumnPicker(e) {
       e.stopPropagation();
       const menu = document.getElementById('columnPickerDropdown');
+      menu.classList.toggle('hidden');
+    }
+
+    function toggleTaskColumnPicker(e) {
+      e.stopPropagation();
+      const menu = document.getElementById('taskColumnPickerDropdown');
       menu.classList.toggle('hidden');
     }
 
@@ -923,6 +1023,10 @@
       const picker = document.getElementById('columnPickerDropdown');
       if (picker && !picker.contains(e.target)) {
         picker.classList.add('hidden');
+      }
+      const taskPicker = document.getElementById('taskColumnPickerDropdown');
+      if (taskPicker && !taskPicker.contains(e.target)) {
+        taskPicker.classList.add('hidden');
       }
       document.querySelectorAll('.row-action-menu').forEach(el => {
         if (!el.contains(e.target)) el.classList.add('hidden');
@@ -1110,6 +1214,7 @@
       document.getElementById('taskStatus').value = 'Pending';
       document.getElementById('taskBudget').value = '';
       document.getElementById('taskPaid').value = '';
+      cancelCustomTaskCat();
     }
 
     function stepFormField(fieldId, delta) {
@@ -1290,11 +1395,12 @@
       }
 
       updateColumnPickerCheckboxes();
+      updateTaskColumnPickerCheckboxes();
       setViewMode(currentViewMode === 'compact' ? 'table' : currentViewMode);
+      setTaskViewMode(currentTaskViewMode);
       listenData();
     }
 
-    // Single unified Firestore listener for Guests and Tasks (100% permissions-safe)
     function listenData() {
       collectionRef.onSnapshot((snapshot) => {
         families = [];
@@ -1376,7 +1482,6 @@
       return false;
     }
 
-    // Default Categories & Task Categories are Uniform for all Families
     function getStandardDefaultMetaData() {
       return {
         functions: ['Engagement', 'Haldi Ceremony', 'House Warming / Pooja', 'Main Reception', 'Marriage Ceremony', 'Sangeet / Mehendi'],
@@ -1449,6 +1554,24 @@
       });
 
       renderFilteredHistory();
+    }
+
+    function setTaskViewMode(mode) {
+      currentTaskViewMode = mode;
+      localStorage.setItem('fc_task_view_mode', currentTaskViewMode);
+
+      ['table', 'tiles', 'list'].forEach(m => {
+        const btn = document.getElementById(`btnTaskView${m.charAt(0).toUpperCase() + m.slice(1)}`);
+        if (btn) {
+          if (m === currentTaskViewMode) {
+            btn.className = "px-2.5 py-1 rounded transition text-amber-700 bg-amber-50 font-bold flex items-center gap-1";
+          } else {
+            btn.className = "px-2.5 py-1 rounded transition text-slate-500 hover:text-slate-800 flex items-center gap-1";
+          }
+        }
+      });
+
+      renderTasksList();
     }
 
     function openMetaManager() {
@@ -1546,7 +1669,7 @@
             </button>
             <button type="button" onclick="deleteFunction('${fn}', ${count})" class="px-2 py-0.5 text-[11px] font-bold rounded transition ${
               count > 0 ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200'
-            }" title="${count > 0 ? 'Cannot delete: entries already exist' : 'Delete Function'}">
+            }" title="${count > 0 ? 'Cannot delete: records already exist' : 'Delete Function'}">
               <i class="fa-solid fa-trash"></i>
             </button>
           </div>
@@ -1647,7 +1770,7 @@
       saveCodeMetaData(meta);
 
       const batch = db.batch();
-      const target = getVisibleFamilies().filter(f => (f.eventFunction || 'Main Reception').toLowerCase() === oldFn.toLowerCase());
+      const target = families.filter(f => f.isTask !== true && (f.eventFunction || 'Main Reception').toLowerCase() === oldFn.toLowerCase());
       target.forEach(item => {
         batch.update(collectionRef.doc(item.id), {
           eventFunction: trimmed,
@@ -1655,7 +1778,7 @@
         });
       });
 
-      const targetTasks = getVisibleTasks().filter(t => (t.eventFunction || 'Main Reception').toLowerCase() === oldFn.toLowerCase());
+      const targetTasks = tasks.filter(t => t.isTask === true && (t.eventFunction || 'Main Reception').toLowerCase() === oldFn.toLowerCase());
       targetTasks.forEach(t => {
         batch.update(collectionRef.doc(t.id), {
           eventFunction: trimmed,
@@ -1664,6 +1787,7 @@
       });
 
       await batch.commit();
+      renderMetaManagerLists();
     }
 
     function deleteFunction(fn, count) {
@@ -1674,6 +1798,7 @@
       const meta = getCodeMetaData();
       meta.functions = (meta.functions || []).filter(f => f.toLowerCase() !== fn.toLowerCase());
       saveCodeMetaData(meta);
+      renderMetaManagerLists();
     }
 
     async function modifyCategory(oldCat) {
@@ -1688,7 +1813,7 @@
       saveCodeMetaData(meta);
 
       const batch = db.batch();
-      const target = getVisibleFamilies().filter(f => canonicalCategory(f.side).toLowerCase() === oldCat.toLowerCase());
+      const target = families.filter(f => f.isTask !== true && canonicalCategory(f.side).toLowerCase() === oldCat.toLowerCase());
       target.forEach(item => {
         batch.update(collectionRef.doc(item.id), {
           side: trimmedNew,
@@ -1696,6 +1821,7 @@
         });
       });
       await batch.commit();
+      renderMetaManagerLists();
     }
 
     function deleteCategory(cat, count) {
@@ -1706,6 +1832,7 @@
       const meta = getCodeMetaData();
       meta.categories = (meta.categories || []).filter(c => c.toLowerCase() !== cat.toLowerCase());
       saveCodeMetaData(meta);
+      renderMetaManagerLists();
     }
 
     async function modifyTaskCategory(oldTc) {
@@ -1719,7 +1846,7 @@
       saveCodeMetaData(meta);
 
       const batch = db.batch();
-      const target = getVisibleTasks().filter(t => (t.category || '').toLowerCase() === oldTc.toLowerCase());
+      const target = tasks.filter(t => t.isTask === true && (t.category || '').toLowerCase() === oldTc.toLowerCase());
       target.forEach(item => {
         batch.update(collectionRef.doc(item.id), {
           category: trimmedNew,
@@ -1727,6 +1854,7 @@
         });
       });
       await batch.commit();
+      renderMetaManagerLists();
     }
 
     function deleteTaskCategory(tc, count) {
@@ -1737,6 +1865,7 @@
       const meta = getCodeMetaData();
       meta.taskCategories = (meta.taskCategories || []).filter(c => c.toLowerCase() !== tc.toLowerCase());
       saveCodeMetaData(meta);
+      renderMetaManagerLists();
     }
 
     async function modifyRelation(oldRel) {
@@ -1750,7 +1879,7 @@
       saveCodeMetaData(meta);
 
       const batch = db.batch();
-      const target = getVisibleFamilies().filter(f => (f.relation || '').trim().toLowerCase() === oldRel.toLowerCase());
+      const target = families.filter(f => f.isTask !== true && (f.relation || '').trim().toLowerCase() === oldRel.toLowerCase());
       target.forEach(item => {
         batch.update(collectionRef.doc(item.id), {
           relation: trimmedNew,
@@ -1758,6 +1887,7 @@
         });
       });
       await batch.commit();
+      renderMetaManagerLists();
     }
 
     function deleteRelation(rel, count) {
@@ -1768,6 +1898,7 @@
       const meta = getCodeMetaData();
       meta.relations = (meta.relations || []).filter(r => r.toLowerCase() !== rel.toLowerCase());
       saveCodeMetaData(meta);
+      renderMetaManagerLists();
     }
 
     function checkCustomFunc(val) {
@@ -1804,6 +1935,24 @@
       const selectWrapper = document.getElementById('groupSelectWrapper');
       selectWrapper.classList.remove('hidden');
       document.getElementById('customGroupInput').value = '';
+    }
+
+    function checkCustomTaskCat(val) {
+      if (val === '__custom_taskcat__') {
+        document.getElementById('taskCatSelectWrapper').classList.add('hidden');
+        const wrapper = document.getElementById('customTaskCatWrapper');
+        wrapper.classList.remove('hidden');
+        const input = document.getElementById('customTaskCatInput');
+        input.value = '';
+        input.focus();
+      }
+    }
+
+    function cancelCustomTaskCat() {
+      document.getElementById('customTaskCatWrapper').classList.add('hidden');
+      const selectWrapper = document.getElementById('taskCatSelectWrapper');
+      selectWrapper.classList.remove('hidden');
+      document.getElementById('customTaskCatInput').value = '';
     }
 
     function checkCustomRelation(val) {
@@ -1923,6 +2072,10 @@
         opt.textContent = tc;
         taskCatSelect.appendChild(opt);
       });
+      const customTaskCatOpt = document.createElement('option');
+      customTaskCatOpt.value = '__custom_taskcat__';
+      customTaskCatOpt.textContent = '+ Add Custom Task Category...';
+      taskCatSelect.appendChild(customTaskCatOpt);
       if (scopedTaskCategories.has(curTaskCatVal)) taskCatSelect.value = curTaskCatVal;
 
       const taskCatFilter = document.getElementById('taskCatFilter');
@@ -2114,7 +2267,24 @@
       try {
         const taskDocId = document.getElementById('taskDocId').value;
         const func = document.getElementById('taskFuncSelect').value || "Main Reception";
-        const cat = document.getElementById('taskCategorySelect').value || "🍽️ Catering & Food Menu";
+
+        const customTaskCatWrapper = document.getElementById('customTaskCatWrapper');
+        let cat = '';
+        if (!customTaskCatWrapper.classList.contains('hidden')) {
+          cat = document.getElementById('customTaskCatInput').value.trim();
+          if (cat) {
+            const meta = getCodeMetaData();
+            if (!meta.taskCategories) meta.taskCategories = [];
+            if (!meta.taskCategories.includes(cat)) {
+              meta.taskCategories.push(cat);
+              saveCodeMetaData(meta);
+            }
+          }
+        } else {
+          cat = document.getElementById('taskCategorySelect').value;
+        }
+        if (!cat) cat = "🍽️ Catering & Food Menu";
+
         const title = document.getElementById('taskTitle').value.trim();
         const dueDate = document.getElementById('taskDueDate').value || '';
         const assignee = document.getElementById('taskAssignee').value.trim();
@@ -2179,7 +2349,26 @@
 
       document.getElementById('taskDocId').value = item.id;
       document.getElementById('taskFuncSelect').value = item.eventFunction || "Main Reception";
-      document.getElementById('taskCategorySelect').value = item.category || "🍽️ Catering & Food Menu";
+      
+      const taskCatSelect = document.getElementById('taskCategorySelect');
+      const targetCat = item.category || "🍽️ Catering & Food Menu";
+      let catFound = false;
+      for (let opt of taskCatSelect.options) {
+        if (opt.value.toLowerCase() === targetCat.toLowerCase()) {
+          opt.selected = true;
+          catFound = true;
+          break;
+        }
+      }
+      if (!catFound) {
+        const newOpt = document.createElement('option');
+        newOpt.value = targetCat;
+        newOpt.textContent = targetCat;
+        taskCatSelect.insertBefore(newOpt, taskCatSelect.lastElementChild);
+        taskCatSelect.value = targetCat;
+      }
+      cancelCustomTaskCat();
+
       document.getElementById('taskTitle').value = item.title || "";
       document.getElementById('taskDueDate').value = item.dueDate || "";
       document.getElementById('taskAssignee').value = item.assignee || "";
@@ -2212,9 +2401,9 @@
       return result;
     }
 
-    // Dynamic Overall & Category-Wise Progress Matrix Rendering
+    // Dynamic Overall & Category-Wise Progress Matrix Rendering (Alphabetically Sorted)
     function renderTasksList() {
-      const container = document.getElementById('tasksListContainer');
+      const displayContainer = document.getElementById('tasksDisplayContainer');
       const emptyMsg = document.getElementById('tasksEmptyMessage');
       const catProgressMatrix = document.getElementById('categoryProgressMatrix');
       const catFilter = document.getElementById('taskCatFilter').value;
@@ -2243,7 +2432,6 @@
         if (t.paid) totalPaid += parseFloat(t.paid) || 0;
       });
 
-      // Overall Progress Calculation
       const totalTasksCount = visible.length;
       const progressPercent = totalTasksCount > 0 ? Math.round((dCount / totalTasksCount) * 100) : 0;
 
@@ -2254,7 +2442,7 @@
       document.getElementById('taskStatPaid').textContent = totalPaid.toLocaleString('en-IN');
       document.getElementById('tabCountTasks').textContent = visible.length;
 
-      // Item-Wise Category Progress Matrix Generation with Visual Percentage Bars
+      // Category / Item-wise Progress Matrix (Alphabetically Sorted)
       catProgressMatrix.innerHTML = '';
       const catKeys = Object.keys(catStats).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
 
@@ -2283,7 +2471,7 @@
         });
       }
 
-      // Filtered Tasks Rendering
+      // Filtered Tasks Rendering (Alphabetically Sorted by Title)
       const filtered = visible.filter(t => {
         const matchesCat = (catFilter === 'All') || (t.category === catFilter);
         const matchesStatus = (statusFilter === 'All') || (t.status === statusFilter);
@@ -2296,403 +2484,41 @@
         return matchesCat && matchesStatus && matchesSearch;
       });
 
+      filtered.sort((a, b) => (a.title || '').localeCompare(b.title || '', undefined, { sensitivity: 'base' }));
+
       document.getElementById('tasksBadgeCount').textContent = `${filtered.length} Tasks`;
 
       if (filtered.length === 0) {
-        container.innerHTML = '';
+        displayContainer.innerHTML = '';
         emptyMsg.classList.remove('hidden');
         return;
       } else {
         emptyMsg.classList.add('hidden');
       }
 
-      let html = '';
-      filtered.forEach(item => {
-        let statusBadge = '';
-        let rowBg = 'bg-white border-slate-200';
-
-        if (item.status === 'Completed') {
-          statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300">✅ Completed</span>';
-          rowBg = 'bg-emerald-50/30 border-emerald-200';
-        } else if (item.status === 'In Progress') {
-          statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-sky-100 text-sky-800 border border-sky-300">🔄 In Progress</span>';
-          rowBg = 'bg-sky-50/30 border-sky-200';
-        } else {
-          statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-900 border border-amber-300">⏳ Pending</span>';
-          rowBg = 'bg-white border-slate-200';
-        }
-
-        const balance = (parseFloat(item.budget) || 0) - (parseFloat(item.paid) || 0);
-
-        html += `
-          <div class="p-3 rounded-xl border ${rowBg} shadow-2xs hover:shadow-xs transition space-y-2">
-            <div class="flex items-start justify-between gap-2">
-              <div class="space-y-1">
-                <div class="flex items-center gap-1.5 flex-wrap">
-                  <span class="text-[10px] font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">🎉 ${item.eventFunction || 'Main Reception'}</span>
-                  <span class="text-[10px] font-bold text-amber-900 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">${item.category}</span>
-                  ${statusBadge}
-                  ${item.dueDate ? `<span class="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded flex items-center gap-1"><i class="fa-regular fa-calendar text-[9px]"></i> ${item.dueDate}</span>` : ''}
-                </div>
-                <h4 class="text-xs sm:text-sm font-bold text-slate-900 ${item.status === 'Completed' ? 'line-through text-slate-400' : ''}">${item.title}</h4>
-              </div>
-
-              <!-- Quick Status Stepper Button & Actions -->
-              <div class="flex items-center gap-1 shrink-0">
-                <button onclick="toggleTaskStatus('${item.id}', '${item.status || 'Pending'}')" class="px-2 py-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 rounded-lg text-[10px] font-bold transition shadow-2xs" title="Click to cycle status: Pending -> In Progress -> Completed">
-                  Change Status
-                </button>
-                <button onclick="editTask('${item.id}')" class="p-1.5 text-slate-400 hover:text-indigo-600 transition"><i class="fa-solid fa-pen text-xs"></i></button>
-                <button onclick="deleteTask('${item.id}')" class="p-1.5 text-slate-400 hover:text-rose-600 transition"><i class="fa-solid fa-trash text-xs"></i></button>
-              </div>
-            </div>
-
-            <!-- Task Meta Details: Assigned, Budget, Advance Paid & Vendor -->
-            <div class="bg-slate-50/80 p-2 rounded-lg border border-slate-200 grid grid-cols-2 sm:grid-cols-4 gap-1.5 text-[11px]">
-              <div>
-                <span class="text-slate-400 text-[10px] font-bold uppercase block">Responsible:</span>
-                <span class="font-semibold text-slate-800">${item.assignee || '—'}</span>
-              </div>
-              <div>
-                <span class="text-slate-400 text-[10px] font-bold uppercase block">Est. Budget:</span>
-                <span class="font-black text-slate-900">${item.budget ? '₹' + Number(item.budget).toLocaleString('en-IN') : '—'}</span>
-              </div>
-              <div>
-                <span class="text-slate-400 text-[10px] font-bold uppercase block">Paid / Balance:</span>
-                <span class="font-bold text-emerald-700">${item.paid ? '₹' + Number(item.paid).toLocaleString('en-IN') : '₹0'}</span>
-                ${item.budget && item.paid ? `<span class="text-[10px] text-rose-600 font-semibold block">(Bal: ₹${Number(balance).toLocaleString('en-IN')})</span>` : ''}
-              </div>
-              <div>
-                <span class="text-slate-400 text-[10px] font-bold uppercase block">Vendor / Contact:</span>
-                <span class="font-semibold text-slate-700 truncate block">${item.vendor || '—'}</span>
-              </div>
-            </div>
-
-            ${item.notes ? `
-              <div class="text-[11px] bg-amber-50/40 p-2 rounded-lg border border-amber-100 text-slate-700">
-                <span class="font-bold text-amber-900 block text-[10px] uppercase">Notes & Menu Items:</span>
-                <p class="whitespace-pre-wrap mt-0.5 text-slate-600 leading-relaxed">${item.notes}</p>
-              </div>
-            ` : ''}
-          </div>
-        `;
-      });
-
-      container.innerHTML = html;
-    }
-
-    async function updateInvitation(id, val) {
-      const item = families.find(f => f.id === id);
-      const totalFamily = (item.gents || 0) + (item.ladies || 0) + (item.kids || 0);
-      
-      let updatePayload = {
-        invitation: val,
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      };
-
-      if ((val === 'Invited' || val === 'Confirmed') && (!item.comingCount || item.comingCount === 0)) {
-        updatePayload.comingCount = totalFamily;
-      } else if (val === 'Not Invited') {
-        updatePayload.comingCount = 0;
-      }
-
-      await collectionRef.doc(id).update(updatePayload);
-    }
-
-    async function adjustRowComingCount(id, delta) {
-      const item = families.find(f => f.id === id);
-      if (!item) return;
-
-      const totalFamily = (item.gents || 0) + (item.ladies || 0) + (item.kids || 0);
-      let current = (item.comingCount !== undefined) ? parseInt(item.comingCount) : totalFamily;
-      let updated = Math.max(0, Math.min(totalFamily, current + delta));
-
-      await collectionRef.doc(id).update({
-        comingCount: updated,
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
-    }
-
-    function editEntry(id) {
-      const item = families.find(f => f.id === id);
-      if (!item) return;
-
-      document.getElementById('docId').value = item.id;
-      document.getElementById('familyName').value = item.name || '';
-      document.getElementById('familyPlace').value = item.place || '';
-      document.getElementById('familyPhone').value = item.phone || '';
-      document.getElementById('gentsCount').value = (item.gents !== undefined) ? item.gents : 1;
-      document.getElementById('ladiesCount').value = (item.ladies !== undefined) ? item.ladies : 1;
-      document.getElementById('kidsCount').value = (item.kids !== undefined) ? item.kids : 0;
-
-      document.getElementById('giftAmount').value = (item.giftAmount && item.giftAmount > 0) ? item.giftAmount : '';
-      document.getElementById('giftDescription').value = (item.giftDescription && item.giftDescription !== '0') ? item.giftDescription : '';
-
-      const formFuncSelect = document.getElementById('funcSelect');
-      const targetFn = item.eventFunction || 'Main Reception';
-      let fnFound = false;
-      for (let opt of formFuncSelect.options) {
-        if (opt.value.toLowerCase() === targetFn.toLowerCase()) {
-          opt.selected = true;
-          fnFound = true;
-          break;
-        }
-      }
-      if (!fnFound) {
-        const newOpt = document.createElement('option');
-        newOpt.value = targetFn;
-        newOpt.textContent = targetFn;
-        formFuncSelect.insertBefore(newOpt, formFuncSelect.lastElementChild);
-        formFuncSelect.value = targetFn;
-      }
-      cancelCustomFunc();
-
-      const rawSide = item.side ? item.side.trim() : '';
-      const sideVal = canonicalCategory(rawSide);
-      const groupSelect = document.getElementById('groupSelect');
-      let sideFoundIndex = -1;
-      for (let i = 0; i < groupSelect.options.length; i++) {
-        const optVal = groupSelect.options[i].value;
-        if (optVal !== '__custom_group__' && (
-            optVal.toLowerCase() === sideVal.toLowerCase() ||
-            optVal.toLowerCase() === rawSide.toLowerCase()
-        )) {
-          sideFoundIndex = i;
-          break;
-        }
-      }
-      if (sideFoundIndex !== -1) {
-        groupSelect.selectedIndex = sideFoundIndex;
-      } else if (sideVal) {
-        const newOpt = document.createElement('option');
-        newOpt.value = sideVal;
-        newOpt.textContent = sideVal;
-        groupSelect.insertBefore(newOpt, groupSelect.lastElementChild);
-        groupSelect.value = sideVal;
-      }
-      cancelCustomGroup();
-
-      const relVal = item.relation ? item.relation.trim() : '';
-      const relSelect = document.getElementById('relationSelect');
-      let relFoundIndex = -1;
-      for (let i = 0; i < relSelect.options.length; i++) {
-        if (relSelect.options[i].value.toLowerCase() === relVal.toLowerCase()) {
-          relFoundIndex = i;
-          break;
-        }
-      }
-      if (relFoundIndex !== -1) {
-        relSelect.selectedIndex = relFoundIndex;
-      } else if (relVal) {
-        const newRelOpt = document.createElement('option');
-        newRelOpt.value = relVal;
-        newRelOpt.textContent = relVal;
-        relSelect.insertBefore(newRelOpt, relSelect.lastElementChild);
-        relSelect.value = relVal;
-      }
-      cancelCustomRelation();
-
-      document.getElementById('modalHeaderTitle').textContent = "Edit Guest Entry & Gifts";
-      document.getElementById('modalHeaderIcon').className = "fa-solid fa-user-pen text-amber-300";
-      document.getElementById('saveBtnText').textContent = "Update Guest Entry";
-      document.getElementById('guestEntryModal').classList.remove('hidden');
-    }
-
-    async function deleteEntry(id) {
-      const item = families.find(f => f.id === id);
-      if (confirm(`Delete ${item ? item.name : 'this entry'}?`)) {
-        await collectionRef.doc(id).delete();
+      if (currentTaskViewMode === 'table') {
+        renderTaskTableView(filtered, displayContainer);
+      } else if (currentTaskViewMode === 'tiles') {
+        renderTaskTilesView(filtered, displayContainer);
+      } else if (currentTaskViewMode === 'list') {
+        renderTaskListView(filtered, displayContainer);
       }
     }
 
-    function resetForm() {
-      document.getElementById('familyForm').reset();
-      document.getElementById('docId').value = '';
-      document.getElementById('gentsCount').value = 1;
-      document.getElementById('ladiesCount').value = 1;
-      document.getElementById('kidsCount').value = 0;
-      document.getElementById('giftAmount').value = '';
-      document.getElementById('giftDescription').value = '';
-      
-      cancelCustomFunc();
-      cancelCustomGroup();
-      cancelCustomRelation();
-    }
-
-    function getVisibleFamilies() {
-      let result = families;
-      if (!isAdmin) {
-        result = result.filter(f => (f.code && f.code.toUpperCase() === loggedCode));
-      }
-      if (selectedTopFunction !== 'All') {
-        result = result.filter(f => (f.eventFunction || 'Main Reception').toLowerCase() === selectedTopFunction.toLowerCase());
-      }
-      return result;
-    }
-
-    function renderDashboard() {
-      const target = getVisibleFamilies();
-      let gCount = 0, lCount = 0, kCount = 0, comingCount = 0;
-      let pendingIndividualCount = 0, invitedIndividualCount = 0, confirmedIndividualCount = 0;
-      let totalCash = 0, totalGifts = 0;
-
-      target.forEach(f => {
-        if (isBinaryGarbage(f.name) || isBinaryGarbage(f.side)) return;
-
-        const g = f.gents || 0;
-        const l = f.ladies || 0;
-        const k = f.kids || 0;
-        const totalFamilyMembers = g + l + k;
-        const coming = parseInt(f.comingCount) || 0;
-
-        gCount += g;
-        lCount += l;
-        kCount += k;
-        comingCount += coming;
-
-        const invStatus = f.invitation || 'Invited';
-        if (invStatus === 'Not Invited') {
-          pendingIndividualCount += totalFamilyMembers;
-        } else if (invStatus === 'Invited') {
-          invitedIndividualCount += totalFamilyMembers;
-        } else if (invStatus === 'Confirmed') {
-          confirmedIndividualCount += totalFamilyMembers;
-        }
-
-        const amt = parseFloat(f.giftAmount);
-        if (!isNaN(amt) && amt > 0) totalCash += amt;
-
-        const desc = (f.giftDescription || '').trim();
-        if (desc.length > 0 && desc !== '0' && desc.toLowerCase() !== 'null' && desc.toLowerCase() !== 'none' && desc.toLowerCase() !== 'nil') {
-          totalGifts++;
-        }
-      });
-
-      const totalHeadcount = gCount + lCount + kCount;
-
-      document.getElementById('statPending').textContent = pendingIndividualCount;
-      document.getElementById('statInvited').textContent = invitedIndividualCount;
-      document.getElementById('statConfirmed').textContent = confirmedIndividualCount;
-      document.getElementById('statTotalCount').textContent = totalHeadcount;
-
-      document.getElementById('statGents').textContent = gCount;
-      document.getElementById('statLadies').textContent = lCount;
-      document.getElementById('statKids').textContent = kCount;
-      
-      document.getElementById('statTotalCash').textContent = totalCash.toLocaleString('en-IN');
-      document.getElementById('statGiftsCount').textContent = totalGifts;
-
-      document.getElementById('historyBadgeCount').textContent = `${target.length} Entries`;
-      document.getElementById('tabCountGuests').textContent = target.length;
-    }
-
-    function getGroupBadge(group) {
-      const canonical = canonicalCategory(group);
-      if (!canonical || isBinaryGarbage(canonical)) return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-100 text-slate-700">General</span>`;
-      if (canonical === 'Paternal Side') return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-100 text-blue-800">Paternal Side</span>`;
-      if (canonical === 'Maternal Side') return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-purple-100 text-purple-800">Maternal Side</span>`;
-      if (canonical.includes('Office')) return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-cyan-100 text-cyan-800">Office</span>`;
-      if (canonical.includes('School')) return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-100 text-emerald-800">School</span>`;
-      if (canonical.includes('College')) return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-800">College</span>`;
-      if (canonical.includes('Friend')) return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-teal-100 text-teal-800">Friends</span>`;
-      return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">${canonical}</span>`;
-    }
-
-    function renderFilteredHistory() {
-      const displayContainer = document.getElementById('viewDisplayContainer');
-      const search = document.getElementById('searchInput').value.toLowerCase();
-      
-      const codeFilter = isAdmin ? document.getElementById('histCodeFilter').value : 'All';
-      const groupFilter = document.getElementById('histGroupFilter').value;
-      const relationFilter = document.getElementById('histRelationFilter').value;
-      const rsvpFilter = document.getElementById('histRsvpFilter').value;
-
-      const target = getVisibleFamilies();
-
-      const filtered = target.filter(f => {
-        let matchesCode = (codeFilter === 'All') || (f.code && f.code.toUpperCase() === codeFilter);
-        let matchesGroup = (groupFilter === 'All');
-        if (!matchesGroup) {
-          matchesGroup = (canonicalCategory(f.side).toLowerCase() === groupFilter.toLowerCase()) || (f.side === groupFilter);
-        }
-
-        let matchesRelation = (relationFilter === 'All');
-        if (!matchesRelation) {
-          matchesRelation = ((f.relation || '').trim().toLowerCase() === relationFilter.toLowerCase());
-        }
-
-        let matchesRsvp = true;
-        if (rsvpFilter === 'Confirmed') matchesRsvp = (f.invitation === 'Confirmed');
-        else if (rsvpFilter === 'Invited') matchesRsvp = (f.invitation === 'Invited');
-        else if (rsvpFilter === 'Not Invited') matchesRsvp = (f.invitation === 'Not Invited');
-
-        const matchesSearch = (f.name && f.name.toLowerCase().includes(search)) || 
-                              (f.code && f.code.toLowerCase().includes(search)) || 
-                              (f.eventFunction && f.eventFunction.toLowerCase().includes(search)) || 
-                              (f.side && f.side.toLowerCase().includes(search)) || 
-                              (f.relation && f.relation.toLowerCase().includes(search)) || 
-                              (f.place && f.place.toLowerCase().includes(search)) || 
-                              (f.phone && f.phone.includes(search)) || 
-                              (f.giftDescription && f.giftDescription.toLowerCase().includes(search));
-
-        return matchesCode && matchesGroup && matchesRelation && matchesRsvp && matchesSearch;
-      });
-
-      filtered.sort((a, b) => (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base' }));
-
-      let filtG = 0, filtL = 0, filtK = 0;
-      filtered.forEach(item => {
-        if (isBinaryGarbage(item.name) || isBinaryGarbage(item.side)) return;
-        filtG += item.gents || 0;
-        filtL += item.ladies || 0;
-        filtK += item.kids || 0;
-      });
-
-      document.getElementById('filteredResultsLabel').textContent = `Showing ${filtered.length} of ${target.length} entries`;
-      document.getElementById('filtGents').textContent = filtG;
-      document.getElementById('filtLadies').textContent = filtL;
-      document.getElementById('filtKids').textContent = filtK;
-      document.getElementById('filtTotalHead').textContent = filtG + filtL + filtK;
-
-      if (filtered.length === 0) {
-        document.getElementById('emptyMessage').classList.remove('hidden');
-        displayContainer.innerHTML = '';
-        return;
-      } else {
-        document.getElementById('emptyMessage').classList.add('hidden');
-      }
-
-      if (currentViewMode === 'table') {
-        renderTableView(filtered, displayContainer);
-      } else if (currentViewMode === 'tiles') {
-        renderTilesView(filtered, displayContainer);
-      } else if (currentViewMode === 'list') {
-        renderListView(filtered, displayContainer);
-      }
-    }
-
-    function renderTableView(items, container) {
-      const codeTh = isAdmin ? `<th class="py-2 px-2.5 whitespace-nowrap">Code</th>` : '';
-
+    function renderTaskTableView(items, container) {
       let html = `
         <div class="w-full overflow-x-auto border border-slate-200 rounded-lg">
           <table class="w-full text-left table-auto border-collapse text-xs">
             <thead>
               <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase text-[10px]">
-                ${codeTh}
-                ${colSettings.func ? `<th class="py-2 px-2.5 whitespace-nowrap">Function</th>` : ''}
-                ${colSettings.cat ? `<th class="py-2 px-2.5 whitespace-nowrap">Category</th>` : ''}
-                ${colSettings.rel ? `<th class="py-2 px-2.5 whitespace-nowrap">Relation</th>` : ''}
-                ${colSettings.guest ? `<th class="py-2 px-3 whitespace-nowrap">Guest & Place</th>` : ''}
-                ${colSettings.glk ? `
-                  <th class="py-2 px-1 text-center text-blue-700 whitespace-nowrap">G</th>
-                  <th class="py-2 px-1 text-center text-pink-700 whitespace-nowrap">L</th>
-                  <th class="py-2 px-1 text-center text-amber-700 whitespace-nowrap">K</th>
-                ` : ''}
-                ${colSettings.total ? `<th class="py-2 px-2 text-center font-bold text-slate-500 whitespace-nowrap">Total</th>` : ''}
-                ${colSettings.coming ? `<th class="py-2 px-2 text-center font-black bg-emerald-50 text-emerald-950 whitespace-nowrap">Attending / Total</th>` : ''}
-                ${colSettings.inv ? `<th class="py-2 px-2.5 text-center bg-indigo-50/60 text-indigo-900 font-bold whitespace-nowrap">Invitation</th>` : ''}
-                ${colSettings.gifts ? `<th class="py-2 px-2.5 text-center bg-amber-50 text-amber-900 font-bold whitespace-nowrap">Gifts / Cash</th>` : ''}
+                ${taskColSettings.func ? `<th class="py-2 px-2.5 whitespace-nowrap">Function</th>` : ''}
+                ${taskColSettings.cat ? `<th class="py-2 px-2.5 whitespace-nowrap">Category</th>` : ''}
+                ${taskColSettings.title ? `<th class="py-2 px-3 whitespace-nowrap">Task Item / Description</th>` : ''}
+                ${taskColSettings.due ? `<th class="py-2 px-2 whitespace-nowrap text-center">Due Date</th>` : ''}
+                ${taskColSettings.assignee ? `<th class="py-2 px-2 whitespace-nowrap">Responsible</th>` : ''}
+                ${taskColSettings.budget ? `<th class="py-2 px-2 text-right whitespace-nowrap">Budget / Paid</th>` : ''}
+                ${taskColSettings.status ? `<th class="py-2 px-2.5 text-center whitespace-nowrap">Status</th>` : ''}
+                ${taskColSettings.vendor ? `<th class="py-2 px-2.5 whitespace-nowrap">Vendor</th>` : ''}
                 <th class="py-2 px-2.5 text-center whitespace-nowrap w-10">Actions</th>
               </tr>
             </thead>
@@ -2700,68 +2526,28 @@
       `;
 
       items.forEach(item => {
-        const total = (item.gents || 0) + (item.ladies || 0) + (item.kids || 0);
-        const status = item.invitation || 'Invited';
-        const comingCount = (item.comingCount !== undefined) ? item.comingCount : total;
-        const isCorrupt = isBinaryGarbage(item.name) || isBinaryGarbage(item.side);
+        let statusBadge = '';
+        if (item.status === 'Completed') {
+          statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300">✅ Completed</span>';
+        } else if (item.status === 'In Progress') {
+          statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-sky-100 text-sky-800 border border-sky-300">🔄 In Progress</span>';
+        } else {
+          statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-900 border border-amber-300">⏳ Pending</span>';
+        }
 
-        let statusStyle = 'bg-slate-50 text-slate-600 border-slate-300';
-        if (status === 'Confirmed') statusStyle = 'bg-amber-50 text-amber-800 border-amber-300 font-bold';
-        else if (status === 'Invited') statusStyle = 'bg-emerald-50 text-emerald-800 border-emerald-300';
-
-        const inviteSelect = `
-          <select onchange="updateInvitation('${item.id}', this.value)" class="text-[10px] font-semibold px-1.5 py-0.5 rounded border focus:outline-none ${statusStyle}">
-            <option value="Not Invited" ${status === 'Not Invited' ? 'selected' : ''}>⏳ Pending</option>
-            <option value="Invited" ${status === 'Invited' ? 'selected' : ''}>📩 Invited</option>
-            <option value="Confirmed" ${status === 'Confirmed' ? 'selected' : ''}>✅ Confirmed</option>
-          </select>
-        `;
-
-        const attendingStepper = `
-          <div class="flex items-center justify-center gap-1">
-            <button onclick="adjustRowComingCount('${item.id}', -1)" class="w-5 h-5 rounded bg-emerald-100 hover:bg-emerald-200 text-emerald-800 flex items-center justify-center text-[9px] font-black transition">
-              <i class="fa-solid fa-chevron-left text-[8px]"></i>
-            </button>
-            <div class="px-1.5 py-0.5 rounded border ${comingCount > 0 ? 'bg-emerald-500 text-white font-black border-emerald-600' : 'bg-slate-100 text-slate-400 font-bold border-slate-200'} text-xs">
-              ${comingCount}
-            </div>
-            <button onclick="adjustRowComingCount('${item.id}', 1)" class="w-5 h-5 rounded bg-emerald-100 hover:bg-emerald-200 text-emerald-800 flex items-center justify-center text-[9px] font-black transition">
-              <i class="fa-solid fa-chevron-right text-[8px]"></i>
-            </button>
-            <span class="text-[11px] font-bold text-slate-400">/ ${total}</span>
-          </div>
-        `;
-
-        const hasValidCash = (item.giftAmount && parseFloat(item.giftAmount) > 0);
-        const rawDesc = (item.giftDescription || '').trim();
-        const hasValidGift = (rawDesc.length > 0 && rawDesc !== '0' && rawDesc.toLowerCase() !== 'null' && rawDesc.toLowerCase() !== 'none');
-
-        const giftDisplay = `
-          <div class="text-[10px] text-center whitespace-nowrap">
-            ${hasValidCash ? `<span class="font-black text-emerald-800 block">₹${Number(item.giftAmount).toLocaleString('en-IN')}</span>` : ''}
-            ${hasValidGift ? `<span class="text-slate-500 italic block truncate max-w-[130px]">${item.giftDescription}</span>` : (!hasValidCash ? '<span class="text-slate-300">—</span>' : '')}
-          </div>
-        `;
-
-        const codeCell = isAdmin ? `
-          <td class="py-1.5 px-2.5 whitespace-nowrap">
-            <span class="font-mono font-bold text-indigo-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 text-[10px]">
-              ${item.code || '—'}
-            </span>
-          </td>
-        ` : '';
+        const balance = (parseFloat(item.budget) || 0) - (parseFloat(item.paid) || 0);
 
         const actionMenuCell = `
           <td class="py-1.5 px-2 text-center whitespace-nowrap relative">
             <div class="relative inline-block text-left">
-              <button onclick="toggleRowActionMenu(event, '${item.id}')" class="w-7 h-7 rounded-lg hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition">
+              <button onclick="toggleRowActionMenu(event, 'task_${item.id}')" class="w-7 h-7 rounded-lg hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition">
                 <i class="fa-solid fa-ellipsis-vertical text-xs"></i>
               </button>
-              <div id="rowActionMenu_${item.id}" class="row-action-menu hidden absolute right-0 mt-1 w-28 bg-white border border-slate-200 rounded-xl shadow-xl py-1 z-30 text-left">
-                <button onclick="editEntry('${item.id}')" class="w-full px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 flex items-center gap-2 transition">
+              <div id="rowActionMenu_task_${item.id}" class="row-action-menu hidden absolute right-0 mt-1 w-28 bg-white border border-slate-200 rounded-xl shadow-xl py-1 z-30 text-left">
+                <button onclick="editTask('${item.id}')" class="w-full px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 flex items-center gap-2 transition">
                   <i class="fa-solid fa-pen text-[10px] w-3"></i> Edit
                 </button>
-                <button onclick="deleteEntry('${item.id}')" class="w-full px-3 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 flex items-center gap-2 transition">
+                <button onclick="deleteTask('${item.id}')" class="w-full px-3 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 flex items-center gap-2 transition">
                   <i class="fa-solid fa-trash text-[10px] w-3"></i> Delete
                 </button>
               </div>
@@ -2770,29 +2556,25 @@
         `;
 
         html += `
-          <tr class="hover:bg-slate-50 transition ${isCorrupt ? 'bg-rose-50/50' : ''}">
-            ${codeCell}
-            ${colSettings.func ? `<td class="py-1.5 px-2.5 font-bold text-indigo-800 text-[11px] whitespace-nowrap">${item.eventFunction || 'Main Reception'}</td>` : ''}
-            ${colSettings.cat ? `<td class="py-1.5 px-2.5 whitespace-nowrap">${getGroupBadge(item.side)}</td>` : ''}
-            ${colSettings.rel ? `<td class="py-1.5 px-2.5 font-medium text-slate-700 text-xs whitespace-nowrap">${item.relation || '—'}</td>` : ''}
-            ${colSettings.guest ? `
-              <td class="py-1.5 px-3">
-                <div class="font-semibold text-slate-800 text-xs leading-tight whitespace-nowrap">${item.name}</div>
-                <div class="text-[10px] text-slate-400 flex items-center gap-2 mt-0.5 whitespace-nowrap">
-                  ${item.place ? `<span><i class="fa-solid fa-location-dot mr-0.5"></i>${item.place}</span>` : ''}
-                  ${item.phone ? `<span><i class="fa-solid fa-phone mr-0.5"></i>${item.phone}</span>` : ''}
-                </div>
+          <tr class="hover:bg-slate-50 transition">
+            ${taskColSettings.func ? `<td class="py-2 px-2.5 font-bold text-indigo-800 text-[11px] whitespace-nowrap">${item.eventFunction || 'Main Reception'}</td>` : ''}
+            ${taskColSettings.cat ? `<td class="py-2 px-2.5 whitespace-nowrap font-bold text-amber-900">${item.category}</td>` : ''}
+            ${taskColSettings.title ? `
+              <td class="py-2 px-3">
+                <div class="font-semibold text-slate-900 text-xs leading-tight ${item.status === 'Completed' ? 'line-through text-slate-400' : ''}">${item.title}</div>
+                ${item.notes ? `<div class="text-[10px] text-slate-500 italic truncate max-w-[200px] mt-0.5">${item.notes}</div>` : ''}
               </td>
             ` : ''}
-            ${colSettings.glk ? `
-              <td class="py-1.5 px-1 text-center text-blue-700 font-medium whitespace-nowrap">${item.gents || 0}</td>
-              <td class="py-1.5 px-1 text-center text-pink-700 font-medium whitespace-nowrap">${item.ladies || 0}</td>
-              <td class="py-1.5 px-1 text-center text-amber-700 font-bold whitespace-nowrap">${item.kids || 0}</td>
+            ${taskColSettings.due ? `<td class="py-2 px-2 text-center text-slate-600 whitespace-nowrap font-medium">${item.dueDate || '—'}</td>` : ''}
+            ${taskColSettings.assignee ? `<td class="py-2 px-2 text-slate-700 whitespace-nowrap font-semibold">${item.assignee || '—'}</td>` : ''}
+            ${taskColSettings.budget ? `
+              <td class="py-2 px-2 text-right whitespace-nowrap">
+                <span class="font-black text-slate-900 block">${item.budget ? '₹' + Number(item.budget).toLocaleString('en-IN') : '—'}</span>
+                <span class="text-[10px] text-emerald-700 block">Paid: ₹${Number(item.paid || 0).toLocaleString('en-IN')}</span>
+              </td>
             ` : ''}
-            ${colSettings.total ? `<td class="py-1.5 px-2 text-center font-bold text-slate-600 whitespace-nowrap">${total}</td>` : ''}
-            ${colSettings.coming ? `<td class="py-1.5 px-2 text-center bg-emerald-50/40 whitespace-nowrap">${attendingStepper}</td>` : ''}
-            ${colSettings.inv ? `<td class="py-1.5 px-2.5 text-center bg-indigo-50/20 whitespace-nowrap">${inviteSelect}</td>` : ''}
-            ${colSettings.gifts ? `<td class="py-1.5 px-2.5 text-center bg-amber-50/40 whitespace-nowrap">${giftDisplay}</td>` : ''}
+            ${taskColSettings.status ? `<td class="py-2 px-2.5 text-center whitespace-nowrap"><button onclick="toggleTaskStatus('${item.id}', '${item.status || 'Pending'}')" title="Click to cycle status">${statusBadge}</button></td>` : ''}
+            ${taskColSettings.vendor ? `<td class="py-2 px-2.5 text-slate-700 whitespace-nowrap truncate max-w-[120px]">${item.vendor || '—'}</td>` : ''}
             ${actionMenuCell}
           </tr>
         `;
@@ -2802,21 +2584,20 @@
       container.innerHTML = html;
     }
 
-    function renderTilesView(items, container) {
+    function renderTaskTilesView(items, container) {
       let html = `<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">`;
 
       items.forEach(item => {
-        const total = (item.gents || 0) + (item.ladies || 0) + (item.kids || 0);
-        const status = item.invitation || 'Invited';
-        const comingCount = (item.comingCount !== undefined) ? item.comingCount : total;
+        let statusBadge = '';
+        if (item.status === 'Completed') {
+          statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300">✅ Completed</span>';
+        } else if (item.status === 'In Progress') {
+          statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-sky-100 text-sky-800 border border-sky-300">🔄 In Progress</span>';
+        } else {
+          statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-900 border border-amber-300">⏳ Pending</span>';
+        }
 
-        let statusStyle = 'bg-slate-50 text-slate-600 border-slate-300';
-        if (status === 'Confirmed') statusStyle = 'bg-amber-50 text-amber-800 border-amber-300 font-bold';
-        else if (status === 'Invited') statusStyle = 'bg-emerald-50 text-emerald-800 border-emerald-300';
-
-        const hasValidCash = (item.giftAmount && parseFloat(item.giftAmount) > 0);
-        const rawDesc = (item.giftDescription || '').trim();
-        const hasValidGift = (rawDesc.length > 0 && rawDesc !== '0' && rawDesc.toLowerCase() !== 'null' && rawDesc.toLowerCase() !== 'none');
+        const balance = (parseFloat(item.budget) || 0) - (parseFloat(item.paid) || 0);
 
         html += `
           <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between space-y-2.5 hover:shadow transition">
@@ -2825,57 +2606,43 @@
                 <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100 inline-block mb-1">
                   🎉 ${item.eventFunction || 'Main Reception'}
                 </span>
-                <div class="flex items-center gap-1.5">
-                  ${getGroupBadge(item.side)}
-                  ${item.relation ? `<span class="text-[10px] font-semibold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">${item.relation}</span>` : ''}
+                <div>
+                  <span class="text-[10px] font-bold text-amber-900 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 inline-block">${item.category}</span>
                 </div>
-                <h4 class="font-bold text-slate-900 text-sm mt-1 leading-tight">${item.name}</h4>
-                <div class="text-[11px] text-slate-400 flex items-center gap-2 mt-0.5">
-                  ${item.place ? `<span><i class="fa-solid fa-location-dot mr-0.5"></i>${item.place}</span>` : ''}
-                  ${item.phone ? `<span><i class="fa-solid fa-phone mr-0.5"></i>${item.phone}</span>` : ''}
-                </div>
+                <h4 class="font-bold text-slate-900 text-sm mt-1 leading-tight ${item.status === 'Completed' ? 'line-through text-slate-400' : ''}">${item.title}</h4>
+                ${item.dueDate ? `<div class="text-[11px] text-slate-500 font-semibold mt-0.5"><i class="fa-regular fa-calendar text-[10px] mr-1"></i>Due: ${item.dueDate}</div>` : ''}
               </div>
-              
-              ${isAdmin ? `<span class="font-mono font-bold text-indigo-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 text-[10px]">${item.code || '—'}</span>` : ''}
+              <div>${statusBadge}</div>
             </div>
 
-            <div class="grid grid-cols-2 gap-1 text-xs">
-              <div class="bg-slate-50 p-1.5 rounded-lg border border-slate-100 flex items-center justify-around font-bold">
-                <span class="text-blue-700">G:${item.gents || 0}</span>
-                <span class="text-pink-700">L:${item.ladies || 0}</span>
-                <span class="text-amber-700">K:${item.kids || 0}</span>
+            <div class="bg-slate-50 p-2 rounded-lg border border-slate-200 grid grid-cols-2 gap-1 text-xs">
+              <div>
+                <span class="text-[10px] text-slate-400 uppercase font-bold block">Budget / Paid:</span>
+                <span class="font-black text-slate-900">₹${Number(item.budget || 0).toLocaleString('en-IN')}</span>
+                <span class="text-[10px] text-emerald-700 block">Paid: ₹${Number(item.paid || 0).toLocaleString('en-IN')}</span>
               </div>
-
-              <div class="bg-emerald-50 p-1.5 rounded-lg border border-emerald-200 flex items-center justify-center gap-1 font-bold">
-                <span class="text-[10px] text-emerald-800 uppercase font-black">Coming:</span>
-                <button onclick="adjustRowComingCount('${item.id}', -1)" class="w-4 h-4 rounded bg-emerald-200 hover:bg-emerald-300 text-emerald-900 flex items-center justify-center text-[8px] font-black">◀</button>
-                <span class="text-xs font-black text-emerald-900">${comingCount}</span>
-                <button onclick="adjustRowComingCount('${item.id}', 1)" class="w-4 h-4 rounded bg-emerald-200 hover:bg-emerald-300 text-emerald-900 flex items-center justify-center text-[8px] font-black">▶</button>
-                <span class="text-[10px] text-slate-400">/${total}</span>
+              <div>
+                <span class="text-[10px] text-slate-400 uppercase font-bold block">Responsible:</span>
+                <span class="font-semibold text-slate-700 truncate block">${item.assignee || '—'}</span>
               </div>
             </div>
 
-            <div class="bg-amber-50/60 p-1.5 rounded-lg border border-amber-200 text-center font-bold text-amber-900 truncate text-xs">
-              ${hasValidCash ? `₹${Number(item.giftAmount).toLocaleString('en-IN')}` : ''}
-              ${hasValidGift ? `<span class="text-[10px] text-amber-800 block truncate">${item.giftDescription}</span>` : (!hasValidCash ? '<span class="text-slate-400 font-normal">No gift logged</span>' : '')}
-            </div>
+            ${item.notes ? `<div class="text-[11px] bg-amber-50/40 p-1.5 rounded border border-amber-100 text-slate-600 truncate">${item.notes}</div>` : ''}
 
             <div class="flex items-center justify-between pt-1 border-t border-slate-100">
-              <select onchange="updateInvitation('${item.id}', this.value)" class="text-[10px] font-semibold px-1.5 py-1 rounded border focus:outline-none ${statusStyle}">
-                <option value="Not Invited" ${status === 'Not Invited' ? 'selected' : ''}>⏳ Pending</option>
-                <option value="Invited" ${status === 'Invited' ? 'selected' : ''}>📩 Invited</option>
-                <option value="Confirmed" ${status === 'Confirmed' ? 'selected' : ''}>✅ Confirmed</option>
-              </select>
+              <button onclick="toggleTaskStatus('${item.id}', '${item.status || 'Pending'}')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold transition">
+                Change Status
+              </button>
 
               <div class="relative inline-block text-left">
-                <button onclick="toggleRowActionMenu(event, 'tile_${item.id}')" class="w-7 h-7 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-800 flex items-center justify-center transition">
+                <button onclick="toggleRowActionMenu(event, 'task_tile_${item.id}')" class="w-7 h-7 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-800 flex items-center justify-center transition">
                   <i class="fa-solid fa-ellipsis-vertical text-xs"></i>
                 </button>
-                <div id="rowActionMenu_tile_${item.id}" class="row-action-menu hidden absolute right-0 bottom-8 w-28 bg-white border border-slate-200 rounded-xl shadow-xl py-1 z-30 text-left">
-                  <button onclick="editEntry('${item.id}')" class="w-full px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 flex items-center gap-2 transition">
+                <div id="rowActionMenu_task_tile_${item.id}" class="row-action-menu hidden absolute right-0 bottom-8 w-28 bg-white border border-slate-200 rounded-xl shadow-xl py-1 z-30 text-left">
+                  <button onclick="editTask('${item.id}')" class="w-full px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 flex items-center gap-2 transition">
                     <i class="fa-solid fa-pen text-[10px] w-3"></i> Edit
                   </button>
-                  <button onclick="deleteEntry('${item.id}')" class="w-full px-3 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 flex items-center gap-2 transition">
+                  <button onclick="deleteTask('${item.id}')" class="w-full px-3 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 flex items-center gap-2 transition">
                     <i class="fa-solid fa-trash text-[10px] w-3"></i> Delete
                   </button>
                 </div>
@@ -2889,69 +2656,49 @@
       container.innerHTML = html;
     }
 
-    function renderListView(items, container) {
+    function renderTaskListView(items, container) {
       let html = `<div class="space-y-2">`;
 
       items.forEach(item => {
-        const total = (item.gents || 0) + (item.ladies || 0) + (item.kids || 0);
-        const status = item.invitation || 'Invited';
-        const comingCount = (item.comingCount !== undefined) ? item.comingCount : total;
-
-        const hasValidCash = (item.giftAmount && parseFloat(item.giftAmount) > 0);
-        const rawDesc = (item.giftDescription || '').trim();
-        const hasValidGift = (rawDesc.length > 0 && rawDesc !== '0' && rawDesc.toLowerCase() !== 'null' && rawDesc.toLowerCase() !== 'none');
+        let statusBadge = '';
+        if (item.status === 'Completed') {
+          statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300">✅ Completed</span>';
+        } else if (item.status === 'In Progress') {
+          statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-sky-100 text-sky-800 border border-sky-300">🔄 In Progress</span>';
+        } else {
+          statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-900 border border-amber-300">⏳ Pending</span>';
+        }
 
         html += `
           <div class="bg-white p-2.5 sm:p-3 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-slate-50 transition">
             <div class="flex items-center gap-3">
-              ${isAdmin ? `<span class="font-mono font-bold text-indigo-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 text-[10px] shrink-0">${item.code || '—'}</span>` : ''}
-              
               <div>
                 <div class="flex items-center gap-1.5 flex-wrap">
                   <span class="text-[10px] font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100">${item.eventFunction || 'Main Reception'}</span>
-                  <span class="font-bold text-slate-900 text-xs sm:text-sm">${item.name}</span>
-                  ${getGroupBadge(item.side)}
-                  ${item.relation ? `<span class="text-[10px] text-slate-500 font-medium">(${item.relation})</span>` : ''}
+                  <span class="text-[10px] font-bold text-amber-900 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">${item.category}</span>
+                  <span class="font-bold text-slate-900 text-xs sm:text-sm ${item.status === 'Completed' ? 'line-through text-slate-400' : ''}">${item.title}</span>
                 </div>
                 <div class="text-[10px] text-slate-400 flex items-center gap-2 mt-0.5">
-                  ${item.place ? `<span><i class="fa-solid fa-location-dot mr-0.5"></i>${item.place}</span>` : ''}
-                  ${item.phone ? `<span><i class="fa-solid fa-phone mr-0.5"></i>${item.phone}</span>` : ''}
-                  ${hasValidCash ? `<span class="text-emerald-700 font-bold"><i class="fa-solid fa-indian-rupee-sign mr-0.5"></i>${Number(item.giftAmount).toLocaleString('en-IN')}</span>` : ''}
-                  ${hasValidGift ? `<span class="text-emerald-800 italic">🎁 ${item.giftDescription}</span>` : ''}
+                  ${item.dueDate ? `<span>📅 Due: ${item.dueDate}</span>` : ''}
+                  ${item.assignee ? `<span>👤 ${item.assignee}</span>` : ''}
+                  ${item.vendor ? `<span>🏢 ${item.vendor}</span>` : ''}
                 </div>
               </div>
             </div>
 
-            <div class="flex items-center justify-between sm:justify-end gap-2.5 pt-1 sm:pt-0 border-t sm:border-t-0 border-slate-100">
-              <div class="text-[11px] font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded flex items-center gap-1.5">
-                <span class="text-blue-700">G:<b>${item.gents || 0}</b></span>
-                <span class="text-pink-700">L:<b>${item.ladies || 0}</b></span>
-                <span class="text-amber-700">K:<b>${item.kids || 0}</b></span>
-              </div>
-
-              <div class="flex items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                <span class="text-[10px] font-black text-emerald-800">Coming:</span>
-                <button onclick="adjustRowComingCount('${item.id}', -1)" class="w-4 h-4 rounded bg-emerald-200 text-emerald-900 flex items-center justify-center text-[8px] font-black">◀</button>
-                <span class="text-xs font-black text-emerald-950">${comingCount}</span>
-                <button onclick="adjustRowComingCount('${item.id}', 1)" class="w-4 h-4 rounded bg-emerald-200 text-emerald-900 flex items-center justify-center text-[8px] font-black">▶</button>
-                <span class="text-[10px] text-slate-400 font-bold">/${total}</span>
-              </div>
-
-              <select onchange="updateInvitation('${item.id}', this.value)" class="text-[10px] font-semibold px-1.5 py-0.5 rounded border focus:outline-none">
-                <option value="Not Invited" ${status === 'Not Invited' ? 'selected' : ''}>⏳ Pending</option>
-                <option value="Invited" ${status === 'Invited' ? 'selected' : ''}>📩 Invited</option>
-                <option value="Confirmed" ${status === 'Confirmed' ? 'selected' : ''}>✅ Confirmed</option>
-              </select>
+            <div class="flex items-center justify-between sm:justify-end gap-3 pt-1 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+              <span class="font-black text-slate-900 text-xs">₹${Number(item.budget || 0).toLocaleString('en-IN')}</span>
+              <div>${statusBadge}</div>
 
               <div class="relative inline-block text-left">
-                <button onclick="toggleRowActionMenu(event, 'list_${item.id}')" class="w-7 h-7 rounded-lg hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition">
+                <button onclick="toggleRowActionMenu(event, 'task_list_${item.id}')" class="w-7 h-7 rounded-lg hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition">
                   <i class="fa-solid fa-ellipsis-vertical text-xs"></i>
                 </button>
-                <div id="rowActionMenu_list_${item.id}" class="row-action-menu hidden absolute right-0 mt-1 w-28 bg-white border border-slate-200 rounded-xl shadow-xl py-1 z-30 text-left">
-                  <button onclick="editEntry('${item.id}')" class="w-full px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 flex items-center gap-2 transition">
+                <div id="rowActionMenu_task_list_${item.id}" class="row-action-menu hidden absolute right-0 mt-1 w-28 bg-white border border-slate-200 rounded-xl shadow-xl py-1 z-30 text-left">
+                  <button onclick="editTask('${item.id}')" class="w-full px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 flex items-center gap-2 transition">
                     <i class="fa-solid fa-pen text-[10px] w-3"></i> Edit
                   </button>
-                  <button onclick="deleteEntry('${item.id}')" class="w-full px-3 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 flex items-center gap-2 transition">
+                  <button onclick="deleteTask('${item.id}')" class="w-full px-3 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 flex items-center gap-2 transition">
                     <i class="fa-solid fa-trash text-[10px] w-3"></i> Delete
                   </button>
                 </div>
