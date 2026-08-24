@@ -1518,15 +1518,9 @@
       };
     }
 
-    // Categories, Functions, Task Categories & Relations are shared, global
-    // lists that must stay identical for every user on every device,
-    // regardless of which family code (or Admin) they log in with.
-    // (Returned as a literal, not a module-level const, so there's no risk
-    // of a temporal-dead-zone error if this is called before the script has
-    // finished running top-to-bottom, e.g. showApp() firing immediately on
-    // an already-logged-in session.)
     function getMetaDocId() {
-      return '__meta__GLOBAL';
+      const code = String(loggedCode || '').trim().toUpperCase();
+      return code ? `__meta__${code}` : '';
     }
 
     function normalizeMetaData(meta) {
@@ -1553,23 +1547,25 @@
 
       codeMetaData = null;
       const metaDocId = getMetaDocId();
+      if (!metaDocId || isAdmin) {
+        codeMetaData = getStandardDefaultMetaData();
+        syncCodeScopedDropdowns();
+        return;
+      }
 
       const cloudRef = collectionRef.doc(metaDocId);
       codeMetaUnsubscribe = cloudRef.onSnapshot(async (doc) => {
         if (doc.exists && doc.data().isMeta === true) {
           codeMetaData = normalizeMetaData(doc.data());
           localStorage.setItem(getCodeMetaStorageKey(), JSON.stringify(codeMetaData));
+          localStorage.setItem(`fc_meta_${loggedCode}`, JSON.stringify(codeMetaData));
         } else {
-          // First device ever to load the app: migrate any old local
-          // metadata (legacy per-code or global cache) if present,
-          // otherwise seed Firestore with the standard defaults. From this
-          // point on, this single global document is the source of truth
-          // for every family code and for Admin, on every device.
+          // First device: migrate any old local metadata for this family code,
+          // otherwise create the standard defaults in Firestore.
+          const codeKey = `fc_meta_${loggedCode}`;
           let localMeta = null;
           try {
-            const stored = localStorage.getItem(getCodeMetaStorageKey())
-              || localStorage.getItem(`fc_meta_${loggedCode}`)
-              || localStorage.getItem('fc_meta_global_categories');
+            const stored = localStorage.getItem(codeKey) || localStorage.getItem('fc_meta_global_categories');
             if (stored) localMeta = JSON.parse(stored);
           } catch (e) {}
 
@@ -1577,12 +1573,12 @@
           try {
             await cloudRef.set({
               isMeta: true,
-              scope: 'global',
+              code: loggedCode,
               ...codeMetaData,
               updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             }, { merge: true });
           } catch (err) {
-            console.error('Unable to create global metadata:', err);
+            console.error('Unable to create family metadata:', err);
           }
         }
 
@@ -1603,11 +1599,9 @@
     }
 
     function getCodeMetaStorageKey() {
-      // Local cache only, for fast/offline rendering before the Firestore
-      // snapshot arrives. The authoritative copy is the single global
-      // metadata document in Firestore (GLOBAL_META_DOC_ID), shared by
-      // every family code and Admin alike.
-      return 'fc_meta_GLOBAL';
+      // Keep a code-specific local cache for fast/offline rendering. The
+      // authoritative copy is the Firestore metadata document for this code.
+      return `fc_meta_${String(loggedCode || 'default').trim().toUpperCase()}`;
     }
 
     function getCodeMetaData() {
@@ -1640,23 +1634,22 @@
       codeMetaData = normalizeMetaData(meta);
       const key = getCodeMetaStorageKey();
       localStorage.setItem(key, JSON.stringify(codeMetaData));
+      // Keep the legacy cache updated for backward compatibility, but never
+      // use it as the authoritative cross-device source.
+      localStorage.setItem('fc_meta_global_categories', JSON.stringify(codeMetaData));
 
-      // Always write to the single global Firestore document so every
-      // device — any family code, and Admin — stays in sync. This is a
-      // `set()` (not `merge` on arrays) so deletions actually remove
-      // entries instead of Firestore re-merging the old array back in.
-      collectionRef.doc(getMetaDocId()).set({
-        isMeta: true,
-        scope: 'global',
-        functions: codeMetaData.functions,
-        categories: codeMetaData.categories,
-        taskCategories: codeMetaData.taskCategories,
-        relations: codeMetaData.relations,
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      }).catch(err => {
-        console.error('Unable to save global metadata to Firestore:', err);
-        alert('Category list was saved locally, but could not sync to the cloud: ' + err.message);
-      });
+      const metaDocId = getMetaDocId();
+      if (metaDocId && !isAdmin) {
+        collectionRef.doc(metaDocId).set({
+          isMeta: true,
+          code: loggedCode,
+          ...codeMetaData,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true }).catch(err => {
+          console.error('Unable to save family metadata to Firestore:', err);
+          alert('Category list was saved locally, but could not sync to the cloud: ' + err.message);
+        });
+      }
 
       syncCodeScopedDropdowns();
       renderDashboard();
