@@ -707,7 +707,7 @@
                 <option value="All">All Statuses</option>
                 <option value="Confirmed">Confirmed</option>
                 <option value="Invited">Marked as Invited</option>
-                <option value="Not Invited">Pending / Not Invited</option>
+                <option value="Pending">Pending</option>
               </select>
             </div>
 
@@ -1802,7 +1802,7 @@
       let giftsCount = 0;
 
       target.forEach(f => {
-        const status = String(f.invitation || 'Invited').trim().toLowerCase();
+        const status = String(f.invitation || 'Pending').trim().toLowerCase();
         const total = getGuestTotal(f);
         const coming = getGuestComing(f);
 
@@ -1880,10 +1880,11 @@
 
       if (rsvpFilter !== 'All') {
         filtered = filtered.filter(f => {
-          const status = String(f.invitation || 'Invited').trim().toLowerCase();
+          const status = String(f.invitation || 'Pending').trim().toLowerCase();
           if (rsvpFilter === 'Confirmed') return status === 'confirmed';
           if (rsvpFilter === 'Invited') return status === 'invited';
-          if (rsvpFilter === 'Not Invited') return status !== 'confirmed' && status !== 'invited';
+          if (rsvpFilter === 'Pending') return status === 'pending' || status === 'not invited' || status === '';
+          if (rsvpFilter === 'Not Invited') return status === 'not invited';
           return true;
         });
       }
@@ -1948,7 +1949,7 @@
     }
 
     function guestInvitationIcon(status) {
-      const s = String(status || 'Invited').trim().toLowerCase();
+      const s = String(status || 'Pending').trim().toLowerCase();
       if (s === 'confirmed') {
         return '<span class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700" title="Confirmed"><i class="fa-solid fa-circle-check text-sm"></i></span>';
       }
@@ -1995,8 +1996,10 @@
       const item = families.find(f => String(f.id || '') === id);
       if (!item || !id) return;
 
-      const next = String(value || 'Invited');
-      const previous = String(item.invitation || 'Invited');
+      const rawNext = String(value || 'Pending').trim();
+      const next = rawNext === 'Confirmed' ? 'Confirmed' : (rawNext === 'Invited' ? 'Invited' : 'Pending');
+      const previousRaw = String(item.invitation || 'Pending').trim();
+      const previous = previousRaw === 'Confirmed' ? 'Confirmed' : (previousRaw === 'Invited' ? 'Invited' : 'Pending');
       if (next === previous) return;
 
       // Optimistic update keeps the dropdown and table in sync immediately.
@@ -2018,18 +2021,26 @@
       }
     }
 
+    // Expose interaction handlers explicitly for dynamically-rendered table controls.
+    window.adjustGuestComing = adjustGuestComing;
+    window.changeGuestInvitation = changeGuestInvitation;
+
     function guestInvitationSelect(item) {
-      const status = String(item.invitation || 'Invited');
+      const rawStatus = String(item.invitation || 'Pending').trim().toLowerCase();
+      const status = rawStatus === 'confirmed' ? 'Confirmed' : (rawStatus === 'invited' ? 'Invited' : 'Pending');
       const id = String(item.id || '');
+      const safeId = id.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
       return `
         <select
-          class="bg-white border border-slate-300 rounded-md px-1.5 py-1 text-[10px] font-bold text-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-400 cursor-pointer"
-          onchange="event.stopPropagation(); changeGuestInvitation(${JSON.stringify(id)}, this.value)"
-          onclick="event.stopPropagation()"
+          data-guest-id="${safeId}"
+          class="guest-invitation-select bg-white border border-slate-300 rounded-md px-1.5 py-1 text-[10px] font-bold text-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-400 cursor-pointer"
+          onchange="changeGuestInvitation(this.dataset.guestId, this.value); return false;"
+          onclick="event.stopPropagation();"
+          onmousedown="event.stopPropagation();"
           title="Change invitation status">
+          <option value="Pending" ${status === 'Pending' ? 'selected' : ''}>Pending</option>
           <option value="Invited" ${status === 'Invited' ? 'selected' : ''}>Invited</option>
           <option value="Confirmed" ${status === 'Confirmed' ? 'selected' : ''}>Confirmed</option>
-          <option value="Not Invited" ${status === 'Not Invited' ? 'selected' : ''}>Not Invited</option>
         </select>
       `;
     }
@@ -2072,9 +2083,9 @@
             ${colSettings.glk ? `<td class="py-1.5 px-2 text-center whitespace-nowrap"><span class="text-blue-700 font-bold">${toNumber(item.gents)}</span> / <span class="text-pink-700 font-bold">${toNumber(item.ladies)}</span> / <span class="text-amber-700 font-bold">${toNumber(item.kids)}</span></td>` : ''}
             ${colSettings.coming ? `<td class="py-1 px-1.5 text-center whitespace-nowrap">
               <div class="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 px-1 py-0.5">
-                <button type="button" onclick="adjustGuestComing(${JSON.stringify(item.id)}, -1)" class="w-5 h-5 rounded-md bg-white border border-slate-200 text-slate-500 hover:text-rose-600 hover:border-rose-200 font-black leading-none" title="Decrease attending">−</button>
+                <button type="button" data-guest-id="${safe(item.id)}" onclick="event.preventDefault(); event.stopPropagation(); adjustGuestComing(this.dataset.guestId, -1); return false;" onmousedown="event.stopPropagation();" class="w-5 h-5 rounded-md bg-white border border-slate-200 text-slate-500 hover:text-rose-600 hover:border-rose-200 font-black leading-none" title="Decrease attending">−</button>
                 <span class="min-w-[42px] text-center font-black text-emerald-700">${coming} / ${total}</span>
-                <button type="button" onclick="adjustGuestComing(${JSON.stringify(item.id)}, 1)" class="w-5 h-5 rounded-md bg-white border border-slate-200 text-slate-500 hover:text-emerald-600 hover:border-emerald-200 font-black leading-none" title="Increase attending">+</button>
+                <button type="button" data-guest-id="${safe(item.id)}" onclick="event.preventDefault(); event.stopPropagation(); adjustGuestComing(this.dataset.guestId, 1); return false;" onmousedown="event.stopPropagation();" class="w-5 h-5 rounded-md bg-white border border-slate-200 text-slate-500 hover:text-emerald-600 hover:border-emerald-200 font-black leading-none" title="Increase attending">+</button>
               </div>
             </td>` : ''}
             ${colSettings.inv ? `<td class="py-1 px-2 text-center">${guestInvitationSelect(item)}</td>` : ''}
@@ -3435,10 +3446,10 @@
         const rawStatus = String(statusIdx !== -1 && row[statusIdx] !== undefined ? row[statusIdx] : (row[10] || 'Invited')).trim();
         let parsedStatus = 'Invited';
         if (rawStatus.toLowerCase().includes('confirm')) parsedStatus = 'Confirmed';
-        else if (rawStatus.toLowerCase().includes('not') || rawStatus.toLowerCase().includes('pend')) parsedStatus = 'Not Invited';
+        else if (rawStatus.toLowerCase().includes('not') || rawStatus.toLowerCase().includes('pend')) parsedStatus = 'Pending';
 
         let parsedComing = parseInt(comingIdx !== -1 ? row[comingIdx] : totalHead);
-        if (isNaN(parsedComing)) parsedComing = (parsedStatus === 'Not Invited') ? 0 : totalHead;
+        if (isNaN(parsedComing)) parsedComing = (parsedStatus === 'Pending') ? 0 : totalHead;
 
         const rawAmt = parseFloat(giftAmtIdx !== -1 ? row[giftAmtIdx] : row[12]);
         const giftAmt = (!isNaN(rawAmt) && rawAmt > 0) ? rawAmt : 0;
