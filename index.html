@@ -758,13 +758,11 @@
               <i class="fa-solid fa-bars-progress"></i>
             </div>
             <div>
-              <h3 class="text-xs sm:text-sm font-bold text-white leading-tight">Overall Tasks & Function Execution</h3>
-              <span class="text-[10px] text-slate-300">Tracks Decor, Catering, DJ, Band, Costumes, Lighting & Photography</span>
+              <h3 class="text-xs sm:text-sm font-bold text-white leading-tight">Overall Progress</h3>
             </div>
           </div>
           <div class="text-right">
             <span id="taskProgressPercentage" class="text-base sm:text-lg font-black text-amber-400">0%</span>
-            <span class="text-[10px] text-slate-300 block">Completed</span>
           </div>
         </div>
 
@@ -824,7 +822,7 @@
                   <input type="checkbox" onchange="toggleTaskColSetting('cat')" id="taskColChk_cat" class="w-3.5 h-3.5 rounded text-amber-600 focus:ring-0" /> Category
                 </label>
                 <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-amber-600 py-0.5">
-                  <input type="checkbox" onchange="toggleTaskColSetting('title')" id="taskColChk_title" class="w-3.5 h-3.5 rounded text-amber-600 focus:ring-0" /> Task Item
+                  <input type="checkbox" onchange="toggleTaskColSetting('title')" id="taskColChk_title" class="w-3.5 h-3.5 rounded text-amber-600 focus:ring-0" /> Item
                   <input type="checkbox" onchange="toggleTaskColSetting('progress')" id="taskColChk_progress" class="w-3.5 h-3.5 rounded text-amber-600 focus:ring-0" checked /> Progress
                 </label>
                 <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-amber-600 py-0.5">
@@ -2707,11 +2705,10 @@
       return result;
     }
 
-    // Dynamic Overall & Category-Wise Progress Matrix Rendering (Alphabetically Sorted)
+    // Render overall task progress and the filtered task views.
     function renderTasksList() {
       const displayContainer = document.getElementById('tasksDisplayContainer');
       const emptyMsg = document.getElementById('tasksEmptyMessage');
-      const catProgressMatrix = document.getElementById('categoryProgressMatrix');
       const catFilter = document.getElementById('taskCatFilter').value;
       const statusFilter = document.getElementById('taskStatusFilter').value;
       const search = document.getElementById('taskSearchInput').value.toLowerCase();
@@ -2719,18 +2716,8 @@
       const visible = getVisibleTasks();
 
       let pCount = 0, inProgCount = 0, dCount = 0, totalBudget = 0, totalPaid = 0;
-      const catStats = {};
 
       visible.forEach(t => {
-        const cat = t.category || '📝 General Checklist';
-        if (!catStats[cat]) {
-          catStats[cat] = { total: 0, completed: 0, budget: 0, paid: 0 };
-        }
-        catStats[cat].total += 1;
-        if (t.status === 'Completed') catStats[cat].completed += 1;
-        if (t.budget) catStats[cat].budget += parseFloat(t.budget) || 0;
-        if (t.paid) catStats[cat].paid += parseFloat(t.paid) || 0;
-
         if (t.status === 'Pending') pCount++;
         else if (t.status === 'In Progress') inProgCount++;
         else if (t.status === 'Completed') dCount++;
@@ -2747,39 +2734,6 @@
       document.getElementById('taskStatBudget').textContent = totalBudget.toLocaleString('en-IN');
       document.getElementById('taskStatPaid').textContent = totalPaid.toLocaleString('en-IN');
       document.getElementById('tabCountTasks').textContent = visible.length;
-
-      // Category / Item-wise Progress Matrix is optional in this HTML version.
-      // The original renderer expected #categoryProgressMatrix, but that element
-      // is not present in the supplied markup. Guard it so task rendering continues.
-      if (catProgressMatrix) {
-        catProgressMatrix.innerHTML = '';
-        const catKeys = Object.keys(catStats).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
-
-        if (catKeys.length === 0) {
-          catProgressMatrix.innerHTML = '<div class="col-span-full text-center py-2 text-slate-400 text-xs italic">No task categories logged yet. Click "+ Add Task" to begin.</div>';
-        } else {
-          catKeys.forEach(catName => {
-            const data = catStats[catName];
-            const catPercent = data.total > 0 ? Math.round((data.completed / data.total) * 100) : 0;
-            const card = document.createElement('div');
-            card.className = "p-2.5 rounded-xl border border-slate-200 bg-slate-50/70 space-y-1.5 hover:bg-slate-50 transition";
-            card.innerHTML = `
-              <div class="flex items-center justify-between text-xs">
-                <span class="font-bold text-slate-800 truncate" title="${catName}">${catName}</span>
-                <span class="font-black ${catPercent === 100 ? 'text-emerald-600' : 'text-amber-600'} text-[11px]">${catPercent}%</span>
-              </div>
-              <div class="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
-                <div class="h-1.5 rounded-full transition-all duration-300 ${catPercent === 100 ? 'bg-emerald-500' : 'bg-amber-500'}" style="width: ${catPercent}%"></div>
-              </div>
-              <div class="flex items-center justify-between text-[10px] text-slate-500 font-semibold pt-0.5">
-                <span>${data.completed} / ${data.total} Done</span>
-                <span class="text-slate-700 font-bold">₹${data.budget.toLocaleString('en-IN')}</span>
-              </div>
-            `;
-            catProgressMatrix.appendChild(card);
-          });
-        }
-      }
 
       // Filtered Tasks Rendering (Alphabetically Sorted by Title)
       const filtered = visible.filter(t => {
