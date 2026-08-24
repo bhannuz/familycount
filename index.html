@@ -360,7 +360,7 @@
     </div>
   </div>
 
-  <!-- Manage Functions, Categories, Task Categories & Relations Modal (All Sections Collapsible & Sorted Alphabetically) -->
+  <!-- Manage Functions, Categories, Task Categories & Relations Modal -->
   <div id="metaManagerModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-3">
     <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full max-h-[90vh] flex flex-col overflow-hidden">
       <div class="px-4 py-3 bg-slate-800 text-white flex items-center justify-between">
@@ -412,7 +412,7 @@
           </div>
         </div>
 
-        <!-- 3. Task Categories Section (Fully Manageable / Renamable / Deletable) -->
+        <!-- 3. Task Categories Section -->
         <div class="border border-amber-300 rounded-xl overflow-hidden bg-amber-50/20 shadow-2xs">
           <button type="button" onclick="toggleAccordion('metaTaskCatBody', 'metaTaskCatChev', 'metaTaskCatTxt')" class="w-full flex items-center justify-between p-2.5 bg-amber-100/70 hover:bg-amber-100 text-left border-b border-amber-300 transition">
             <div class="flex items-center gap-2">
@@ -466,7 +466,7 @@
   <!-- Main App Screen -->
   <div id="appScreen" class="hidden max-w-6xl mx-auto space-y-2.5">
     
-    <!-- Top Header Bar with Top Function Filter & Add Guest Button next to it -->
+    <!-- Top Header Bar -->
     <header class="bg-white p-2.5 sm:p-3 rounded-xl border border-slate-200 shadow-sm space-y-2 relative">
       <div class="flex items-center justify-between gap-2">
         <div class="flex items-center gap-2">
@@ -479,7 +479,6 @@
           </div>
         </div>
 
-        <!-- Top Right Action Menu -->
         <div class="relative">
           <button onclick="toggleActionMenu(event)" id="actionMenuBtn" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition border border-slate-200">
             <i class="fa-solid fa-ellipsis-vertical text-sm"></i>
@@ -524,7 +523,6 @@
         </div>
       </div>
 
-      <!-- PRIMARY FUNCTION FILTER + DYNAMIC ACTION BUTTON (Guest or Task) + REFRESH BUTTON -->
       <div class="flex items-center gap-1.5 pt-1 border-t border-slate-100">
         <button type="button" id="topAddButton" onclick="handleTopAddClick()" class="px-2.5 sm:px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1 shrink-0 transition">
           <i class="fa-solid fa-plus text-[10px]" id="topAddButtonIcon"></i>
