@@ -2823,7 +2823,7 @@
               <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase text-[10px]">
                 ${taskColSettings.func ? `<th class="py-2 px-2.5 whitespace-nowrap">Function</th>` : ''}
                 ${taskColSettings.cat ? `<th class="py-2 px-2.5 whitespace-nowrap">Category</th>` : ''}
-                ${taskColSettings.title ? `<th class="py-2 px-3 whitespace-nowrap">Task Item / Description</th>` : ''}
+                ${taskColSettings.title ? `<th class="py-2 px-3 whitespace-nowrap">Item</th>` : ''}
                 ${taskColSettings.progress ? `<th class="py-2 px-3 whitespace-nowrap text-center min-w-[150px]">Progress</th>` : ''}
                 ${taskColSettings.due ? `<th class="py-2 px-2 whitespace-nowrap text-center">Due Date</th>` : ''}
                 ${taskColSettings.assignee ? `<th class="py-2 px-2 whitespace-nowrap">Responsible</th>` : ''}
@@ -2837,13 +2837,14 @@
       `;
 
       items.forEach(item => {
+        const statusPercent = item.status === 'Completed' ? 100 : (item.status === 'In Progress' ? 50 : 0);
         let statusBadge = '';
         if (item.status === 'Completed') {
-          statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300">✅ Completed</span>';
+          statusBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300">Completed ${statusPercent}%</span>`;
         } else if (item.status === 'In Progress') {
-          statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-sky-100 text-sky-800 border border-sky-300">🔄 In Progress</span>';
+          statusBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-sky-100 text-sky-800 border border-sky-300">In Progress ${statusPercent}%</span>`;
         } else {
-          statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-900 border border-amber-300">⏳ Pending</span>';
+          statusBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-900 border border-amber-300">Pending ${statusPercent}%</span>`;
         }
 
         const balance = (parseFloat(item.budget) || 0) - (parseFloat(item.paid) || 0);
@@ -2910,13 +2911,14 @@
       let html = `<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">`;
 
       items.forEach(item => {
+        const statusPercent = item.status === 'Completed' ? 100 : (item.status === 'In Progress' ? 50 : 0);
         let statusBadge = '';
         if (item.status === 'Completed') {
-          statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300">✅ Completed</span>';
+          statusBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300">Completed ${statusPercent}%</span>`;
         } else if (item.status === 'In Progress') {
-          statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-sky-100 text-sky-800 border border-sky-300">🔄 In Progress</span>';
+          statusBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-sky-100 text-sky-800 border border-sky-300">In Progress ${statusPercent}%</span>`;
         } else {
-          statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-900 border border-amber-300">⏳ Pending</span>';
+          statusBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-900 border border-amber-300">Pending ${statusPercent}%</span>`;
         }
 
         const balance = (parseFloat(item.budget) || 0) - (parseFloat(item.paid) || 0);
@@ -2982,13 +2984,14 @@
       let html = `<div class="space-y-2">`;
 
       items.forEach(item => {
+        const statusPercent = item.status === 'Completed' ? 100 : (item.status === 'In Progress' ? 50 : 0);
         let statusBadge = '';
         if (item.status === 'Completed') {
-          statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300">✅ Completed</span>';
+          statusBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300">Completed ${statusPercent}%</span>`;
         } else if (item.status === 'In Progress') {
-          statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-sky-100 text-sky-800 border border-sky-300">🔄 In Progress</span>';
+          statusBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-sky-100 text-sky-800 border border-sky-300">In Progress ${statusPercent}%</span>`;
         } else {
-          statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-900 border border-amber-300">⏳ Pending</span>';
+          statusBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-900 border border-amber-300">Pending ${statusPercent}%</span>`;
         }
 
         html += `
