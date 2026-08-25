@@ -677,10 +677,10 @@
                   <input type="checkbox" onchange="toggleColSetting('guest')" id="colChk_guest" class="w-3.5 h-3.5 rounded text-indigo-600 focus:ring-0" /> Guest & Place
                 </label>
                 <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600 py-0.5">
-                  <input type="checkbox" onchange="toggleColSetting('glk')" id="colChk_glk" class="w-3.5 h-3.5 rounded text-indigo-600 focus:ring-0" /> G / L / K Counts
+                  <input type="checkbox" onchange="toggleColSetting('actual')" id="colChk_actual" class="w-3.5 h-3.5 rounded text-indigo-600 focus:ring-0" /> Actual G / L / K
                 </label>
                 <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600 py-0.5">
-                  <input type="checkbox" onchange="toggleColSetting('coming')" id="colChk_coming" class="w-3.5 h-3.5 rounded text-indigo-600 focus:ring-0" /> Attending / Total
+                  <input type="checkbox" onchange="toggleColSetting('plan')" id="colChk_plan" class="w-3.5 h-3.5 rounded text-indigo-600 focus:ring-0" /> Plan G / L / K
                 </label>
                 <label class="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-indigo-600 py-0.5">
                   <input type="checkbox" onchange="toggleColSetting('inv')" id="colChk_inv" class="w-3.5 h-3.5 rounded text-indigo-600 focus:ring-0" /> Invitation
@@ -966,7 +966,10 @@
         try {
           const parsed = JSON.parse(stored);
           parsed.total = false;
-          parsed.coming = parsed.coming !== false;
+          parsed.coming = false;
+          parsed.glk = false;
+          parsed.actual = parsed.actual !== false;
+          parsed.plan = parsed.plan !== false;
           return parsed;
         } catch (e) {}
       }
@@ -975,9 +978,11 @@
         cat: true,
         rel: true,
         guest: true,
-        glk: true,
+        glk: false,
         total: false,
-        coming: true,
+        coming: false,
+        actual: true,
+        plan: true,
         inv: true,
         gifts: true
       };
@@ -2080,6 +2085,81 @@
       return '<span class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-slate-100 text-slate-500" title="Not Invited"><i class="fa-solid fa-envelope-open text-sm"></i></span>';
     }
 
+    async function updateGuestActualCount(guestId, gender, value) {
+      const id = String(guestId || '').trim();
+      const item = families.find(f => String(f.id || '') === id);
+      if (!item || !id) return;
+      const keyMap = { gents: 'attendingGents', ladies: 'attendingLadies', kids: 'attendingKids' };
+      const field = keyMap[gender];
+      if (!field) return;
+      const planMap = { gents: 'gents', ladies: 'ladies', kids: 'kids' };
+      const planned = toNumber(item[planMap[gender]]);
+      const old = getGuestActualCounts(item);
+      const next = Math.max(0, Math.min(planned, parseInt(value, 10) || 0));
+      item[field] = next;
+      item.comingCount = old.gents + old.ladies + old.kids - toNumber(old[gender]) + next;
+      renderDashboard();
+      renderFilteredHistory();
+      try {
+        await collectionRef.doc(id).set({ [field]: next, comingCount: item.comingCount, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+      } catch (err) {
+        item[field] = old[gender];
+        item.comingCount = old.gents + old.ladies + old.kids;
+        renderDashboard();
+        renderFilteredHistory();
+        alert('Unable to update actual count: ' + (err.message || err));
+      }
+    }
+
+    window.updateGuestActualCount = updateGuestActualCount;
+
+    async function adjustGuestActualGender(guestId, gender, delta) {
+      const id = String(guestId || '').trim();
+      const item = families.find(f => String(f.id || '') === id);
+      if (!item || !id) return;
+      const keyMap = { gents: 'attendingGents', ladies: 'attendingLadies', kids: 'attendingKids' };
+      const planMap = { gents: 'gents', ladies: 'ladies', kids: 'kids' };
+      const field = keyMap[gender];
+      if (!field || !(gender in planMap)) return;
+
+      const old = getGuestActualCounts(item);
+      const planned = toNumber(item[planMap[gender]]);
+      const current = toNumber(old[gender]);
+      const next = Math.max(0, Math.min(planned, current + (Number(delta) || 0)));
+      if (next === current) return;
+
+      const counts = { gents: old.gents, ladies: old.ladies, kids: old.kids };
+      counts[gender] = next;
+      const total = counts.gents + counts.ladies + counts.kids;
+
+      item.attendingGents = counts.gents;
+      item.attendingLadies = counts.ladies;
+      item.attendingKids = counts.kids;
+      item.comingCount = total;
+      renderDashboard();
+      renderFilteredHistory();
+
+      try {
+        await collectionRef.doc(id).set({
+          attendingGents: counts.gents,
+          attendingLadies: counts.ladies,
+          attendingKids: counts.kids,
+          comingCount: total,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+      } catch (err) {
+        item.attendingGents = old.gents;
+        item.attendingLadies = old.ladies;
+        item.attendingKids = old.kids;
+        item.comingCount = old.gents + old.ladies + old.kids;
+        renderDashboard();
+        renderFilteredHistory();
+        alert('Unable to update actual count: ' + (err.message || err));
+      }
+    }
+
+    window.adjustGuestActualGender = adjustGuestActualGender;
+
     async function adjustGuestComing(guestId, delta) {
       const id = String(guestId || '').trim();
       const item = families.find(f => String(f.id || '') === id);
@@ -2303,8 +2383,8 @@
                 ${colSettings.cat ? '<th class="border border-slate-200 py-2 px-2.5 whitespace-nowrap">Category</th>' : ''}
                 ${colSettings.rel ? '<th class="border border-slate-200 py-2 px-2.5 whitespace-nowrap">Relation</th>' : ''}
                 ${colSettings.guest ? '<th class="border border-slate-200 py-2 px-2.5 whitespace-nowrap">Guest / Place</th>' : ''}
-                ${colSettings.glk ? '<th class="border border-slate-200 py-2 px-2 text-center whitespace-nowrap">G / L / K</th>' : ''}
-                ${colSettings.coming ? '<th class="border border-slate-200 py-2 px-2 text-center whitespace-nowrap">Attending / Total</th>' : ''}
+                ${colSettings.actual ? '<th class="border border-slate-200 py-2 px-2 text-center whitespace-nowrap">Actual G / L / K</th>' : ''}
+                ${colSettings.plan ? '<th class="border border-slate-200 py-2 px-2 text-center whitespace-nowrap">Plan G / L / K</th>' : ''}
                 ${colSettings.inv ? '<th class="border border-slate-200 py-2 px-2 text-center whitespace-nowrap">Invitation</th>' : ''}
                 ${colSettings.gifts ? '<th class="border border-slate-200 py-1 px-2 text-right whitespace-nowrap">Gift / Cash</th>' : ''}
                 <th class="border border-slate-200 py-1 px-2 text-center whitespace-nowrap sticky right-0 bg-slate-50">Action</th>
@@ -2325,14 +2405,8 @@
             ${colSettings.cat ? `<td class="border border-slate-200 py-1.5 px-2.5 whitespace-nowrap">${safe(canonicalCategory(item.side))}</td>` : ''}
             ${colSettings.rel ? `<td class="border border-slate-200 py-1.5 px-2.5 whitespace-nowrap">${safe(item.relation || '')}</td>` : ''}
             ${colSettings.guest ? `<td class="border border-slate-200 py-1.5 px-2.5"><div class="font-bold text-slate-800">${safe(item.name || '')}</div><div class="text-[10px] text-slate-500">${safe(item.place || '')}</div></td>` : ''}
-            ${colSettings.glk ? (() => { const a=getGuestActualCounts(item); return `<td class="border border-slate-200 py-1.5 px-2 text-center whitespace-nowrap"><div class="text-[9px] text-slate-400 font-bold">P: <span class="text-blue-700">${toNumber(item.gents)}</span>/<span class="text-pink-700">${toNumber(item.ladies)}</span>/<span class="text-amber-700">${toNumber(item.kids)}</span></div><div class="text-[10px] font-black">A: <span class="text-blue-700">${a.gents}</span>/<span class="text-pink-700">${a.ladies}</span>/<span class="text-amber-700">${a.kids}</span></div></td>`; })() : ''}
-            ${colSettings.coming ? `<td class="border border-slate-200 py-1 px-1.5 text-center whitespace-nowrap">
-              <div class="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 px-1 py-0.5">
-                <button type="button" data-guest-id="${safe(item.id)}" onclick="event.preventDefault(); event.stopPropagation(); adjustGuestComing(this.dataset.guestId, -1); return false;" onmousedown="event.stopPropagation();" class="w-5 h-5 rounded-md bg-white border border-slate-200 text-slate-500 hover:text-rose-600 hover:border-rose-200 font-black leading-none" title="Decrease attending">−</button>
-                <span class="min-w-[42px] text-center font-black text-emerald-700">${coming} / ${total}</span>
-                <button type="button" data-guest-id="${safe(item.id)}" onclick="event.preventDefault(); event.stopPropagation(); adjustGuestComing(this.dataset.guestId, 1); return false;" onmousedown="event.stopPropagation();" class="w-5 h-5 rounded-md bg-white border border-slate-200 text-slate-500 hover:text-emerald-600 hover:border-emerald-200 font-black leading-none" title="Increase attending">+</button>
-              </div>
-            </td>` : ''}
+            ${colSettings.actual ? (() => { const a=getGuestActualCounts(item); const step=(label,value,gender,planned,cls)=>`<div class="inline-flex items-center gap-0.5"><span class="text-[9px] ${cls} font-black">${label}</span><button type="button" class="w-5 h-5 rounded border border-slate-200 bg-white hover:bg-slate-100 text-slate-600 text-[10px] font-black leading-none" title="Decrease ${label}" onclick="event.stopPropagation(); adjustGuestActualGender('${safe(item.id)}','${gender}',-1)">−</button><span class="min-w-[16px] text-center text-[10px] font-black text-slate-800">${value}</span><button type="button" class="w-5 h-5 rounded border border-slate-200 bg-white hover:bg-slate-100 text-slate-600 text-[10px] font-black leading-none" title="Increase ${label}" onclick="event.stopPropagation(); adjustGuestActualGender('${safe(item.id)}','${gender}',1)">+</button></div>`; return `<td class="border border-slate-200 py-1 px-1 text-center whitespace-nowrap"><div class="inline-flex items-center gap-1.5">${step('G',a.gents,'gents',toNumber(item.gents),'text-blue-700')}${step('L',a.ladies,'ladies',toNumber(item.ladies),'text-pink-700')}${step('K',a.kids,'kids',toNumber(item.kids),'text-amber-700')}</div></td>`; })() : ''}
+            ${colSettings.plan ? `<td class="border border-slate-200 py-1.5 px-2 text-center whitespace-nowrap font-black"><span class="text-blue-700">G:${toNumber(item.gents)}</span> <span class="text-pink-700">L:${toNumber(item.ladies)}</span> <span class="text-amber-700">K:${toNumber(item.kids)}</span></td>` : ''}
             ${colSettings.inv ? `<td class="border border-slate-200 py-1 px-2 text-center">${guestInvitationSelect(item)}</td>` : ''}
             ${colSettings.gifts ? `<td class="border border-slate-200 py-1.5 px-2 text-right">${gift > 0 ? '₹' + gift.toLocaleString('en-IN') : ''}${item.giftDescription ? `<div class="text-[10px] text-slate-500">${safe(item.giftDescription)}</div>` : ''}</td>` : ''}
             <td class="border border-slate-200 py-1 px-2 text-center sticky right-0 bg-white">
@@ -2381,7 +2455,7 @@
                   <span>Total <b>${total}</b></span>
                 </div>
                 <div class="mt-2 flex items-center justify-between text-[10px] font-bold">
-                  <span class="text-emerald-700">Attending / Total: ${coming} / ${total}</span>
+                  <span class="text-emerald-700">Actual G:${getGuestActualCounts(item).gents} L:${getGuestActualCounts(item).ladies} K:${getGuestActualCounts(item).kids}</span><span class="text-slate-500">Plan G:${toNumber(item.gents)} L:${toNumber(item.ladies)} K:${toNumber(item.kids)}</span>
                   <span class="text-[10px] font-bold text-slate-700">${safe(item.invitation || 'Invited')}</span>
                 </div>
                 ${gift > 0 ? `<div class="mt-1 text-[10px] text-emerald-800">Gift: ₹${gift.toLocaleString('en-IN')}</div>` : ''}
@@ -2410,7 +2484,7 @@
               </div>
               <div class="text-[10px] text-slate-600 mt-1">
                 G:${toNumber(item.gents)} · L:${toNumber(item.ladies)} · K:${toNumber(item.kids)}
-                · Attending / Total:${getGuestComing(item)} / ${getGuestTotal(item)}
+                · Actual G:${getGuestActualCounts(item).gents} L:${getGuestActualCounts(item).ladies} K:${getGuestActualCounts(item).kids} · Plan G:${toNumber(item.gents)} L:${toNumber(item.ladies)} K:${toNumber(item.kids)}
               </div>
             </div>
           `).join('')}
