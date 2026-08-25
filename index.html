@@ -16,14 +16,18 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <style>
-.actual-counts-compact,.plan-counts-compact{display:inline-flex;align-items:center;justify-content:center;gap:3px;white-space:nowrap}
-.actual-count-group{display:inline-flex;align-items:center;gap:1px;padding:1px 2px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;line-height:1}
-.actual-count-label{font-size:8px;min-width:9px;text-align:center}
+.compact-counts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));align-items:start;justify-items:center;gap:3px;white-space:nowrap}
+.compact-count{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:2px;min-width:30px}
+.compact-count-label{font-size:8px;font-weight:900;line-height:9px;min-height:9px}
+.compact-count-number{font-size:10px;font-weight:900;line-height:14px;min-width:14px;text-align:center}
+.compact-count-controls{display:flex;align-items:center;justify-content:center;gap:1px;min-height:17px}
 .actual-step-btn{width:17px;height:17px;padding:0;border:1px solid #dbe3ee;border-radius:4px;background:#fff;color:#475569;font-size:10px;font-weight:900;line-height:15px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
 .actual-step-btn:hover{background:#eef2ff;border-color:#c7d2fe;color:#3730a3}
-.actual-count-value{min-width:12px;text-align:center;font-size:10px;color:#0f172a}
-.plan-count-pill{display:inline-flex;align-items:center;gap:2px;padding:2px 4px;border-radius:5px;background:#f8fafc;font-size:9px;font-weight:800;line-height:1.1}
-.plan-count-pill b{font-size:8px}
+.actual-count-value{min-width:12px;text-align:center;font-size:10px;color:#0f172a;line-height:17px}
+.plan-counts-compact{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));align-items:start;justify-items:center;gap:4px;white-space:nowrap}
+.plan-count-pill{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:2px;min-width:22px;padding:0;background:transparent;font-size:10px;font-weight:900;line-height:12px}
+.plan-count-pill b{font-size:8px;line-height:9px}
+
 </style>
 </head>
 <body class="bg-slate-100 text-slate-800 antialiased p-2 sm:p-3 md:p-4 min-h-screen">
@@ -2419,19 +2423,21 @@
             ${colSettings.plan ? (() => {
               const pg = toNumber(item.gents), pl = toNumber(item.ladies), pk = toNumber(item.kids);
               const planTotal = pg + pl + pk;
-              return `<td class="border border-slate-200 py-1 px-1 text-center whitespace-nowrap" title="Planned: Gents ${pg}, Ladies ${pl}, Kids ${pk}, Total ${planTotal}"><div class="plan-counts-compact"><span class="plan-count-pill text-blue-700"><b>G</b>${pg}</span><span class="plan-count-pill text-pink-700"><b>L</b>${pl}</span><span class="plan-count-pill text-amber-700"><b>K</b>${pk}</span><span class="plan-count-pill text-slate-700"><b>T</b>${planTotal}</span></div></td>`;
+              return `<td class="border border-slate-200 py-1 px-1 text-center whitespace-nowrap" title="Planned: Gents ${pg}, Ladies ${pl}, Kids ${pk}, Total ${planTotal}"><div class="plan-counts-compact"><span class="plan-count-pill text-blue-700"><b>G</b><span>${pg}</span></span><span class="plan-count-pill text-pink-700"><b>L</b><span>${pl}</span></span><span class="plan-count-pill text-amber-700"><b>K</b><span>${pk}</span></span><span class="plan-count-pill text-slate-700"><b>T</b><span>${planTotal}</span></span></div></td>`;
             })() : ''}
             ${colSettings.actual ? (() => {
               const a = getGuestActualCounts(item);
               const actualTotal = a.gents + a.ladies + a.kids;
               const compact = (label, value, gender, cls) => `
-                <span class="actual-count-group" title="${label === 'G' ? 'Gents' : label === 'L' ? 'Ladies' : 'Kids'} actual count">
-                  <b class="${cls} actual-count-label">${label}</b>
-                  <button type="button" class="actual-step-btn" title="Decrease ${label}" onclick="event.stopPropagation(); adjustGuestActualGender('${safe(item.id)}','${gender}',-1)">−</button>
-                  <b class="actual-count-value">${value}</b>
-                  <button type="button" class="actual-step-btn" title="Increase ${label}" onclick="event.stopPropagation(); adjustGuestActualGender('${safe(item.id)}','${gender}',1)">+</button>
+                <span class="compact-count" title="${label === 'G' ? 'Gents' : label === 'L' ? 'Ladies' : 'Kids'} actual count">
+                  <b class="${cls} compact-count-label">${label}</b>
+                  <span class="compact-count-controls">
+                    <button type="button" class="actual-step-btn" title="Decrease ${label}" onclick="event.stopPropagation(); adjustGuestActualGender('${safe(item.id)}','${gender}',-1)">−</button>
+                    <b class="actual-count-value">${value}</b>
+                    <button type="button" class="actual-step-btn" title="Increase ${label}" onclick="event.stopPropagation(); adjustGuestActualGender('${safe(item.id)}','${gender}',1)">+</button>
+                  </span>
                 </span>`;
-              return `<td class="border border-slate-200 py-1 px-1 text-center whitespace-nowrap" title="Actual: Gents ${a.gents}, Ladies ${a.ladies}, Kids ${a.kids}, Total ${actualTotal}"><div class="actual-counts-compact">${compact('G',a.gents,'gents','text-blue-700')}${compact('L',a.ladies,'ladies','text-pink-700')}${compact('K',a.kids,'kids','text-amber-700')}<span class="plan-count-pill text-emerald-700"><b>T</b>${actualTotal}</span></div></td>`;
+              return `<td class="border border-slate-200 py-1 px-1 text-center whitespace-nowrap" title="Actual: Gents ${a.gents}, Ladies ${a.ladies}, Kids ${a.kids}, Total ${actualTotal}"><div class="compact-counts">${compact('G',a.gents,'gents','text-blue-700')}${compact('L',a.ladies,'ladies','text-pink-700')}${compact('K',a.kids,'kids','text-amber-700')}<span class="compact-count text-emerald-700"><b class="compact-count-label">T</b><b class="compact-count-number">${actualTotal}</b></span></div></td>`;
             })() : ''}
             ${colSettings.inv ? `<td class="border border-slate-200 py-1 px-2 text-center">${guestInvitationSelect(item)}</td>` : ''}
             ${colSettings.gifts ? `<td class="border border-slate-200 py-1.5 px-2 text-right">${gift > 0 ? '₹' + gift.toLocaleString('en-IN') : ''}${item.giftDescription ? `<div class="text-[10px] text-slate-500">${safe(item.giftDescription)}</div>` : ''}</td>` : ''}
