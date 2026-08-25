@@ -760,13 +760,23 @@
             </div>
           </div>
 
-          <div class="flex flex-wrap items-center justify-between gap-1.5 text-xs bg-indigo-50/60 border border-indigo-100 p-2 rounded-lg text-indigo-900 font-semibold">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 text-xs bg-indigo-50/60 border border-indigo-100 p-2 rounded-lg text-indigo-900 font-semibold">
             <span id="filteredResultsLabel">Showing 0 entries</span>
-            <div class="flex flex-wrap items-center gap-3 text-[11px]">
-              <span class="text-blue-700">G: <b id="filtGents" class="text-xs">0</b></span>
-              <span class="text-pink-700">L: <b id="filtLadies" class="text-xs">0</b></span>
-              <span class="text-amber-700">K: <b id="filtKids" class="text-xs">0</b></span>
-              <span class="text-emerald-900 font-bold">Total: <b id="filtTotalHead" class="text-xs">0</b></span>
+            <div class="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-4 text-[10px]">
+              <div class="flex items-center gap-2 bg-white/70 border border-indigo-100 rounded-md px-2 py-1">
+                <span class="font-black text-indigo-700 min-w-[38px]">PLAN</span>
+                <span class="text-blue-700">G: <b id="filtPlanGents">0</b></span>
+                <span class="text-pink-700">L: <b id="filtPlanLadies">0</b></span>
+                <span class="text-amber-700">K: <b id="filtPlanKids">0</b></span>
+                <span class="text-emerald-800 font-black">T: <b id="filtPlanTotal">0</b></span>
+              </div>
+              <div class="flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-md px-2 py-1">
+                <span class="font-black text-emerald-700 min-w-[38px]">ACTUAL</span>
+                <span class="text-blue-700">G: <b id="filtActualGents">0</b></span>
+                <span class="text-pink-700">L: <b id="filtActualLadies">0</b></span>
+                <span class="text-amber-700">K: <b id="filtActualKids">0</b></span>
+                <span class="text-emerald-800 font-black">T: <b id="filtActualTotal">0</b></span>
+              </div>
             </div>
           </div>
         </div>
@@ -2040,16 +2050,30 @@
         });
       }
 
-      let filtGents = 0;
-      let filtLadies = 0;
-      let filtKids = 0;
-      let filtTotal = 0;
+      let filtPlanGents = 0;
+      let filtPlanLadies = 0;
+      let filtPlanKids = 0;
+      let filtPlanTotal = 0;
+      let filtActualGents = 0;
+      let filtActualLadies = 0;
+      let filtActualKids = 0;
+      let filtActualTotal = 0;
 
       filtered.forEach(f => {
-        filtGents += toNumber(f.gents);
-        filtLadies += toNumber(f.ladies);
-        filtKids += toNumber(f.kids);
-        filtTotal += getGuestTotal(f);
+        const pg = toNumber(f.gents);
+        const pl = toNumber(f.ladies);
+        const pk = toNumber(f.kids);
+        const actual = getGuestActualCounts(f);
+
+        filtPlanGents += pg;
+        filtPlanLadies += pl;
+        filtPlanKids += pk;
+        filtPlanTotal += pg + pl + pk;
+
+        filtActualGents += actual.gents;
+        filtActualLadies += actual.ladies;
+        filtActualKids += actual.kids;
+        filtActualTotal += actual.gents + actual.ladies + actual.kids;
       });
 
       const setText = (id, value) => {
@@ -2058,10 +2082,14 @@
       };
 
       setText('filteredResultsLabel', `Showing ${filtered.length} entries`);
-      setText('filtGents', filtGents);
-      setText('filtLadies', filtLadies);
-      setText('filtKids', filtKids);
-      setText('filtTotalHead', filtTotal);
+      setText('filtPlanGents', filtPlanGents);
+      setText('filtPlanLadies', filtPlanLadies);
+      setText('filtPlanKids', filtPlanKids);
+      setText('filtPlanTotal', filtPlanTotal);
+      setText('filtActualGents', filtActualGents);
+      setText('filtActualLadies', filtActualLadies);
+      setText('filtActualKids', filtActualKids);
+      setText('filtActualTotal', filtActualTotal);
       setText('historyBadgeCount', `${filtered.length} Entries`);
 
       if (filtered.length === 0) {
