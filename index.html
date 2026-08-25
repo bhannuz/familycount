@@ -227,6 +227,19 @@
             </div>
           </div>
 
+          <!-- Actual Attendance Section -->
+          <div class="bg-emerald-50 p-2.5 rounded-xl border border-emerald-200 space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-bold uppercase text-emerald-800">Actual Attending</span>
+              <span class="text-[9px] font-semibold text-emerald-700">Food & return-gift planning</span>
+            </div>
+            <div class="grid grid-cols-3 gap-2">
+              <div><label class="block text-[10px] font-bold text-blue-700 mb-0.5 text-center">Gents</label><div class="flex items-center gap-1 bg-white border border-emerald-200 rounded-lg p-0.5"><button type="button" onclick="stepFormField('actualGentsCount',-1)" class="w-6 h-6 rounded bg-slate-100 text-xs font-black">−</button><input type="number" id="actualGentsCount" min="0" value="1" class="w-full text-center bg-transparent py-1 text-xs font-bold focus:outline-none"><button type="button" onclick="stepFormField('actualGentsCount',1)" class="w-6 h-6 rounded bg-slate-100 text-xs font-black">+</button></div></div>
+              <div><label class="block text-[10px] font-bold text-pink-700 mb-0.5 text-center">Ladies</label><div class="flex items-center gap-1 bg-white border border-emerald-200 rounded-lg p-0.5"><button type="button" onclick="stepFormField('actualLadiesCount',-1)" class="w-6 h-6 rounded bg-slate-100 text-xs font-black">−</button><input type="number" id="actualLadiesCount" min="0" value="1" class="w-full text-center bg-transparent py-1 text-xs font-bold focus:outline-none"><button type="button" onclick="stepFormField('actualLadiesCount',1)" class="w-6 h-6 rounded bg-slate-100 text-xs font-black">+</button></div></div>
+              <div><label class="block text-[10px] font-bold text-amber-700 mb-0.5 text-center">Kids</label><div class="flex items-center gap-1 bg-white border border-emerald-200 rounded-lg p-0.5"><button type="button" onclick="stepFormField('actualKidsCount',-1)" class="w-6 h-6 rounded bg-slate-100 text-xs font-black">−</button><input type="number" id="actualKidsCount" min="0" value="0" class="w-full text-center bg-transparent py-1 text-xs font-bold focus:outline-none"><button type="button" onclick="stepFormField('actualKidsCount',1)" class="w-6 h-6 rounded bg-slate-100 text-xs font-black">+</button></div></div>
+            </div>
+          </div>
+
           <!-- Gifts & Cash Section -->
           <div class="bg-emerald-50/50 p-2.5 rounded-xl border border-emerald-200 space-y-1.5">
             <span class="text-[10px] font-bold uppercase text-emerald-800 block">Gift / Cash Information</span>
@@ -583,11 +596,20 @@
             </div>
           </div>
 
-          <div class="pt-2 border-t border-indigo-800/80 flex items-center justify-start text-xs">
-            <div class="flex items-center gap-3 bg-indigo-950/60 px-2.5 py-1 rounded-lg border border-indigo-800">
-              <span class="text-blue-300 font-bold text-xs">G: <b id="statGents" class="text-white">0</b></span>
-              <span class="text-pink-300 font-bold text-xs">L: <b id="statLadies" class="text-white">0</b></span>
-              <span class="text-amber-300 font-bold text-xs">K: <b id="statKids" class="text-white">0</b></span>
+          <div class="pt-2 border-t border-indigo-800/80 space-y-1 text-xs">
+            <div class="flex items-center gap-2 bg-indigo-950/60 px-2.5 py-1 rounded-lg border border-indigo-800">
+              <span class="text-[9px] font-bold uppercase text-indigo-300 w-14">Planned</span>
+              <span class="text-blue-300 font-bold">G: <b id="statGents" class="text-white">0</b></span>
+              <span class="text-pink-300 font-bold">L: <b id="statLadies" class="text-white">0</b></span>
+              <span class="text-amber-300 font-bold">K: <b id="statKids" class="text-white">0</b></span>
+              <span class="text-emerald-300 font-black ml-auto">T: <b id="statPlannedTotal" class="text-white">0</b></span>
+            </div>
+            <div class="flex items-center gap-2 bg-emerald-950/60 px-2.5 py-1 rounded-lg border border-emerald-800">
+              <span class="text-[9px] font-bold uppercase text-emerald-300 w-14">Actual</span>
+              <span class="text-blue-300 font-bold">G: <b id="statActualGents" class="text-white">0</b></span>
+              <span class="text-pink-300 font-bold">L: <b id="statActualLadies" class="text-white">0</b></span>
+              <span class="text-amber-300 font-bold">K: <b id="statActualKids" class="text-white">0</b></span>
+              <span class="text-emerald-300 font-black ml-auto">T: <b id="statActualTotal" class="text-white">0</b></span>
             </div>
           </div>
         </div>
@@ -1212,6 +1234,12 @@
       if (gents) gents.value = '1';
       if (ladies) ladies.value = '1';
       if (kids) kids.value = '0';
+      const actualGents = document.getElementById('actualGentsCount');
+      const actualLadies = document.getElementById('actualLadiesCount');
+      const actualKids = document.getElementById('actualKidsCount');
+      if (actualGents) actualGents.value = '1';
+      if (actualLadies) actualLadies.value = '1';
+      if (actualKids) actualKids.value = '0';
 
       const giftAmount = document.getElementById('giftAmount');
       const giftDescription = document.getElementById('giftDescription');
@@ -1416,6 +1444,9 @@
         kids: 0,
         kidNames: "",
         invitation: "Invited",
+        attendingGents: 1,
+        attendingLadies: 1,
+        attendingKids: 0,
         comingCount: 2,
         giftAmount: 0,
         giftDescription: "",
@@ -1834,11 +1865,18 @@
       return toNumber(f.gents) + toNumber(f.ladies) + toNumber(f.kids);
     }
 
-    function getGuestComing(f) {
-      return (f.comingCount !== undefined && f.comingCount !== null && f.comingCount !== '')
-        ? toNumber(f.comingCount)
-        : getGuestTotal(f);
+    function getGuestActualCounts(f) {
+      const pg = toNumber(f.gents), pl = toNumber(f.ladies), pk = toNumber(f.kids);
+      const has = f.attendingGents !== undefined || f.attendingLadies !== undefined || f.attendingKids !== undefined;
+      if (has) return { gents: Math.min(pg, Math.max(0, toNumber(f.attendingGents))), ladies: Math.min(pl, Math.max(0, toNumber(f.attendingLadies))), kids: Math.min(pk, Math.max(0, toNumber(f.attendingKids))) };
+      let remaining = Math.max(0, Math.min(getGuestTotal(f), toNumber(f.comingCount)));
+      if (!Number.isFinite(remaining)) remaining = getGuestTotal(f);
+      const g = Math.min(pg, remaining); remaining -= g;
+      const l = Math.min(pl, remaining); remaining -= l;
+      const k = Math.min(pk, remaining);
+      return {gents:g, ladies:l, kids:k};
     }
+    function getGuestComing(f) { const a = getGuestActualCounts(f); return a.gents + a.ladies + a.kids; }
 
     function renderDashboard() {
       const target = getVisibleFamilies();
@@ -1849,6 +1887,9 @@
       let gents = 0;
       let ladies = 0;
       let kids = 0;
+      let actualGents = 0;
+      let actualLadies = 0;
+      let actualKids = 0;
       let totalCount = 0;
       let totalCash = 0;
       let giftsCount = 0;
@@ -1861,6 +1902,10 @@
         gents += toNumber(f.gents);
         ladies += toNumber(f.ladies);
         kids += toNumber(f.kids);
+        const actual = getGuestActualCounts(f);
+        actualGents += actual.gents;
+        actualLadies += actual.ladies;
+        actualKids += actual.kids;
         totalCount += total;
 
         if (status === 'confirmed') {
@@ -1892,6 +1937,11 @@
       setText('statGents', gents);
       setText('statLadies', ladies);
       setText('statKids', kids);
+      setText('statPlannedTotal', totalCount);
+      setText('statActualGents', actualGents);
+      setText('statActualLadies', actualLadies);
+      setText('statActualKids', actualKids);
+      setText('statActualTotal', actualGents + actualLadies + actualKids);
       setText('statTotalCash', totalCash.toLocaleString('en-IN'));
       setText('statGiftsCount', giftsCount);
       setText('tabCountGuests', target.length);
@@ -2034,32 +2084,19 @@
       const id = String(guestId || '').trim();
       const item = families.find(f => String(f.id || '') === id);
       if (!item || !id) return;
-
       const total = getGuestTotal(item);
-      const current = getGuestComing(item);
-      const step = Number(delta) || 0;
-      const next = Math.max(0, Math.min(total, current + step));
+      const oldA = getGuestActualCounts(item);
+      const current = oldA.gents + oldA.ladies + oldA.kids;
+      const next = Math.max(0, Math.min(total, current + (Number(delta) || 0)));
       if (next === current) return;
-
-      // Update the local model immediately so the UI responds without waiting
-      // for the Firestore listener to return.
-      item.comingCount = next;
-      renderDashboard();
-      renderFilteredHistory();
-
-      try {
-        await collectionRef.doc(id).set({
-          comingCount: next,
-          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        }, { merge: true });
-      } catch (err) {
-        // Revert the optimistic change if Firestore rejects the write.
-        item.comingCount = current;
-        renderDashboard();
-        renderFilteredHistory();
-        console.error('Error updating attending count:', err);
-        alert('Unable to update attending count: ' + (err.message || err));
-      }
+      const planned = [toNumber(item.gents),toNumber(item.ladies),toNumber(item.kids)];
+      const counts = [oldA.gents,oldA.ladies,oldA.kids];
+      if (next > current) { let r=next-current; for(let i=0;i<3&&r>0;i++){const add=Math.min(planned[i]-counts[i],r); counts[i]+=add;r-=add;} }
+      else { let r=current-next; for(let i=2;i>=0&&r>0;i--){const sub=Math.min(counts[i],r);counts[i]-=sub;r-=sub;} }
+      item.attendingGents=counts[0]; item.attendingLadies=counts[1]; item.attendingKids=counts[2]; item.comingCount=next;
+      renderDashboard(); renderFilteredHistory();
+      try { await collectionRef.doc(id).set({attendingGents:counts[0],attendingLadies:counts[1],attendingKids:counts[2],comingCount:next,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}); }
+      catch(err){ item.attendingGents=oldA.gents; item.attendingLadies=oldA.ladies; item.attendingKids=oldA.kids; item.comingCount=current; renderDashboard(); renderFilteredHistory(); alert('Unable to update attending count: '+(err.message||err)); }
     }
 
     async function changeGuestInvitation(guestId, value) {
@@ -2210,6 +2247,10 @@
       document.getElementById('gentsCount').value = toNumber(item.gents);
       document.getElementById('ladiesCount').value = toNumber(item.ladies);
       document.getElementById('kidsCount').value = toNumber(item.kids);
+      const actual = getGuestActualCounts(item);
+      document.getElementById('actualGentsCount').value = actual.gents;
+      document.getElementById('actualLadiesCount').value = actual.ladies;
+      document.getElementById('actualKidsCount').value = actual.kids;
       document.getElementById('giftAmount').value = toNumber(item.giftAmount) || '';
       document.getElementById('giftDescription').value = item.giftDescription || '';
 
@@ -2284,7 +2325,7 @@
             ${colSettings.cat ? `<td class="border border-slate-200 py-1.5 px-2.5 whitespace-nowrap">${safe(canonicalCategory(item.side))}</td>` : ''}
             ${colSettings.rel ? `<td class="border border-slate-200 py-1.5 px-2.5 whitespace-nowrap">${safe(item.relation || '')}</td>` : ''}
             ${colSettings.guest ? `<td class="border border-slate-200 py-1.5 px-2.5"><div class="font-bold text-slate-800">${safe(item.name || '')}</div><div class="text-[10px] text-slate-500">${safe(item.place || '')}</div></td>` : ''}
-            ${colSettings.glk ? `<td class="border border-slate-200 py-1.5 px-2 text-center whitespace-nowrap"><span class="text-blue-700 font-bold">${toNumber(item.gents)}</span> / <span class="text-pink-700 font-bold">${toNumber(item.ladies)}</span> / <span class="text-amber-700 font-bold">${toNumber(item.kids)}</span></td>` : ''}
+            ${colSettings.glk ? (() => { const a=getGuestActualCounts(item); return `<td class="border border-slate-200 py-1.5 px-2 text-center whitespace-nowrap"><div class="text-[9px] text-slate-400 font-bold">P: <span class="text-blue-700">${toNumber(item.gents)}</span>/<span class="text-pink-700">${toNumber(item.ladies)}</span>/<span class="text-amber-700">${toNumber(item.kids)}</span></div><div class="text-[10px] font-black">A: <span class="text-blue-700">${a.gents}</span>/<span class="text-pink-700">${a.ladies}</span>/<span class="text-amber-700">${a.kids}</span></div></td>`; })() : ''}
             ${colSettings.coming ? `<td class="border border-slate-200 py-1 px-1.5 text-center whitespace-nowrap">
               <div class="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 px-1 py-0.5">
                 <button type="button" data-guest-id="${safe(item.id)}" onclick="event.preventDefault(); event.stopPropagation(); adjustGuestComing(this.dataset.guestId, -1); return false;" onmousedown="event.stopPropagation();" class="w-5 h-5 rounded-md bg-white border border-slate-200 text-slate-500 hover:text-rose-600 hover:border-rose-200 font-black leading-none" title="Decrease attending">−</button>
@@ -2980,6 +3021,10 @@
       const ladies = parseInt(document.getElementById('ladiesCount').value) || 0;
       const kids = parseInt(document.getElementById('kidsCount').value) || 0;
       const totalHead = gents + ladies + kids;
+      const attendingGents = Math.max(0, Math.min(gents, parseInt(document.getElementById('actualGentsCount').value) || 0));
+      const attendingLadies = Math.max(0, Math.min(ladies, parseInt(document.getElementById('actualLadiesCount').value) || 0));
+      const attendingKids = Math.max(0, Math.min(kids, parseInt(document.getElementById('actualKidsCount').value) || 0));
+      const actualTotal = attendingGents + attendingLadies + attendingKids;
 
       const rawGiftAmount = parseFloat(document.getElementById('giftAmount').value);
       const giftAmount = (!isNaN(rawGiftAmount) && rawGiftAmount > 0) ? rawGiftAmount : 0;
@@ -2998,6 +3043,10 @@
         gents: gents,
         ladies: ladies,
         kids: kids,
+        attendingGents: attendingGents,
+        attendingLadies: attendingLadies,
+        attendingKids: attendingKids,
+        comingCount: actualTotal,
         kidNames: '',
         giftAmount: giftAmount,
         giftDescription: giftDescription,
@@ -3008,7 +3057,6 @@
 
       if (!docId) {
         record.invitation = "Invited";
-        record.comingCount = totalHead;
       }
 
       if (docId) {
