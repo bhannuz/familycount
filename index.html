@@ -2394,8 +2394,8 @@
                 ${colSettings.cat ? '<th class="border border-slate-200 py-2 px-2.5 whitespace-nowrap">Category</th>' : ''}
                 ${colSettings.rel ? '<th class="border border-slate-200 py-2 px-2.5 whitespace-nowrap">Relation</th>' : ''}
                 ${colSettings.guest ? '<th class="border border-slate-200 py-2 px-2.5 whitespace-nowrap">Guest / Place</th>' : ''}
-                ${colSettings.actual ? '<th class="border border-slate-200 py-1.5 px-1.5 text-center whitespace-nowrap">Actual</th>' : ''}
                 ${colSettings.plan ? '<th class="border border-slate-200 py-1.5 px-1.5 text-center whitespace-nowrap">Plan</th>' : ''}
+                ${colSettings.actual ? '<th class="border border-slate-200 py-1.5 px-1.5 text-center whitespace-nowrap">Actual</th>' : ''}
                 ${colSettings.inv ? '<th class="border border-slate-200 py-2 px-2 text-center whitespace-nowrap">Invitation</th>' : ''}
                 ${colSettings.gifts ? '<th class="border border-slate-200 py-1 px-2 text-right whitespace-nowrap">Gift / Cash</th>' : ''}
                 <th class="border border-slate-200 py-1 px-2 text-center whitespace-nowrap sticky right-0 bg-slate-50">Action</th>
@@ -2416,8 +2416,14 @@
             ${colSettings.cat ? `<td class="border border-slate-200 py-1.5 px-2.5 whitespace-nowrap">${safe(canonicalCategory(item.side))}</td>` : ''}
             ${colSettings.rel ? `<td class="border border-slate-200 py-1.5 px-2.5 whitespace-nowrap">${safe(item.relation || '')}</td>` : ''}
             ${colSettings.guest ? `<td class="border border-slate-200 py-1.5 px-2.5"><div class="font-bold text-slate-800">${safe(item.name || '')}</div><div class="text-[10px] text-slate-500">${safe(item.place || '')}</div></td>` : ''}
+            ${colSettings.plan ? (() => {
+              const pg = toNumber(item.gents), pl = toNumber(item.ladies), pk = toNumber(item.kids);
+              const planTotal = pg + pl + pk;
+              return `<td class="border border-slate-200 py-1 px-1 text-center whitespace-nowrap" title="Planned: Gents ${pg}, Ladies ${pl}, Kids ${pk}, Total ${planTotal}"><div class="plan-counts-compact"><span class="plan-count-pill text-blue-700"><b>G</b>${pg}</span><span class="plan-count-pill text-pink-700"><b>L</b>${pl}</span><span class="plan-count-pill text-amber-700"><b>K</b>${pk}</span><span class="plan-count-pill text-slate-700"><b>T</b>${planTotal}</span></div></td>`;
+            })() : ''}
             ${colSettings.actual ? (() => {
               const a = getGuestActualCounts(item);
+              const actualTotal = a.gents + a.ladies + a.kids;
               const compact = (label, value, gender, cls) => `
                 <span class="actual-count-group" title="${label === 'G' ? 'Gents' : label === 'L' ? 'Ladies' : 'Kids'} actual count">
                   <b class="${cls} actual-count-label">${label}</b>
@@ -2425,9 +2431,8 @@
                   <b class="actual-count-value">${value}</b>
                   <button type="button" class="actual-step-btn" title="Increase ${label}" onclick="event.stopPropagation(); adjustGuestActualGender('${safe(item.id)}','${gender}',1)">+</button>
                 </span>`;
-              return `<td class="border border-slate-200 py-1 px-1 text-center whitespace-nowrap"><div class="actual-counts-compact">${compact('G',a.gents,'gents','text-blue-700')}${compact('L',a.ladies,'ladies','text-pink-700')}${compact('K',a.kids,'kids','text-amber-700')}</div></td>`;
+              return `<td class="border border-slate-200 py-1 px-1 text-center whitespace-nowrap" title="Actual: Gents ${a.gents}, Ladies ${a.ladies}, Kids ${a.kids}, Total ${actualTotal}"><div class="actual-counts-compact">${compact('G',a.gents,'gents','text-blue-700')}${compact('L',a.ladies,'ladies','text-pink-700')}${compact('K',a.kids,'kids','text-amber-700')}<span class="plan-count-pill text-emerald-700"><b>T</b>${actualTotal}</span></div></td>`;
             })() : ''}
-            ${colSettings.plan ? `<td class="border border-slate-200 py-1 px-1 text-center whitespace-nowrap"><div class="plan-counts-compact"><span class="plan-count-pill text-blue-700"><b>G</b>${toNumber(item.gents)}</span><span class="plan-count-pill text-pink-700"><b>L</b>${toNumber(item.ladies)}</span><span class="plan-count-pill text-amber-700"><b>K</b>${toNumber(item.kids)}</span></div></td>` : ''}
             ${colSettings.inv ? `<td class="border border-slate-200 py-1 px-2 text-center">${guestInvitationSelect(item)}</td>` : ''}
             ${colSettings.gifts ? `<td class="border border-slate-200 py-1.5 px-2 text-right">${gift > 0 ? '₹' + gift.toLocaleString('en-IN') : ''}${item.giftDescription ? `<div class="text-[10px] text-slate-500">${safe(item.giftDescription)}</div>` : ''}</td>` : ''}
             <td class="border border-slate-200 py-1 px-2 text-center sticky right-0 bg-white">
