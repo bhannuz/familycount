@@ -28,6 +28,8 @@
 .plan-count-pill{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:2px;min-width:22px;padding:0;background:transparent;font-size:10px;font-weight:900;line-height:12px}
 .plan-count-pill b{font-size:8px;line-height:9px}
 
+
+.admin-family-panel{display:none}.admin-family-panel.admin-visible{display:block}.admin-code-table{width:100%;border-collapse:separate;border-spacing:0}.admin-code-table th,.admin-code-table td{border-bottom:1px solid #e2e8f0;border-right:1px solid #e2e8f0;padding:7px 8px;font-size:10px}.admin-code-table th:last-child,.admin-code-table td:last-child{border-right:0}.admin-code-table th{background:#f8fafc;color:#475569;text-transform:uppercase;font-size:9px;letter-spacing:.04em}.admin-code-table tr:last-child td{border-bottom:0}.admin-status-lock{color:#be123c;font-weight:900}.admin-status-open{color:#047857;font-weight:900}.admin-mini-btn{border:1px solid #cbd5e1;border-radius:6px;padding:4px 7px;background:#fff;font-size:10px;font-weight:800;cursor:pointer}.admin-mini-btn:hover{background:#f8fafc}.admin-mini-btn.blue:hover{color:#3730a3;border-color:#a5b4fc;background:#eef2ff}.admin-mini-btn.amber:hover{color:#92400e;border-color:#fcd34d;background:#fffbeb}.admin-mini-btn.rose:hover{color:#be123c;border-color:#fda4af;background:#fff1f2}
 </style>
 </head>
 <body class="bg-slate-100 text-slate-800 antialiased p-2 sm:p-3 md:p-4 min-h-screen">
@@ -491,6 +493,29 @@
 
   <input type="file" id="spreadsheetFileInput" accept=".numbers,.csv,.xlsx,.xls,.tsv,text/csv,text/plain" class="hidden" />
 
+  <!-- Event Date / Countdown Modal -->
+  <div id="eventDateModal" class="hidden fixed inset-0 z-[70] flex items-center justify-center bg-slate-900/70 backdrop-blur-sm p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-5 space-y-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center">
+          <i class="fa-solid fa-calendar-days"></i>
+        </div>
+        <div>
+          <h3 class="text-sm font-black text-slate-900">Set Event Date</h3>
+          <p class="text-[11px] text-slate-500">Enter the event date after login to start the countdown.</p>
+        </div>
+      </div>
+      <div>
+        <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Event Date *</label>
+        <input type="date" id="eventDateInput" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm font-semibold text-slate-800 focus:outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100">
+      </div>
+      <div class="flex justify-end gap-2">
+        <button type="button" id="eventDateCancelBtn" onclick="closeEventDateModal()" class="hidden px-3 py-2 rounded-lg border border-slate-300 text-xs font-bold text-slate-600 hover:bg-slate-50">Cancel</button>
+        <button type="button" onclick="saveEventDate()" class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold">Save Event Date</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Main App Screen -->
   <div id="appScreen" class="hidden max-w-6xl mx-auto space-y-2.5">
     
@@ -503,7 +528,13 @@
           </div>
           <div>
             <h1 class="text-xs sm:text-sm font-bold text-slate-900 leading-tight">Guest Headcount, Functions & Task Tracker</h1>
-            <span id="roleBadge" class="text-[10px] font-bold text-indigo-600">Guest Mode</span>
+            <div class="flex items-center gap-2 flex-wrap">
+              <span id="roleBadge" class="text-[10px] font-bold text-indigo-600">Guest Mode</span>
+              <button type="button" id="countdownChip" onclick="openEventDateModal(true)" class="hidden inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-indigo-50 border border-indigo-200 text-[10px] font-black text-indigo-700 hover:bg-indigo-100 transition" title="Change event date">
+                <i class="fa-solid fa-hourglass-half text-[9px]"></i>
+                <span id="countdownText">Set Event Date</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -573,6 +604,26 @@
         </button>
       </div>
     </header>
+
+    <!-- ADMIN FAMILY CODE MANAGEMENT -->
+    <section id="adminFamilyPanel" class="admin-family-panel bg-white rounded-xl border border-amber-200 shadow-sm overflow-hidden">
+      <div class="px-3 py-2.5 bg-amber-50/70 border-b border-amber-200 flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <div class="flex items-center gap-2 text-xs font-black text-amber-900"><i class="fa-solid fa-shield-halved text-amber-600"></i> Admin — All Family Codes</div>
+          <div class="text-[9px] text-amber-800/80 mt-0.5">View planned/actual totals, phone number, and lock or modify each family code.</div>
+        </div>
+        <div id="adminFamilyCodeCount" class="text-[10px] font-black text-amber-900 bg-white border border-amber-200 rounded-full px-2 py-1">0 Codes</div>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="admin-code-table">
+          <thead><tr>
+            <th>Code</th><th>Phone</th><th>Families / Guests</th><th>Plan G/L/K/T</th><th>Actual G/L/K/T</th><th>Status</th><th>Action</th>
+          </tr></thead>
+          <tbody id="adminFamilyCodeBody"></tbody>
+        </table>
+      </div>
+      <div id="adminFamilyEmpty" class="hidden text-center py-5 text-xs text-slate-400">No family codes found.</div>
+    </section>
 
     <!-- PRIMARY APP MODULE SWITCHER TABS -->
     <div class="flex items-center bg-slate-200/80 p-1 rounded-xl border border-slate-300 shadow-2xs gap-1">
@@ -981,6 +1032,10 @@
     let currentAppTab = 'guests';
     let selectedTopFunction = 'All';
     let pendingImportPayload = null;
+    let currentEventDate = '';
+    let eventCountdownTimer = null;
+    let eventDateDocUnsubscribe = null;
+    let editingEventDate = false;
 
     let colSettings = getStoredColSettings();
     let taskColSettings = getStoredTaskColSettings();
@@ -1178,6 +1233,7 @@
         renderDashboard();
         renderFilteredHistory();
         renderTasksList();
+        if (isAdmin) renderAdminFamilyCodePanel();
       } catch (err) {
         console.error('Error refreshing data:', err);
       } finally {
@@ -1504,6 +1560,11 @@
       document.getElementById('appScreen').classList.add('hidden');
       document.getElementById('loginScreen').classList.remove('hidden');
       document.getElementById('accessCodeInput').value = '';
+      if (eventCountdownTimer) { clearInterval(eventCountdownTimer); eventCountdownTimer = null; }
+      if (eventDateDocUnsubscribe) { try { eventDateDocUnsubscribe(); } catch (e) {} eventDateDocUnsubscribe = null; }
+      currentEventDate = '';
+      updateCountdownChip();
+      closeEventDateModal();
       switchAuthTab('login');
     }
 
@@ -1517,14 +1578,17 @@
 
       menuCodeBadge.textContent = loggedCode || '—';
 
+      const adminFamilyPanel = document.getElementById('adminFamilyPanel');
       if (isAdmin) {
         roleBadge.textContent = "👑 Admin View (All Families)";
         roleBadge.className = "text-[10px] font-bold text-amber-600";
         adminCodeFilterCol.classList.remove('hidden');
+        if (adminFamilyPanel) adminFamilyPanel.classList.add('admin-visible');
       } else {
         roleBadge.textContent = `Family Code: ${loggedCode}`;
         roleBadge.className = "text-[10px] font-bold text-indigo-600";
         adminCodeFilterCol.classList.add('hidden');
+        if (adminFamilyPanel) adminFamilyPanel.classList.remove('admin-visible');
       }
 
       updateColumnPickerCheckboxes();
@@ -1532,7 +1596,122 @@
       setViewMode(currentViewMode === 'compact' ? 'table' : currentViewMode);
       setTaskViewMode(currentTaskViewMode);
       listenCodeMeta();
+      listenEventDate();
       listenData();
+    }
+
+    function getEventSettingsDocId() {
+      const code = (loggedCode || '').trim().toUpperCase();
+      return `__event_settings__${code || 'UNKNOWN'}`;
+    }
+
+    function listenEventDate() {
+      if (eventDateDocUnsubscribe) {
+        try { eventDateDocUnsubscribe(); } catch (e) {}
+        eventDateDocUnsubscribe = null;
+      }
+      currentEventDate = '';
+      updateCountdownChip();
+      if (!loggedCode) return;
+
+      const ref = collectionRef.doc(getEventSettingsDocId());
+      eventDateDocUnsubscribe = ref.onSnapshot((doc) => {
+        currentEventDate = doc.exists && doc.data().eventDate ? String(doc.data().eventDate) : '';
+        updateCountdownChip();
+        if (!currentEventDate) {
+          openEventDateModal(false);
+        }
+      }, (error) => {
+        console.error('Event date listener error:', error);
+        updateCountdownChip();
+      });
+    }
+
+    function openEventDateModal(canCancel) {
+      const modal = document.getElementById('eventDateModal');
+      const input = document.getElementById('eventDateInput');
+      const cancel = document.getElementById('eventDateCancelBtn');
+      if (!modal || !input) return;
+      editingEventDate = !!canCancel;
+      input.value = currentEventDate || '';
+      if (cancel) cancel.classList.toggle('hidden', !canCancel);
+      modal.classList.remove('hidden');
+      setTimeout(() => input.focus(), 50);
+    }
+
+    function closeEventDateModal() {
+      const modal = document.getElementById('eventDateModal');
+      if (!modal) return;
+      if (!currentEventDate && !editingEventDate) return;
+      modal.classList.add('hidden');
+      editingEventDate = false;
+    }
+
+    async function saveEventDate() {
+      const input = document.getElementById('eventDateInput');
+      const date = input ? input.value : '';
+      if (!date) {
+        alert('Please select the event date.');
+        return;
+      }
+      if (!loggedCode) return;
+
+      try {
+        await collectionRef.doc(getEventSettingsDocId()).set({
+          isEventSettings: true,
+          code: loggedCode,
+          eventDate: date,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+        currentEventDate = date;
+        updateCountdownChip();
+        closeEventDateModal();
+      } catch (error) {
+        console.error('Could not save event date:', error);
+        alert('Could not save the event date. Please try again.');
+      }
+    }
+
+    function updateCountdownChip() {
+      const chip = document.getElementById('countdownChip');
+      const text = document.getElementById('countdownText');
+      if (!chip || !text) return;
+
+      chip.classList.remove('hidden');
+      if (eventCountdownTimer) {
+        clearInterval(eventCountdownTimer);
+        eventCountdownTimer = null;
+      }
+
+      if (!currentEventDate) {
+        text.textContent = 'Set Event Date';
+        chip.className = 'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-[10px] font-black text-amber-700 hover:bg-amber-100 transition';
+        chip.title = 'Set event date';
+        return;
+      }
+
+      const render = () => {
+        const parts = currentEventDate.split('-').map(Number);
+        const eventStart = new Date(parts[0], parts[1] - 1, parts[2]);
+        eventStart.setHours(0, 0, 0, 0);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const diffDays = Math.round((eventStart - today) / 86400000);
+        if (diffDays > 0) {
+          text.textContent = `${diffDays} ${diffDays === 1 ? 'Day' : 'Days'} to Go`;
+          chip.className = 'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-indigo-50 border border-indigo-200 text-[10px] font-black text-indigo-700 hover:bg-indigo-100 transition';
+        } else if (diffDays === 0) {
+          text.textContent = 'Today is the Event!';
+          chip.className = 'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-[10px] font-black text-emerald-700 hover:bg-emerald-100 transition';
+        } else {
+          const daysAgo = Math.abs(diffDays);
+          text.textContent = `Event was ${daysAgo} ${daysAgo === 1 ? 'Day' : 'Days'} Ago`;
+          chip.className = 'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-[10px] font-black text-slate-600 hover:bg-slate-200 transition';
+        }
+      };
+      render();
+      eventCountdownTimer = setInterval(render, 60000);
+      chip.title = `Event Date: ${currentEventDate} — click to change`;
     }
 
     function listenData() {
@@ -1542,6 +1721,7 @@
 
         snapshot.forEach((doc) => {
           const data = doc.data();
+          if (data.isEventSettings === true) return;
           if (data.isTask === true) {
             tasks.push({ id: doc.id, ...data });
           } else {
@@ -1907,6 +2087,105 @@
       return {gents:g, ladies:l, kids:k};
     }
     function getGuestComing(f) { const a = getGuestActualCounts(f); return a.gents + a.ladies + a.kids; }
+
+    function escapeJs(value) { return String(value ?? '').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\r?\n/g,' '); }
+    function escapeHtml(value) { const d=document.createElement('div'); d.textContent=String(value ?? ''); return d.innerHTML; }
+
+    function getAdminCodeGroups() {
+      const groups = new Map();
+      (families || []).filter(f => f && f.isTask !== true).forEach(f => {
+        const code = String(f.code || '').trim().toUpperCase();
+        if (!code || code === ADMIN_CODE) return;
+        if (!groups.has(code)) groups.set(code, { code, docs: [], phones: new Set() });
+        const g = groups.get(code);
+        g.docs.push(f);
+        const phone = String(f.phone || '').trim();
+        if (phone) g.phones.add(phone);
+      });
+      return Array.from(groups.values()).sort((a,b) => a.code.localeCompare(b.code));
+    }
+
+    function renderAdminFamilyCodePanel() {
+      if (!isAdmin) return;
+      const body = document.getElementById('adminFamilyCodeBody');
+      const empty = document.getElementById('adminFamilyEmpty');
+      const count = document.getElementById('adminFamilyCodeCount');
+      if (!body) return;
+      const groups = getAdminCodeGroups();
+      body.innerHTML = '';
+      if (count) count.textContent = `${groups.length} Code${groups.length === 1 ? '' : 's'}`;
+      if (!groups.length) { if (empty) empty.classList.remove('hidden'); return; }
+      if (empty) empty.classList.add('hidden');
+
+      groups.forEach(g => {
+        let pg=0,pl=0,pk=0,ag=0,al=0,ak=0;
+        g.docs.forEach(f => {
+          pg += toNumber(f.gents); pl += toNumber(f.ladies); pk += toNumber(f.kids);
+          const a = getGuestActualCounts(f); ag += a.gents; al += a.ladies; ak += a.kids;
+        });
+        const blocked = g.docs.some(f => f.isBlocked === true);
+        const phone = Array.from(g.phones)[0] || '—';
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="font-mono font-black text-indigo-700 whitespace-nowrap">${escapeHtml(g.code)}</td>
+          <td class="whitespace-nowrap font-semibold text-slate-700">${escapeHtml(phone)}</td>
+          <td class="whitespace-nowrap"><b>${g.docs.length}</b> guest rows</td>
+          <td class="whitespace-nowrap text-slate-700"><b>G ${pg}</b> · <b>L ${pl}</b> · <b>K ${pk}</b> · <b>T ${pg+pl+pk}</b></td>
+          <td class="whitespace-nowrap text-emerald-700"><b>G ${ag}</b> · <b>L ${al}</b> · <b>K ${ak}</b> · <b>T ${ag+al+ak}</b></td>
+          <td class="whitespace-nowrap ${blocked ? 'admin-status-lock':'admin-status-open'}"><i class="fa-solid ${blocked ? 'fa-lock':'fa-unlock'} mr-1"></i>${blocked ? 'Locked':'Active'}</td>
+          <td class="whitespace-nowrap">\
+            <div class="flex items-center gap-1">\
+              <button type="button" class="admin-mini-btn blue" title="Modify code and phone" onclick="adminModifyFamilyCode('${escapeJs(g.code)}')"><i class="fa-solid fa-pen"></i></button>\
+              <button type="button" class="admin-mini-btn ${blocked ? 'blue':'rose'}" title="${blocked ? 'Unlock code':'Lock code'}" onclick="adminToggleFamilyLock('${escapeJs(g.code)}', ${blocked})"><i class="fa-solid ${blocked ? 'fa-unlock':'fa-lock'}"></i></button>\
+            </div>\
+          </td>`;
+        body.appendChild(tr);
+      });
+    }
+
+    async function adminModifyFamilyCode(oldCode) {
+      if (!isAdmin) return;
+      const code = String(oldCode || '').trim().toUpperCase();
+      if (!code || code === ADMIN_CODE) return;
+      const group = getAdminCodeGroups().find(g => g.code === code);
+      if (!group) return alert('Family code not found.');
+      const currentPhone = Array.from(group.phones)[0] || '';
+      const newCode = (prompt(`Modify family code for ${code}:`, code) || '').trim().toUpperCase();
+      if (!newCode) return;
+      if (newCode === ADMIN_CODE) return alert('That code is reserved for the administrator.');
+      if (!/^[A-Z0-9]{4}$/.test(newCode)) return alert('Family code must be exactly 4 letters/numbers.');
+      if (newCode !== code && getAdminCodeGroups().some(g => g.code === newCode)) return alert('That family code already exists.');
+      const newPhone = prompt(`Phone number used for ${newCode}:`, currentPhone) ?? currentPhone;
+      const phone = String(newPhone).trim();
+      if (!confirm(`Update ${code} → ${newCode}${phone ? ` and phone → ${phone}` : ''}?`)) return;
+      try {
+        const relatedDocs = [...(families || []), ...(tasks || [])].filter(d => String(d.code || '').trim().toUpperCase() === code);
+        const batch = db.batch();
+        relatedDocs.forEach(f => batch.update(collectionRef.doc(f.id), { code: newCode, ...(f.isTask === true ? {} : { phone }), updatedAt: firebase.firestore.FieldValue.serverTimestamp() }));
+        await batch.commit();
+        alert(`Family code ${code} updated to ${newCode}.`);
+      } catch (err) {
+        alert('Unable to modify family code: ' + (err.message || err));
+      }
+    }
+
+    async function adminToggleFamilyLock(code, currentlyBlocked) {
+      if (!isAdmin) return;
+      const target = String(code || '').trim().toUpperCase();
+      const group = getAdminCodeGroups().find(g => g.code === target);
+      if (!group) return alert('Family code not found.');
+      const action = currentlyBlocked ? 'unlock' : 'lock';
+      if (!confirm(`${action === 'lock' ? 'Lock' : 'Unlock'} family code ${target}?`)) return;
+      try {
+        const relatedDocs = [...(families || []), ...(tasks || [])].filter(d => String(d.code || '').trim().toUpperCase() === target);
+        const batch = db.batch();
+        relatedDocs.forEach(f => batch.update(collectionRef.doc(f.id), { isBlocked: !currentlyBlocked, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }));
+        await batch.commit();
+        alert(`${target} is now ${currentlyBlocked ? 'unlocked' : 'locked'}.`);
+      } catch (err) {
+        alert(`Unable to ${action} ${target}: ` + (err.message || err));
+      }
+    }
 
     function renderDashboard() {
       const target = getVisibleFamilies();
