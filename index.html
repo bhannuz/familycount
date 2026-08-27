@@ -530,13 +530,17 @@
             <h1 class="text-xs sm:text-sm font-bold text-slate-900 leading-tight">Guest Headcount, Functions & Task Tracker</h1>
             <div class="flex items-center gap-2 flex-wrap">
               <span id="roleBadge" class="text-[10px] font-bold text-indigo-600">Guest Mode</span>
-              <button type="button" id="countdownChip" onclick="openMetaManager();" class="hidden inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-indigo-50 border border-indigo-200 text-[10px] font-black text-indigo-700 hover:bg-indigo-100 transition" title="Change event date">
-                <i class="fa-solid fa-hourglass-half text-[9px]"></i>
-                <span id="countdownText">Set Event Date</span>
-              </button>
             </div>
           </div>
         </div>
+
+        <!-- Center Countdown Circle -->
+        <button type="button" id="countdownChip" onclick="openMetaManager();"
+          class="hidden absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[72px] h-[72px] sm:w-[82px] sm:h-[82px] rounded-full bg-indigo-50 border-2 border-indigo-200 text-indigo-700 hover:bg-indigo-100 hover:border-indigo-300 transition shadow-sm flex-col items-center justify-center text-center leading-tight z-10"
+          title="Change event date">
+          <i class="fa-solid fa-hourglass-half text-[10px] sm:text-[11px] mb-0.5"></i>
+          <span id="countdownText" class="text-[9px] sm:text-[10px] font-black leading-tight px-1">Set Event Date</span>
+        </button>
 
         <!-- Top Right Action Menu -->
         <div class="relative">
@@ -1609,7 +1613,7 @@
     }
     function updateCountdownChip() {
       const chip=document.getElementById('countdownChip'), text=document.getElementById('countdownText'); if(!chip||!text)return;
-      if(eventCountdownTimer){clearInterval(eventCountdownTimer);eventCountdownTimer=null;} chip.classList.remove('hidden');
+      if(eventCountdownTimer){clearInterval(eventCountdownTimer);eventCountdownTimer=null;} chip.classList.remove('hidden'); chip.classList.add('flex');
       const fn=selectedTopFunction,date=getSelectedFunctionDate();
       if(!fn||fn==='All'){text.textContent='Select Function';chip.title='Select an Event Function to view its countdown';return;}
       if(!date){text.textContent='Set Date';chip.title=`${fn}: set event date in Manage → Event Functions`;return;}
