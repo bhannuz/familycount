@@ -530,7 +530,7 @@
             <h1 class="text-xs sm:text-sm font-bold text-slate-900 leading-tight">Guest Headcount, Functions & Task Tracker</h1>
             <div class="flex items-center gap-2 flex-wrap">
               <span id="roleBadge" class="text-[10px] font-bold text-indigo-600">Guest Mode</span>
-              <button type="button" id="countdownChip" onclick="openEventDateModal(true)" class="hidden inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-indigo-50 border border-indigo-200 text-[10px] font-black text-indigo-700 hover:bg-indigo-100 transition" title="Change event date">
+              <button type="button" id="countdownChip" onclick="openMetaManager();" class="hidden inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-indigo-50 border border-indigo-200 text-[10px] font-black text-indigo-700 hover:bg-indigo-100 transition" title="Change event date">
                 <i class="fa-solid fa-hourglass-half text-[9px]"></i>
                 <span id="countdownText">Set Event Date</span>
               </button>
@@ -1596,122 +1596,22 @@
       setViewMode(currentViewMode === 'compact' ? 'table' : currentViewMode);
       setTaskViewMode(currentTaskViewMode);
       listenCodeMeta();
-      listenEventDate();
       listenData();
     }
 
-    function getEventSettingsDocId() {
-      const code = (loggedCode || '').trim().toUpperCase();
-      return `__event_settings__${code || 'UNKNOWN'}`;
+    // ==================== FUNCTION-SPECIFIC COUNTDOWN ====================
+    function getSelectedFunctionDate() {
+      if (!selectedTopFunction || selectedTopFunction === 'All') return '';
+      const dates=getCodeMetaData().functionDates||{}; const key=Object.keys(dates).find(k=>k.toLowerCase()===String(selectedTopFunction).toLowerCase());
+      return key ? String(dates[key]||'') : '';
     }
-
-    function listenEventDate() {
-      if (eventDateDocUnsubscribe) {
-        try { eventDateDocUnsubscribe(); } catch (e) {}
-        eventDateDocUnsubscribe = null;
-      }
-      currentEventDate = '';
-      updateCountdownChip();
-      if (!loggedCode) return;
-
-      const ref = collectionRef.doc(getEventSettingsDocId());
-      eventDateDocUnsubscribe = ref.onSnapshot((doc) => {
-        currentEventDate = doc.exists && doc.data().eventDate ? String(doc.data().eventDate) : '';
-        updateCountdownChip();
-        if (!currentEventDate) {
-          openEventDateModal(false);
-        }
-      }, (error) => {
-        console.error('Event date listener error:', error);
-        updateCountdownChip();
-      });
-    }
-
-    function openEventDateModal(canCancel) {
-      const modal = document.getElementById('eventDateModal');
-      const input = document.getElementById('eventDateInput');
-      const cancel = document.getElementById('eventDateCancelBtn');
-      if (!modal || !input) return;
-      editingEventDate = !!canCancel;
-      input.value = currentEventDate || '';
-      if (cancel) cancel.classList.toggle('hidden', !canCancel);
-      modal.classList.remove('hidden');
-      setTimeout(() => input.focus(), 50);
-    }
-
-    function closeEventDateModal() {
-      const modal = document.getElementById('eventDateModal');
-      if (!modal) return;
-      if (!currentEventDate && !editingEventDate) return;
-      modal.classList.add('hidden');
-      editingEventDate = false;
-    }
-
-    async function saveEventDate() {
-      const input = document.getElementById('eventDateInput');
-      const date = input ? input.value : '';
-      if (!date) {
-        alert('Please select the event date.');
-        return;
-      }
-      if (!loggedCode) return;
-
-      try {
-        await collectionRef.doc(getEventSettingsDocId()).set({
-          isEventSettings: true,
-          code: loggedCode,
-          eventDate: date,
-          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        }, { merge: true });
-        currentEventDate = date;
-        updateCountdownChip();
-        closeEventDateModal();
-      } catch (error) {
-        console.error('Could not save event date:', error);
-        alert('Could not save the event date. Please try again.');
-      }
-    }
-
     function updateCountdownChip() {
-      const chip = document.getElementById('countdownChip');
-      const text = document.getElementById('countdownText');
-      if (!chip || !text) return;
-
-      chip.classList.remove('hidden');
-      if (eventCountdownTimer) {
-        clearInterval(eventCountdownTimer);
-        eventCountdownTimer = null;
-      }
-
-      if (!currentEventDate) {
-        text.textContent = 'Set Event Date';
-        chip.className = 'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-[10px] font-black text-amber-700 hover:bg-amber-100 transition';
-        chip.title = 'Set event date';
-        return;
-      }
-
-      const render = () => {
-        const parts = currentEventDate.split('-').map(Number);
-        const eventStart = new Date(parts[0], parts[1] - 1, parts[2]);
-        eventStart.setHours(0, 0, 0, 0);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const diffDays = Math.round((eventStart - today) / 86400000);
-        if (diffDays > 0) {
-          text.textContent = `${diffDays} ${diffDays === 1 ? 'Day' : 'Days'} to Go`;
-          chip.className = 'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-indigo-50 border border-indigo-200 text-[10px] font-black text-indigo-700 hover:bg-indigo-100 transition';
-        } else if (diffDays === 0) {
-          text.textContent = 'Today is the Event!';
-          chip.className = 'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-[10px] font-black text-emerald-700 hover:bg-emerald-100 transition';
-        } else {
-          const daysAgo = Math.abs(diffDays);
-          text.textContent = `Event was ${daysAgo} ${daysAgo === 1 ? 'Day' : 'Days'} Ago`;
-          chip.className = 'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-[10px] font-black text-slate-600 hover:bg-slate-200 transition';
-        }
-      };
-      render();
-      eventCountdownTimer = setInterval(render, 60000);
-      chip.title = `Event Date: ${currentEventDate} — click to change`;
+      const chip=document.getElementById('countdownChip'), text=document.getElementById('countdownText'); if(!chip||!text)return;
+      if(eventCountdownTimer){clearInterval(eventCountdownTimer);eventCountdownTimer=null;} chip.classList.remove('hidden');
+      const fn=selectedTopFunction,date=getSelectedFunctionDate();
+      if(!fn||fn==='All'){text.textContent='Select Function';chip.title='Select an Event Function to view its countdown';return;}
+      if(!date){text.textContent='Set Date';chip.title=`${fn}: set event date in Manage → Event Functions`;return;}
+      const render=()=>{const p=date.split('-').map(Number),d0=new Date(p[0],p[1]-1,p[2]);d0.setHours(0,0,0,0);const t=new Date();t.setHours(0,0,0,0);const d=Math.round((d0-t)/86400000);text.textContent=d>0?`${d} ${d===1?'Day':'Days'} to Go`:d===0?'Today is the Event!':`Event was ${Math.abs(d)} ${Math.abs(d)===1?'Day':'Days'} Ago`;}; render();eventCountdownTimer=setInterval(render,60000); chip.title=`${fn} — Event Date: ${date}`;
     }
 
     function listenData() {
@@ -1733,6 +1633,7 @@
         renderDashboard();
         renderFilteredHistory();
         renderTasksList();
+        updateCountdownChip();
         if (!document.getElementById('metaManagerModal').classList.contains('hidden')) {
           renderMetaManagerLists();
         }
@@ -1767,6 +1668,7 @@
       renderDashboard();
       renderFilteredHistory();
       renderTasksList();
+      updateCountdownChip();
     }
 
     async function purgeCorruptedEntries() {
@@ -1799,6 +1701,7 @@
     function getStandardDefaultMetaData() {
       return {
         functions: ['Engagement', 'Haldi Ceremony', 'House Warming / Pooja', 'Main Reception', 'Marriage Ceremony', 'Sangeet / Mehendi'],
+        functionDates: {},
         categories: ['College Friends', 'Friends', 'Maternal Side', 'Neighbours', 'Office Friends', 'Paternal Side', 'School Friends'],
         taskCategories: [
           '🍽️ Catering & Food Menu',
@@ -1836,8 +1739,11 @@
         const result = arr.map(v => String(v || '').trim()).filter(Boolean);
         return result.length ? [...new Set(result)] : [...fallback];
       };
-      return {
-        functions: clean(src.functions, defaults.functions),
+      const functions = clean(src.functions, defaults.functions);
+      const rawDates = (src.functionDates && typeof src.functionDates === 'object') ? src.functionDates : {};
+      const functionDates = {};
+      functions.forEach(fn => { if (rawDates[fn]) functionDates[fn] = String(rawDates[fn]).slice(0,10); });
+      return { functions, functionDates,
         categories: clean(src.categories, defaults.categories),
         taskCategories: clean(src.taskCategories, defaults.taskCategories),
         relations: clean(src.relations, defaults.relations)
@@ -1889,6 +1795,7 @@
         renderDashboard();
         renderFilteredHistory();
         renderTasksList();
+        updateCountdownChip();
         if (!document.getElementById('metaManagerModal').classList.contains('hidden')) {
           renderMetaManagerLists();
         }
@@ -1948,6 +1855,7 @@
         isMeta: true,
         scope: 'global',
         functions: codeMetaData.functions,
+        functionDates: codeMetaData.functionDates || {},
         categories: codeMetaData.categories,
         taskCategories: codeMetaData.taskCategories,
         relations: codeMetaData.relations,
@@ -2022,6 +1930,8 @@
       if (type === 'functions') {
         if (!meta.functions.some(f => f.toLowerCase() === val.toLowerCase())) {
           meta.functions.push(val);
+          if (!meta.functionDates) meta.functionDates = {};
+          meta.functionDates[val] = '';
         }
       } else if (type === 'categories') {
         const canonical = canonicalCategory(val);
@@ -2867,30 +2777,15 @@
       const allTaskCategories = Array.from(new Set([...(meta.taskCategories || []), ...Object.keys(taskCatCountMap)])).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
       const allRelations = Array.from(new Set([...(meta.relations || []), ...Object.keys(relCountMap)])).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
 
-      // 1. Functions List
+      // 1. Functions List — set each function's event date here
       funcList.innerHTML = '';
+      const functionDates = meta.functionDates || {};
       allFunctions.forEach(fn => {
         const count = funcCountMap[fn] || 0;
+        const safeFn = escapeHtml(fn), fnKey = escapeJs(fn), dateValue = functionDates[fn] || '';
         const row = document.createElement('div');
-        row.className = 'flex items-center justify-between p-2 rounded-lg bg-indigo-50/50 border border-indigo-100 text-xs';
-        row.innerHTML = `
-          <div class="flex items-center gap-2">
-            <span class="font-bold text-indigo-900">${fn}</span>
-            <span class="text-[10px] px-1.5 py-0.5 rounded font-semibold ${count > 0 ? 'bg-indigo-200 text-indigo-900' : 'bg-slate-200 text-slate-600'}">
-              ${count} ${count === 1 ? 'entry' : 'entries'}
-            </span>
-          </div>
-          <div class="flex items-center gap-1.5">
-            <button type="button" onclick="modifyFunction('${fn}')" class="px-2 py-0.5 text-[11px] font-bold bg-white border border-indigo-200 hover:border-indigo-500 rounded text-indigo-700 transition" title="Rename Function">
-              <i class="fa-solid fa-pen"></i> Rename
-            </button>
-            <button type="button" onclick="deleteFunction('${fn}', ${count})" class="px-2 py-0.5 text-[11px] font-bold rounded transition ${
-              count > 0 ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200'
-            }" title="${count > 0 ? 'Cannot delete: records already exist' : 'Delete Function'}">
-              <i class="fa-solid fa-trash"></i>
-            </button>
-          </div>
-        `;
+        row.className = 'p-2 rounded-lg bg-indigo-50/50 border border-indigo-100 text-xs';
+        row.innerHTML = `<div class="flex items-center justify-between gap-2"><div class="flex items-center gap-2 min-w-0"><span class="font-bold text-indigo-900 truncate">${safeFn}</span><span class="text-[10px] px-1.5 py-0.5 rounded font-semibold ${count>0?'bg-indigo-200 text-indigo-900':'bg-slate-200 text-slate-600'}">${count} ${count===1?'entry':'entries'}</span></div><div class="flex items-center gap-1.5 shrink-0"><button type="button" onclick="modifyFunction('${fnKey}')" class="px-2 py-0.5 text-[11px] font-bold bg-white border border-indigo-200 hover:border-indigo-500 rounded text-indigo-700">Rename</button><button type="button" onclick="deleteFunction('${fnKey}', ${count})" class="px-2 py-0.5 text-[11px] font-bold bg-rose-50 text-rose-600 rounded">🗑</button></div></div><div class="mt-2 flex items-center gap-2"><label class="text-[10px] font-bold uppercase text-slate-500 whitespace-nowrap">Event Date</label><input type="date" value="${escapeHtml(dateValue)}" onchange="saveFunctionDate('${fnKey}', this.value)" class="flex-1 min-w-0 bg-white border border-indigo-200 rounded-lg px-2 py-1 text-[11px] font-semibold"/><span class="text-[9px] text-slate-400">Countdown</span></div>`;
         funcList.appendChild(row);
       });
 
@@ -2982,8 +2877,11 @@
 
       const trimmed = newFn.trim();
       const meta = getCodeMetaData();
+      const oldDate = (meta.functionDates || {})[oldFn] || '';
       meta.functions = (meta.functions || []).map(f => f.toLowerCase() === oldFn.toLowerCase() ? trimmed : f);
       if (!meta.functions.includes(trimmed)) meta.functions.push(trimmed);
+      meta.functionDates = meta.functionDates || {};
+      delete meta.functionDates[oldFn]; meta.functionDates[trimmed] = oldDate;
       saveCodeMetaData(meta);
 
       const batch = db.batch();
@@ -3014,6 +2912,7 @@
       }
       const meta = getCodeMetaData();
       meta.functions = (meta.functions || []).filter(f => f.toLowerCase() !== fn.toLowerCase());
+      if (meta.functionDates) delete meta.functionDates[fn];
       saveCodeMetaData(meta);
       renderMetaManagerLists();
     }
