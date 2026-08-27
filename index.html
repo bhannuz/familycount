@@ -2782,7 +2782,7 @@
       const functionDates = meta.functionDates || {};
       allFunctions.forEach(fn => {
         const count = funcCountMap[fn] || 0;
-        const safeFn = escapeHtml(fn), fnKey = escapeJs(fn), dateValue = functionDates[fn] || '';
+        const safeFn = escapeHtml(fn), fnKey = escapeJs(fn), dateKey = Object.keys(functionDates).find(k => k.toLowerCase() === fn.toLowerCase()), dateValue = dateKey ? (functionDates[dateKey] || '') : '';
         const row = document.createElement('div');
         row.className = 'p-2 rounded-lg bg-indigo-50/50 border border-indigo-100 text-xs';
         row.innerHTML = `<div class="flex items-center justify-between gap-2"><div class="flex items-center gap-2 min-w-0"><span class="font-bold text-indigo-900 truncate">${safeFn}</span><span class="text-[10px] px-1.5 py-0.5 rounded font-semibold ${count>0?'bg-indigo-200 text-indigo-900':'bg-slate-200 text-slate-600'}">${count} ${count===1?'entry':'entries'}</span></div><div class="flex items-center gap-1.5 shrink-0"><button type="button" onclick="modifyFunction('${fnKey}')" class="px-2 py-0.5 text-[11px] font-bold bg-white border border-indigo-200 hover:border-indigo-500 rounded text-indigo-700">Rename</button><button type="button" onclick="deleteFunction('${fnKey}', ${count})" class="px-2 py-0.5 text-[11px] font-bold bg-rose-50 text-rose-600 rounded">🗑</button></div></div><div class="mt-2 flex items-center gap-2"><label class="text-[10px] font-bold uppercase text-slate-500 whitespace-nowrap">Event Date</label><input type="date" value="${escapeHtml(dateValue)}" onchange="saveFunctionDate('${fnKey}', this.value)" class="flex-1 min-w-0 bg-white border border-indigo-200 rounded-lg px-2 py-1 text-[11px] font-semibold"/><span class="text-[9px] text-slate-400">Countdown</span></div>`;
@@ -2903,6 +2903,75 @@
 
       await batch.commit();
       renderMetaManagerLists();
+    }
+
+    async function saveFunctionDate(functionName, dateValue) {
+      if (!functionName) return;
+
+      const fn = String(functionName).trim();
+      const date = String(dateValue || '').trim();
+
+      // HTML date inputs return YYYY-MM-DD. Empty is allowed to clear the date.
+      if (date && !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        alert('Please select a valid event date.');
+        renderMetaManagerLists();
+        return;
+      }
+
+      try {
+        const meta = getCodeMetaData();
+        meta.functions = Array.isArray(meta.functions) ? meta.functions : [];
+        meta.functionDates = (meta.functionDates && typeof meta.functionDates === 'object')
+          ? { ...meta.functionDates }
+          : {};
+
+        // Find the canonical function name case-insensitively so the date is
+        // always stored against the exact function name in the Functions list.
+        const canonical = meta.functions.find(
+          f => String(f).trim().toLowerCase() === fn.toLowerCase()
+        );
+
+        if (!canonical) {
+          alert('Event Function not found. Please refresh and try again.');
+          return;
+        }
+
+        if (date) {
+          meta.functionDates[canonical] = date;
+        } else {
+          delete meta.functionDates[canonical];
+        }
+
+        // Remove stale case-variant keys for this function.
+        Object.keys(meta.functionDates).forEach(key => {
+          if (key !== canonical && key.toLowerCase() === canonical.toLowerCase()) {
+            delete meta.functionDates[key];
+          }
+        });
+
+        codeMetaData = normalizeMetaData(meta);
+        localStorage.setItem(getCodeMetaStorageKey(), JSON.stringify(codeMetaData));
+
+        // Explicitly await Firestore so the user gets confirmation/error
+        // instead of the previous silent failure caused by a missing handler.
+        await collectionRef.doc(getMetaDocId()).set({
+          isMeta: true,
+          scope: 'global',
+          functions: codeMetaData.functions,
+          functionDates: codeMetaData.functionDates || {},
+          categories: codeMetaData.categories,
+          taskCategories: codeMetaData.taskCategories,
+          relations: codeMetaData.relations,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+
+        updateCountdownChip();
+        renderMetaManagerLists();
+      } catch (err) {
+        console.error('Unable to save event date:', err);
+        alert('Unable to save the event date. Please check your internet connection and Firestore permissions.\n\n' + (err.message || err));
+        renderMetaManagerLists();
+      }
     }
 
     function deleteFunction(fn, count) {
