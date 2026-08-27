@@ -1030,7 +1030,7 @@
     let currentViewMode = localStorage.getItem('fc_view_mode') || 'table';
     let currentTaskViewMode = localStorage.getItem('fc_task_view_mode') || 'table';
     let currentAppTab = 'guests';
-    let selectedTopFunction = 'All';
+    let selectedTopFunction = localStorage.getItem('fc_last_function') || 'All';
     let pendingImportPayload = null;
     let currentEventDate = '';
     let eventCountdownTimer = null;
@@ -1591,6 +1591,7 @@
         if (adminFamilyPanel) adminFamilyPanel.classList.remove('admin-visible');
       }
 
+      selectedTopFunction = localStorage.getItem('fc_last_function') || selectedTopFunction || 'All';
       updateColumnPickerCheckboxes();
       updateTaskColumnPickerCheckboxes();
       setViewMode(currentViewMode === 'compact' ? 'table' : currentViewMode);
@@ -1642,6 +1643,7 @@
 
     function onTopFunctionChange(val) {
       selectedTopFunction = val;
+      if (val && val !== 'All') localStorage.setItem('fc_last_function', val);
 
       const formFuncSelect = document.getElementById('funcSelect');
       const taskFuncSelect = document.getElementById('taskFuncSelect');
@@ -2785,7 +2787,7 @@
         const safeFn = escapeHtml(fn), fnKey = escapeJs(fn), dateKey = Object.keys(functionDates).find(k => k.toLowerCase() === fn.toLowerCase()), dateValue = dateKey ? (functionDates[dateKey] || '') : '';
         const row = document.createElement('div');
         row.className = 'p-2 rounded-lg bg-indigo-50/50 border border-indigo-100 text-xs';
-        row.innerHTML = `<div class="flex items-center justify-between gap-2"><div class="flex items-center gap-2 min-w-0"><span class="font-bold text-indigo-900 truncate">${safeFn}</span><span class="text-[10px] px-1.5 py-0.5 rounded font-semibold ${count>0?'bg-indigo-200 text-indigo-900':'bg-slate-200 text-slate-600'}">${count} ${count===1?'entry':'entries'}</span></div><div class="flex items-center gap-1.5 shrink-0"><button type="button" onclick="modifyFunction('${fnKey}')" class="px-2 py-0.5 text-[11px] font-bold bg-white border border-indigo-200 hover:border-indigo-500 rounded text-indigo-700">Rename</button><button type="button" onclick="deleteFunction('${fnKey}', ${count})" class="px-2 py-0.5 text-[11px] font-bold bg-rose-50 text-rose-600 rounded">🗑</button></div></div><div class="mt-2 flex items-center gap-2"><label class="text-[10px] font-bold uppercase text-slate-500 whitespace-nowrap">Event Date</label><input type="date" value="${escapeHtml(dateValue)}" onchange="saveFunctionDate('${fnKey}', this.value)" class="flex-1 min-w-0 bg-white border border-indigo-200 rounded-lg px-2 py-1 text-[11px] font-semibold"/><span class="text-[9px] text-slate-400">Countdown</span></div>`;
+        row.innerHTML = `<div class="flex items-center justify-between gap-2"><div class="flex items-center gap-2 min-w-0"><span class="font-bold text-indigo-900 truncate">${safeFn}</span><span class="text-[10px] px-1.5 py-0.5 rounded font-semibold ${count>0?'bg-indigo-200 text-indigo-900':'bg-slate-200 text-slate-600'}">${count} ${count===1?'entry':'entries'}</span></div><div class="flex items-center gap-1.5 shrink-0"><button type="button" onclick="modifyFunction('${fnKey}')" class="px-2 py-0.5 text-[11px] font-bold bg-white border border-indigo-200 hover:border-indigo-500 rounded text-indigo-700">Rename</button><button type="button" onclick="deleteFunction('${fnKey}', ${count})" class="px-2 py-0.5 text-[11px] font-bold bg-rose-50 text-rose-600 rounded">🗑</button></div></div><div class="mt-2 flex items-center gap-2"><label class="text-[10px] font-bold uppercase text-slate-500 whitespace-nowrap">Event Date</label><input id="functionDate_${escapeHtml(fnKey)}" type="date" value="${escapeHtml(dateValue)}" class="flex-1 min-w-0 bg-white border border-indigo-200 rounded-lg px-2 py-1 text-[11px] font-semibold"/><button type="button" onclick="saveFunctionDate('${fnKey}', document.getElementById('functionDate_${escapeHtml(fnKey)}').value)" class="px-2.5 py-1 text-[10px] font-bold bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg">Save</button><span class="text-[9px] text-slate-400">Countdown</span></div>`;
         funcList.appendChild(row);
       });
 
@@ -2965,8 +2967,12 @@
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true });
 
+        // Keep the local cache and countdown immediately in sync. The Firestore
+        // listener will then confirm the same value for every device.
+        localStorage.setItem(getCodeMetaStorageKey(), JSON.stringify(codeMetaData));
         updateCountdownChip();
         renderMetaManagerLists();
+        alert(`Event date saved for ${canonical}.`);
       } catch (err) {
         console.error('Unable to save event date:', err);
         alert('Unable to save the event date. Please check your internet connection and Firestore permissions.\n\n' + (err.message || err));
@@ -3209,7 +3215,9 @@
 
       // Sync Top Primary Function Filter
       const topFuncSelect = document.getElementById('topFunctionFilter');
-      const curTopVal = topFuncSelect.value;
+      const preferredTopFn = selectedTopFunction && selectedTopFunction !== 'All'
+        ? selectedTopFunction
+        : (localStorage.getItem('fc_last_function') || 'All');
       topFuncSelect.innerHTML = '<option value="All">All Functions (Combined)</option>';
       sortedFunctions.forEach(fn => {
         const opt = document.createElement('option');
@@ -3217,7 +3225,15 @@
         opt.textContent = `🎉 ${fn}`;
         topFuncSelect.appendChild(opt);
       });
-      topFuncSelect.value = scopedFunctions.has(curTopVal) ? curTopVal : 'All';
+      const matchingTopFn = sortedFunctions.find(fn => String(fn).toLowerCase() === String(preferredTopFn).toLowerCase());
+      if (matchingTopFn) {
+        selectedTopFunction = matchingTopFn;
+        topFuncSelect.value = matchingTopFn;
+        localStorage.setItem('fc_last_function', matchingTopFn);
+      } else {
+        selectedTopFunction = 'All';
+        topFuncSelect.value = 'All';
+      }
 
       // Sync Function in Guest Form
       const formFuncSelect = document.getElementById('funcSelect');
