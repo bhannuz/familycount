@@ -30,6 +30,14 @@
 
 
 .admin-family-panel{display:none}.admin-family-panel.admin-visible{display:block}.admin-code-table{width:100%;border-collapse:separate;border-spacing:0}.admin-code-table th,.admin-code-table td{border-bottom:1px solid #e2e8f0;border-right:1px solid #e2e8f0;padding:7px 8px;font-size:10px}.admin-code-table th:last-child,.admin-code-table td:last-child{border-right:0}.admin-code-table th{background:#f8fafc;color:#475569;text-transform:uppercase;font-size:9px;letter-spacing:.04em}.admin-code-table tr:last-child td{border-bottom:0}.admin-status-lock{color:#be123c;font-weight:900}.admin-status-open{color:#047857;font-weight:900}.admin-mini-btn{border:1px solid #cbd5e1;border-radius:6px;padding:4px 7px;background:#fff;font-size:10px;font-weight:800;cursor:pointer}.admin-mini-btn:hover{background:#f8fafc}.admin-mini-btn.blue:hover{color:#3730a3;border-color:#a5b4fc;background:#eef2ff}.admin-mini-btn.amber:hover{color:#92400e;border-color:#fcd34d;background:#fffbeb}.admin-mini-btn.rose:hover{color:#be123c;border-color:#fda4af;background:#fff1f2}
+
+    /* Header layout: keep the countdown centered without covering the Function selector. */
+    @media (max-width: 420px) {
+      #appScreen > header > div:first-child { grid-template-columns: minmax(0,1fr) 56px auto; }
+      #countdownChip { width: 56px !important; height: 56px !important; }
+      #countdownChip #countdownText { font-size: 8px !important; }
+      #countdownChip i { font-size: 9px !important; }
+    }
 </style>
 </head>
 <body class="bg-slate-100 text-slate-800 antialiased p-2 sm:p-3 md:p-4 min-h-screen">
@@ -521,13 +529,13 @@
     
     <!-- Top Header Bar with Top Function Filter & Add Guest Button next to it -->
     <header class="bg-white p-2.5 sm:p-3 rounded-xl border border-slate-200 shadow-sm space-y-2 relative">
-      <div class="flex items-center justify-between gap-2">
-        <div class="flex items-center gap-2">
+      <div class="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2">
+        <div class="flex items-center gap-2 min-w-0">
           <div class="w-7 h-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shrink-0">
             <i class="fa-solid fa-users"></i>
           </div>
           <div>
-            <h1 class="text-xs sm:text-sm font-bold text-slate-900 leading-tight">Guest Headcount, Functions & Task Tracker</h1>
+            <h1 class="text-xs sm:text-sm font-bold text-slate-900 leading-tight">Party Tracker</h1>
             <div class="flex items-center gap-2 flex-wrap">
               <span id="roleBadge" class="text-[10px] font-bold text-indigo-600">Guest Mode</span>
             </div>
@@ -536,14 +544,14 @@
 
         <!-- Center Countdown Circle -->
         <button type="button" id="countdownChip" onclick="openMetaManager();"
-          class="hidden absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[72px] h-[72px] sm:w-[82px] sm:h-[82px] rounded-full bg-indigo-50 border-2 border-indigo-200 text-indigo-700 hover:bg-indigo-100 hover:border-indigo-300 transition shadow-sm flex-col items-center justify-center text-center leading-tight z-10"
+          class="hidden relative w-[62px] h-[62px] sm:w-[72px] sm:h-[72px] rounded-full bg-indigo-50 border-2 border-indigo-200 text-indigo-700 hover:bg-indigo-100 hover:border-indigo-300 transition shadow-sm flex-col items-center justify-center text-center leading-tight justify-self-center shrink-0"
           title="Change event date">
           <i class="fa-solid fa-hourglass-half text-[10px] sm:text-[11px] mb-0.5"></i>
           <span id="countdownText" class="text-[9px] sm:text-[10px] font-black leading-tight px-1">Set Event Date</span>
         </button>
 
         <!-- Top Right Action Menu -->
-        <div class="relative">
+        <div class="relative justify-self-end">
           <button onclick="toggleActionMenu(event)" id="actionMenuBtn" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition border border-slate-200">
             <i class="fa-solid fa-ellipsis-vertical text-sm"></i>
           </button>
