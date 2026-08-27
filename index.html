@@ -1591,7 +1591,8 @@
         if (adminFamilyPanel) adminFamilyPanel.classList.remove('admin-visible');
       }
 
-      selectedTopFunction = localStorage.getItem('fc_last_function') || selectedTopFunction || 'All';
+      const savedLastFunction = localStorage.getItem('fc_last_function') || '';
+      if (savedLastFunction) selectedTopFunction = savedLastFunction;
       updateColumnPickerCheckboxes();
       updateTaskColumnPickerCheckboxes();
       setViewMode(currentViewMode === 'compact' ? 'table' : currentViewMode);
@@ -1642,8 +1643,10 @@
     }
 
     function onTopFunctionChange(val) {
-      selectedTopFunction = val;
-      if (val && val !== 'All') localStorage.setItem('fc_last_function', val);
+      selectedTopFunction = val || 'All';
+      if (selectedTopFunction !== 'All') {
+        localStorage.setItem('fc_last_function', selectedTopFunction);
+      }
 
       const formFuncSelect = document.getElementById('funcSelect');
       const taskFuncSelect = document.getElementById('taskFuncSelect');
@@ -2929,13 +2932,22 @@
 
         // Find the canonical function name case-insensitively so the date is
         // always stored against the exact function name in the Functions list.
-        const canonical = meta.functions.find(
+        // The Manage list can also contain functions discovered from existing
+        // guest/task records. If such a function is not yet in global metadata,
+        // add it instead of rejecting the date as "not found".
+        let canonical = meta.functions.find(
           f => String(f).trim().toLowerCase() === fn.toLowerCase()
         );
 
         if (!canonical) {
-          alert('Event Function not found. Please refresh and try again.');
-          return;
+          const discovered = [
+            ...families.map(f => f.eventFunction),
+            ...tasks.map(t => t.eventFunction)
+          ].find(v => String(v || '').trim().toLowerCase() === fn.toLowerCase());
+          canonical = String(discovered || fn).trim();
+          if (!meta.functions.some(f => String(f).trim().toLowerCase() === canonical.toLowerCase())) {
+            meta.functions.push(canonical);
+          }
         }
 
         if (date) {
