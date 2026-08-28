@@ -39,23 +39,20 @@
       #countdownChip i { font-size: 9px !important; }
     }
 
-/* Food Planning - compact UI */
+/* Party Tracker tabs + Food Planning */
+.party-tabs{width:100%;}
+.party-tab{min-width:0;min-height:42px;border:1px solid #e2e8f0;border-radius:11px;padding:7px 6px;display:flex;align-items:center;justify-content:center;gap:6px;font-size:10px;font-weight:900;line-height:12px;transition:.18s;background:#f8fafc;color:#475569;white-space:nowrap;}
+.party-tab:hover{transform:translateY(-1px)}
+.party-tab i{font-size:11px}.party-tab-count{font-size:8px;min-width:18px;padding:2px 5px;border-radius:999px;background:#fff;border:1px solid #dbe3ee;color:#475569}
+.party-tab-guests.active{background:#eef2ff;border-color:#c7d2fe;color:#3730a3}.party-tab-guests.active i{color:#4f46e5}.party-tab-guests.active .party-tab-count{background:#e0e7ff;color:#3730a3;border-color:#c7d2fe}
+.party-tab-tasks.active{background:#fffbeb;border-color:#fde68a;color:#92400e}.party-tab-tasks.active i{color:#d97706}.party-tab-tasks.active .party-tab-count{background:#fef3c7;color:#92400e;border-color:#fde68a}
+.party-tab-food.active{background:#ecfdf5;border-color:#a7f3d0;color:#047857}.party-tab-food.active i{color:#059669}.party-tab-food.active .party-tab-count{background:#d1fae5;color:#047857;border-color:#a7f3d0}
+@media(max-width:430px){.party-tab{font-size:9px;gap:3px;padding-left:3px;padding-right:3px}.party-tab-count{display:none}.party-tab i{font-size:10px}}
 .food-meal-card{border:1px solid #e2e8f0;border-radius:12px;background:#fff;overflow:hidden;box-shadow:0 1px 2px rgba(15,23,42,.04)}
-.food-meal-head{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:#f8fafc;border-bottom:1px solid #e2e8f0}
-.food-meal-title{font-size:12px;font-weight:900;color:#0f172a;display:flex;align-items:center;gap:7px}
-.food-meal-body{padding:9px 10px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:end}
-.food-field label{display:block;font-size:9px;font-weight:800;text-transform:uppercase;color:#64748b;margin-bottom:3px}
-.food-input{width:100%;border:1px solid #cbd5e1;border-radius:7px;padding:6px 8px;font-size:11px;font-weight:600;outline:none;background:#fff}
-.food-input:focus{border-color:#818cf8;box-shadow:0 0 0 2px rgba(99,102,241,.1)}
-.food-counts{display:grid;grid-template-columns:repeat(3,minmax(52px,1fr));gap:5px;margin-top:8px}
-.food-count-box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:7px;padding:5px 4px;text-align:center}
-.food-count-box .lbl{font-size:8px;font-weight:900;color:#64748b;text-transform:uppercase;display:block}
-.food-count-box .num{font-size:12px;font-weight:900;color:#0f172a;display:block;line-height:14px}
-.food-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
-.food-summary-card{border:1px solid #e2e8f0;border-radius:10px;padding:8px 10px;background:#fff}
-.food-summary-label{font-size:8px;font-weight:900;text-transform:uppercase;color:#64748b}
-.food-summary-value{font-size:15px;font-weight:900;line-height:18px}
-@media(max-width:640px){.food-meal-body{grid-template-columns:1fr}.food-summary{grid-template-columns:1fr 1fr 1fr}.food-input{font-size:10px}}
+.food-meal-head{display:flex;align-items:center;justify-content:space-between;padding:9px 10px;background:#f8fafc;border-bottom:1px solid #e2e8f0;cursor:pointer}
+.meal-breakfast .food-meal-head{background:#fffbeb}.meal-lunch .food-meal-head{background:#fff7ed}.meal-snacks .food-meal-head{background:#fdf2f8}.meal-dinner .food-meal-head{background:#eef2ff}
+.food-meal-title{font-size:12px;font-weight:900;color:#0f172a;display:flex;align-items:center;gap:7px}.food-meal-title small{font-size:8px;color:#64748b;font-weight:800;margin-left:2px}.food-meal-icon{width:25px;height:25px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:10px}.food-chevron{font-size:9px;color:#64748b;transition:transform .18s}.food-mini-summary{font-size:8px;font-weight:900;color:#475569;background:#fff;border:1px solid #dbe3ee;border-radius:999px;padding:3px 6px;white-space:nowrap}
+.food-meal-body{padding:8px 9px}.food-table-wrap{overflow-x:auto;border:1px solid #e2e8f0;border-radius:8px}.food-detail-table{width:100%;border-collapse:collapse;min-width:430px}.food-detail-table th,.food-detail-table td{border-bottom:1px solid #e2e8f0;border-right:1px solid #e2e8f0;padding:5px 6px;font-size:9px}.food-detail-table th:last-child,.food-detail-table td:last-child{border-right:0}.food-detail-table tr:last-child td{border-bottom:0}.food-detail-table th{background:#f8fafc;color:#64748b;text-transform:uppercase;font-size:8px;letter-spacing:.04em;text-align:left}.food-detail-table td:first-child{width:105px;font-weight:900;color:#475569;white-space:nowrap}.food-detail-table td:last-child{width:62px}.food-input{width:100%;border:1px solid #cbd5e1;border-radius:7px;padding:5px 7px;font-size:10px;font-weight:600;outline:none;background:#fff}.food-input:focus,.food-qty-input:focus{border-color:#10b981;box-shadow:0 0 0 2px rgba(16,185,129,.1)}.food-qty-input{width:58px;border:1px solid #cbd5e1;border-radius:7px;padding:5px 5px;font-size:10px;font-weight:800;text-align:center;outline:none;background:#fff}.food-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}.food-summary-card{border-radius:10px;padding:7px 9px;border:1px solid;display:flex;align-items:center;justify-content:space-between;gap:5px;min-width:0}.food-summary-card span{font-size:8px;font-weight:900;white-space:nowrap}.food-summary-card b{font-size:16px;line-height:17px}.food-chip-plan{background:#eef2ff;border-color:#c7d2fe;color:#3730a3}.food-chip-actual{background:#ecfdf5;border-color:#a7f3d0;color:#047857}.food-chip-prepared{background:#fff7ed;border-color:#fed7aa;color:#c2410c}.food-chip-buffer{background:#fefce8;border-color:#fde68a;color:#a16207}@media(max-width:640px){.food-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.food-summary-card b{font-size:14px}.food-meal-title small{display:none}}
 </style>
 </head>
 <body class="bg-slate-100 text-slate-800 antialiased p-2 sm:p-3 md:p-4 min-h-screen">
@@ -656,22 +653,18 @@
     </section>
 
     <!-- PRIMARY APP MODULE SWITCHER TABS -->
-    <div class="flex items-center bg-slate-200/80 p-1 rounded-xl border border-slate-300 shadow-2xs gap-1">
-      <button type="button" onclick="switchAppTab('guests')" id="tabNavGuests" class="flex-1 py-1.5 sm:py-2 text-xs font-black rounded-lg transition bg-white text-indigo-900 shadow-sm flex items-center justify-center gap-1.5">
-        <i class="fa-solid fa-users text-indigo-600"></i>
-        <span>Guest List & RSVP</span>
-        <span id="tabCountGuests" class="text-[10px] px-1.5 py-0.2 rounded-full bg-indigo-100 text-indigo-800 font-bold ml-1">0</span>
+    <div class="party-tabs grid grid-cols-3 gap-1.5 p-1.5 rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <button type="button" onclick="switchAppTab('guests')" id="tabNavGuests" class="party-tab party-tab-guests active">
+        <i class="fa-solid fa-users"></i><span>Guest List</span>
+        <span id="tabCountGuests" class="party-tab-count">0</span>
       </button>
-
-      <button type="button" onclick="switchAppTab('tasks')" id="tabNavTasks" class="flex-1 py-1.5 sm:py-2 text-xs font-black rounded-lg transition text-slate-600 hover:text-slate-900 flex items-center justify-center gap-1.5">
-        <i class="fa-solid fa-list-check text-amber-600"></i>
-        <span>Event Function Tasks</span>
-        <span id="tabCountTasks" class="text-[10px] px-1.5 py-0.2 rounded-full bg-amber-100 text-amber-800 font-bold ml-1">0</span>
+      <button type="button" onclick="switchAppTab('tasks')" id="tabNavTasks" class="party-tab party-tab-tasks">
+        <i class="fa-solid fa-list-check"></i><span>Event Checklist</span>
+        <span id="tabCountTasks" class="party-tab-count">0</span>
       </button>
-
-      <button type="button" onclick="switchAppTab('food')" id="tabNavFood" class="flex-1 py-1.5 sm:py-2 text-xs font-black rounded-lg transition text-slate-600 hover:text-slate-900 flex items-center justify-center gap-1.5">
-        <i class="fa-solid fa-utensils text-emerald-600"></i>
-        <span>Food Planning</span>
+      <button type="button" onclick="switchAppTab('food')" id="tabNavFood" class="party-tab party-tab-food">
+        <i class="fa-solid fa-utensils"></i><span>Food Planning</span>
+        <span id="tabCountFood" class="party-tab-count">4</span>
       </button>
     </div>
 
@@ -1035,52 +1028,95 @@
 
     <!-- ==================== MODULE 3: FOOD PLANNING ==================== -->
     <div id="foodModule" class="hidden space-y-2.5">
-      <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-3">
-        <div class="flex items-center justify-between gap-2 mb-2.5">
-          <div>
+      <div class="food-planning-shell rounded-2xl border border-emerald-200 bg-white shadow-sm overflow-hidden">
+        <div class="px-3 py-2.5 bg-gradient-to-r from-emerald-50 via-white to-amber-50 border-b border-emerald-100">
+          <div class="flex flex-wrap items-center justify-between gap-2">
             <div class="flex items-center gap-2">
-              <div class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs"><i class="fa-solid fa-utensils"></i></div>
-              <div>
-                <h3 class="text-xs sm:text-sm font-black text-slate-900">Food Planning</h3>
-                <p class="text-[9px] text-slate-500">Menu & preparation plan for the selected function</p>
-              </div>
+              <div class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center"><i class="fa-solid fa-utensils"></i></div>
+              <div><h3 class="text-sm font-black text-slate-900">Food Planning</h3><p class="text-[9px] text-slate-500">Detailed menu & preparation plan for the selected function</p></div>
+            </div>
+            <button type="button" onclick="saveFoodPlanning()" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-black flex items-center gap-1.5 shadow-sm"><i class="fa-solid fa-floppy-disk"></i> Save Plan</button>
+          </div>
+          <div class="food-summary mt-2.5">
+            <div class="food-summary-card food-chip-plan"><span>PLAN GUESTS</span><b id="foodPlanTotal">0</b></div>
+            <div class="food-summary-card food-chip-actual"><span>ACTUAL GUESTS</span><b id="foodActualTotal">0</b></div>
+            <div class="food-summary-card food-chip-prepared"><span>PREPARED</span><b id="foodPrepareTotal">0</b></div>
+            <div class="food-summary-card food-chip-buffer"><span>BUFFER</span><b id="foodBufferTotal">+0</b></div>
+          </div>
+        </div>
+
+        <div class="p-2.5 grid grid-cols-1 md:grid-cols-2 gap-2.5">
+          <div class="food-meal-card meal-breakfast">
+            <button type="button" class="food-meal-head w-full text-left" onclick="toggleFoodMeal('breakfast')" aria-expanded="false">
+              <span class="food-meal-title"><span class="food-meal-icon bg-amber-100 text-amber-700"><i class="fa-solid fa-mug-hot"></i></span>Breakfast <small>Morning</small></span>
+              <span class="flex items-center gap-2"><span id="foodMealSummary_breakfast" class="food-mini-summary">P 0 · A 0 · Prep 0</span><i id="foodChevron_breakfast" class="fa-solid fa-chevron-right food-chevron"></i></span>
+            </button>
+            <div id="foodBody_breakfast" class="food-meal-body hidden">
+              <div class="food-table-wrap"><table class="food-detail-table"><thead><tr><th>Category</th><th>Menu Items</th><th>Qty</th></tr></thead><tbody>
+                <tr><td>Hot Breakfast</td><td><input id="foodItem_breakfast_hot" class="food-input" placeholder="Idli, Dosa, Upma..." /></td><td><input id="foodQty_breakfast_hot" type="number" min="0" step="any" class="food-qty-input" placeholder="0" /></td></tr>
+                <tr><td>Snacks / Tiffin</td><td><input id="foodItem_breakfast_tiffin" class="food-input" placeholder="Vada, Pongal, Poori..." /></td><td><input id="foodQty_breakfast_tiffin" type="number" min="0" step="any" class="food-qty-input" placeholder="0" /></td></tr>
+                <tr><td>Breads</td><td><input id="foodItem_breakfast_breads" class="food-input" placeholder="Bread, Bun, Paratha..." /></td><td><input id="foodQty_breakfast_breads" type="number" min="0" step="any" class="food-qty-input" placeholder="0" /></td></tr>
+                <tr><td>Sides</td><td><input id="foodItem_breakfast_sides" class="food-input" placeholder="Sambar, Curry, Potato..." /></td><td><input id="foodQty_breakfast_sides" type="number" min="0" step="any" class="food-qty-input" placeholder="0" /></td></tr>
+                <tr><td>Chutney / Pickle</td><td><input id="foodItem_breakfast_chutney" class="food-input" placeholder="Coconut, Tomato, Pickle..." /></td><td><input id="foodQty_breakfast_chutney" type="number" min="0" step="any" class="food-qty-input" placeholder="0" /></td></tr>
+                <tr><td>Beverages</td><td><input id="foodItem_breakfast_beverages" class="food-input" placeholder="Tea, Coffee, Milk..." /></td><td><input id="foodQty_breakfast_beverages" type="number" min="0" step="any" class="food-qty-input" placeholder="0" /></td></tr>
+                <tr><td>Fruit / Dessert</td><td><input id="foodItem_breakfast_dessert" class="food-input" placeholder="Fruit, Sweet..." /></td><td><input id="foodQty_breakfast_dessert" type="number" min="0" step="any" class="food-qty-input" placeholder="0" /></td></tr>
+              </tbody></table></div>
             </div>
           </div>
-          <button type="button" onclick="saveFoodPlanning()" class="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-black flex items-center gap-1.5 shadow-sm"><i class="fa-solid fa-floppy-disk"></i> Save</button>
-        </div>
 
-        <div class="food-summary">
-          <div class="food-summary-card bg-indigo-50/60 border-indigo-100"><div class="food-summary-label text-indigo-600">Plan Guests</div><div id="foodPlanTotal" class="food-summary-value text-indigo-900">0</div></div>
-          <div class="food-summary-card bg-emerald-50/60 border-emerald-100"><div class="food-summary-label text-emerald-600">Actual Guests</div><div id="foodActualTotal" class="food-summary-value text-emerald-900">0</div></div>
-          <div class="food-summary-card bg-amber-50/60 border-amber-100"><div class="food-summary-label text-amber-600">Prepare + Buffer</div><div id="foodPrepareTotal" class="food-summary-value text-amber-900">0</div></div>
-        </div>
-        <div class="mt-2 text-[9px] text-slate-500"><i class="fa-solid fa-circle-info mr-1 text-indigo-400"></i>Guest counts follow the selected Function. Set menu and preparation quantity for each meal below.</div>
-      </div>
+          <div class="food-meal-card meal-lunch">
+            <button type="button" class="food-meal-head w-full text-left" onclick="toggleFoodMeal('lunch')" aria-expanded="false">
+              <span class="food-meal-title"><span class="food-meal-icon bg-orange-100 text-orange-700"><i class="fa-solid fa-bowl-food"></i></span>Lunch <small>Afternoon</small></span>
+              <span class="flex items-center gap-2"><span id="foodMealSummary_lunch" class="food-mini-summary">P 0 · A 0 · Prep 0</span><i id="foodChevron_lunch" class="fa-solid fa-chevron-right food-chevron"></i></span>
+            </button>
+            <div id="foodBody_lunch" class="food-meal-body hidden"><div class="food-table-wrap"><table class="food-detail-table"><thead><tr><th>Category</th><th>Menu Items</th><th>Qty</th></tr></thead><tbody>
+              <tr><td>Starters</td><td><input id="foodItem_lunch_starters" class="food-input" placeholder="Paneer, Kebab, Pakoda..." /></td><td><input id="foodQty_lunch_starters" type="number" min="0" step="any" class="food-qty-input" /></td></tr>
+              <tr><td>Main Course</td><td><input id="foodItem_lunch_main" class="food-input" placeholder="Rice, Curry, Dal..." /></td><td><input id="foodQty_lunch_main" type="number" min="0" step="any" class="food-qty-input" /></td></tr>
+              <tr><td>Rice / Biryani</td><td><input id="foodItem_lunch_rice" class="food-input" placeholder="Rice, Biryani, Pulao..." /></td><td><input id="foodQty_lunch_rice" type="number" min="0" step="any" class="food-qty-input" /></td></tr>
+              <tr><td>Breads</td><td><input id="foodItem_lunch_breads" class="food-input" placeholder="Roti, Naan, Poori..." /></td><td><input id="foodQty_lunch_breads" type="number" min="0" step="any" class="food-qty-input" /></td></tr>
+              <tr><td>Sides</td><td><input id="foodItem_lunch_sides" class="food-input" placeholder="Vegetable, Fry, Curry..." /></td><td><input id="foodQty_lunch_sides" type="number" min="0" step="any" class="food-qty-input" /></td></tr>
+              <tr><td>Pickles</td><td><input id="foodItem_lunch_pickles" class="food-input" placeholder="Mango, Lime, Mixed..." /></td><td><input id="foodQty_lunch_pickles" type="number" min="0" step="any" class="food-qty-input" /></td></tr>
+              <tr><td>Raita / Salad</td><td><input id="foodItem_lunch_raita" class="food-input" placeholder="Raita, Salad, Papad..." /></td><td><input id="foodQty_lunch_raita" type="number" min="0" step="any" class="food-qty-input" /></td></tr>
+              <tr><td>Dessert</td><td><input id="foodItem_lunch_dessert" class="food-input" placeholder="Sweet, Ice Cream..." /></td><td><input id="foodQty_lunch_dessert" type="number" min="0" step="any" class="food-qty-input" /></td></tr>
+              <tr><td>Beverages</td><td><input id="foodItem_lunch_beverages" class="food-input" placeholder="Juice, Buttermilk..." /></td><td><input id="foodQty_lunch_beverages" type="number" min="0" step="any" class="food-qty-input" /></td></tr>
+            </tbody></table></div></div>
+          </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
-        <div class="food-meal-card">
-          <div class="food-meal-head"><div class="food-meal-title"><span class="w-6 h-6 rounded-md bg-amber-100 text-amber-700 flex items-center justify-center"><i class="fa-solid fa-mug-hot text-[10px]"></i></span>Breakfast</div><span class="text-[9px] font-bold text-slate-400">Morning</span></div>
-          <div class="food-meal-body"><div class="food-field"><label>Menu / Items</label><input id="foodMenu_breakfast" class="food-input" placeholder="Idli, Vada, Tea..." /></div><div class="food-field w-full sm:w-24"><label>Prepare</label><input id="foodQty_breakfast" type="number" min="0" step="any" class="food-input" placeholder="0" /></div>
-          <div class="col-span-full"><label class="block text-[9px] font-extrabold uppercase text-slate-500 mb-1">Counts</label><div class="food-counts"><div class="food-count-box"><span class="lbl">Plan</span><span id="foodPlan_breakfast" class="num">0</span></div><div class="food-count-box"><span class="lbl">Actual</span><span id="foodActual_breakfast" class="num">0</span></div><div class="food-count-box"><span class="lbl">Buffer</span><span id="foodBuffer_breakfast" class="num">+0</span></div></div></div></div>
-        </div>
+          <div class="food-meal-card meal-snacks">
+            <button type="button" class="food-meal-head w-full text-left" onclick="toggleFoodMeal('snacks')" aria-expanded="false">
+              <span class="food-meal-title"><span class="food-meal-icon bg-pink-100 text-pink-700"><i class="fa-solid fa-cookie-bite"></i></span>Snacks <small>Evening</small></span>
+              <span class="flex items-center gap-2"><span id="foodMealSummary_snacks" class="food-mini-summary">P 0 · A 0 · Prep 0</span><i id="foodChevron_snacks" class="fa-solid fa-chevron-right food-chevron"></i></span>
+            </button>
+            <div id="foodBody_snacks" class="food-meal-body hidden"><div class="food-table-wrap"><table class="food-detail-table"><thead><tr><th>Category</th><th>Menu Items</th><th>Qty</th></tr></thead><tbody>
+              <tr><td>Savouries</td><td><input id="foodItem_snacks_savouries" class="food-input" placeholder="Samosa, Pakoda, Cutlet..." /></td><td><input id="foodQty_snacks_savouries" type="number" min="0" step="any" class="food-qty-input" /></td></tr>
+              <tr><td>Chaats / Chutneys</td><td><input id="foodItem_snacks_chaat" class="food-input" placeholder="Chaat, Bhel, Chutney..." /></td><td><input id="foodQty_snacks_chaat" type="number" min="0" step="any" class="food-qty-input" /></td></tr>
+              <tr><td>Sweets</td><td><input id="foodItem_snacks_sweets" class="food-input" placeholder="Laddu, Barfi, Sweet..." /></td><td><input id="foodQty_snacks_sweets" type="number" min="0" step="any" class="food-qty-input" /></td></tr>
+              <tr><td>Bakery</td><td><input id="foodItem_snacks_bakery" class="food-input" placeholder="Cake, Puffs, Cookies..." /></td><td><input id="foodQty_snacks_bakery" type="number" min="0" step="any" class="food-qty-input" /></td></tr>
+              <tr><td>Fruit</td><td><input id="foodItem_snacks_fruit" class="food-input" placeholder="Fruit / Fruit Bowl..." /></td><td><input id="foodQty_snacks_fruit" type="number" min="0" step="any" class="food-qty-input" /></td></tr>
+              <tr><td>Hot Beverages</td><td><input id="foodItem_snacks_hotbev" class="food-input" placeholder="Tea, Coffee..." /></td><td><input id="foodQty_snacks_hotbev" type="number" min="0" step="any" class="food-qty-input" /></td></tr>
+              <tr><td>Cold Beverages</td><td><input id="foodItem_snacks_coldbev" class="food-input" placeholder="Juice, Soft Drink..." /></td><td><input id="foodQty_snacks_coldbev" type="number" min="0" step="any" class="food-qty-input" /></td></tr>
+            </tbody></table></div></div>
+          </div>
 
-        <div class="food-meal-card">
-          <div class="food-meal-head"><div class="food-meal-title"><span class="w-6 h-6 rounded-md bg-orange-100 text-orange-700 flex items-center justify-center"><i class="fa-solid fa-bowl-food text-[10px]"></i></span>Lunch</div><span class="text-[9px] font-bold text-slate-400">Afternoon</span></div>
-          <div class="food-meal-body"><div class="food-field"><label>Menu / Items</label><input id="foodMenu_lunch" class="food-input" placeholder="Rice, Dal, Curry..." /></div><div class="food-field w-full sm:w-24"><label>Prepare</label><input id="foodQty_lunch" type="number" min="0" step="any" class="food-input" placeholder="0" /></div>
-          <div class="col-span-full"><label class="block text-[9px] font-extrabold uppercase text-slate-500 mb-1">Counts</label><div class="food-counts"><div class="food-count-box"><span class="lbl">Plan</span><span id="foodPlan_lunch" class="num">0</span></div><div class="food-count-box"><span class="lbl">Actual</span><span id="foodActual_lunch" class="num">0</span></div><div class="food-count-box"><span class="lbl">Buffer</span><span id="foodBuffer_lunch" class="num">+0</span></div></div></div></div>
+          <div class="food-meal-card meal-dinner">
+            <button type="button" class="food-meal-head w-full text-left" onclick="toggleFoodMeal('dinner')" aria-expanded="false">
+              <span class="food-meal-title"><span class="food-meal-icon bg-indigo-100 text-indigo-700"><i class="fa-solid fa-moon"></i></span>Dinner <small>Night</small></span>
+              <span class="flex items-center gap-2"><span id="foodMealSummary_dinner" class="food-mini-summary">P 0 · A 0 · Prep 0</span><i id="foodChevron_dinner" class="fa-solid fa-chevron-right food-chevron"></i></span>
+            </button>
+            <div id="foodBody_dinner" class="food-meal-body hidden"><div class="food-table-wrap"><table class="food-detail-table"><thead><tr><th>Category</th><th>Menu Items</th><th>Qty</th></tr></thead><tbody>
+              <tr><td>Starters</td><td><input id="foodItem_dinner_starters" class="food-input" placeholder="Paneer, Kebab, Soup..." /></td><td><input id="foodQty_dinner_starters" type="number" min="0" step="any" class="food-qty-input" /></td></tr>
+              <tr><td>Main Course</td><td><input id="foodItem_dinner_main" class="food-input" placeholder="Curry, Vegetable, Dal..." /></td><td><input id="foodQty_dinner_main" type="number" min="0" step="any" class="food-qty-input" /></td></tr>
+              <tr><td>Rice / Biryani</td><td><input id="foodItem_dinner_rice" class="food-input" placeholder="Biryani, Rice, Pulao..." /></td><td><input id="foodQty_dinner_rice" type="number" min="0" step="any" class="food-qty-input" /></td></tr>
+              <tr><td>Breads</td><td><input id="foodItem_dinner_breads" class="food-input" placeholder="Roti, Naan, Paratha..." /></td><td><input id="foodQty_dinner_breads" type="number" min="0" step="any" class="food-qty-input" /></td></tr>
+              <tr><td>Sides</td><td><input id="foodItem_dinner_sides" class="food-input" placeholder="Fry, Curry, Vegetable..." /></td><td><input id="foodQty_dinner_sides" type="number" min="0" step="any" class="food-qty-input" /></td></tr>
+              <tr><td>Pickles</td><td><input id="foodItem_dinner_pickles" class="food-input" placeholder="Mango, Lime, Mixed..." /></td><td><input id="foodQty_dinner_pickles" type="number" min="0" step="any" class="food-qty-input" /></td></tr>
+              <tr><td>Raita / Salad</td><td><input id="foodItem_dinner_raita" class="food-input" placeholder="Raita, Salad, Papad..." /></td><td><input id="foodQty_dinner_raita" type="number" min="0" step="any" class="food-qty-input" /></td></tr>
+              <tr><td>Dessert</td><td><input id="foodItem_dinner_dessert" class="food-input" placeholder="Sweet, Ice Cream..." /></td><td><input id="foodQty_dinner_dessert" type="number" min="0" step="any" class="food-qty-input" /></td></tr>
+              <tr><td>Beverages</td><td><input id="foodItem_dinner_beverages" class="food-input" placeholder="Juice, Water, Soft Drink..." /></td><td><input id="foodQty_dinner_beverages" type="number" min="0" step="any" class="food-qty-input" /></td></tr>
+            </tbody></table></div></div>
+          </div>
         </div>
-
-        <div class="food-meal-card">
-          <div class="food-meal-head"><div class="food-meal-title"><span class="w-6 h-6 rounded-md bg-pink-100 text-pink-700 flex items-center justify-center"><i class="fa-solid fa-cookie-bite text-[10px]"></i></span>Snacks</div><span class="text-[9px] font-bold text-slate-400">Evening</span></div>
-          <div class="food-meal-body"><div class="food-field"><label>Menu / Items</label><input id="foodMenu_snacks" class="food-input" placeholder="Samosa, Tea, Juice..." /></div><div class="food-field w-full sm:w-24"><label>Prepare</label><input id="foodQty_snacks" type="number" min="0" step="any" class="food-input" placeholder="0" /></div>
-          <div class="col-span-full"><label class="block text-[9px] font-extrabold uppercase text-slate-500 mb-1">Counts</label><div class="food-counts"><div class="food-count-box"><span class="lbl">Plan</span><span id="foodPlan_snacks" class="num">0</span></div><div class="food-count-box"><span class="lbl">Actual</span><span id="foodActual_snacks" class="num">0</span></div><div class="food-count-box"><span class="lbl">Buffer</span><span id="foodBuffer_snacks" class="num">+0</span></div></div></div></div>
-        </div>
-
-        <div class="food-meal-card">
-          <div class="food-meal-head"><div class="food-meal-title"><span class="w-6 h-6 rounded-md bg-indigo-100 text-indigo-700 flex items-center justify-center"><i class="fa-solid fa-moon text-[10px]"></i></span>Dinner</div><span class="text-[9px] font-bold text-slate-400">Night</span></div>
-          <div class="food-meal-body"><div class="food-field"><label>Menu / Items</label><input id="foodMenu_dinner" class="food-input" placeholder="Biryani, Curry, Dessert..." /></div><div class="food-field w-full sm:w-24"><label>Prepare</label><input id="foodQty_dinner" type="number" min="0" step="any" class="food-input" placeholder="0" /></div>
-          <div class="col-span-full"><label class="block text-[9px] font-extrabold uppercase text-slate-500 mb-1">Counts</label><div class="food-counts"><div class="food-count-box"><span class="lbl">Plan</span><span id="foodPlan_dinner" class="num">0</span></div><div class="food-count-box"><span class="lbl">Actual</span><span id="foodActual_dinner" class="num">0</span></div><div class="food-count-box"><span class="lbl">Buffer</span><span id="foodBuffer_dinner" class="num">+0</span></div></div></div></div>
-        </div>
+        <div class="px-3 pb-2.5 text-[9px] text-slate-500"><i class="fa-solid fa-circle-info mr-1 text-emerald-500"></i>Each meal is collapsed by default. Expand a meal to enter detailed menu items and preparation quantities.</div>
       </div>
     </div>
 
@@ -1257,6 +1293,12 @@
 
     // ==================== FOOD PLANNING ====================
     const FOOD_MEALS = ['breakfast','lunch','snacks','dinner'];
+    const FOOD_CATEGORIES = {
+      breakfast:['hot','tiffin','breads','sides','chutney','beverages','dessert'],
+      lunch:['starters','main','rice','breads','sides','pickles','raita','dessert','beverages'],
+      snacks:['savouries','chaat','sweets','bakery','fruit','hotbev','coldbev'],
+      dinner:['starters','main','rice','breads','sides','pickles','raita','dessert','beverages']
+    };
     function getFoodStorageDocId(){
       const fn=(selectedTopFunction && selectedTopFunction!=='All')?selectedTopFunction:'All Functions';
       const code=(loggedCode||'guest').toUpperCase().replace(/[^A-Z0-9_-]/g,'_');
@@ -1268,58 +1310,55 @@
       const source=Array.isArray(families)?families.filter(x=>x && !x.isTask):[];
       source.forEach(f=>{
         if(selectedTopFunction!=='All' && String(f.eventFunction||'').toLowerCase()!==String(selectedTopFunction).toLowerCase()) return;
-        const pg=Math.max(0,parseInt(f.gents)||0), pl=Math.max(0,parseInt(f.ladies)||0), pk=Math.max(0,parseInt(f.kids)||0);
-        plan += pg+pl+pk;
-        const ag=f.attendingGents!==undefined?Math.max(0,Math.min(pg,parseInt(f.attendingGents)||0)):0;
-        const al=f.attendingLadies!==undefined?Math.max(0,Math.min(pl,parseInt(f.attendingLadies)||0)):0;
-        const ak=f.attendingKids!==undefined?Math.max(0,Math.min(pk,parseInt(f.attendingKids)||0)):0;
-        actual += (f.attendingGents!==undefined||f.attendingLadies!==undefined||f.attendingKids!==undefined)?ag+al+ak:Math.max(0,parseInt(f.comingCount)||0);
-      });
-      return {plan,actual};
+        const pg=Math.max(0,parseInt(f.gents)||0), pl=Math.max(0,parseInt(f.ladies)||0), pk=Math.max(0,parseInt(f.kids)||0); plan+=pg+pl+pk;
+        const hasActual=f.attendingGents!==undefined||f.attendingLadies!==undefined||f.attendingKids!==undefined;
+        const ag=hasActual?Math.max(0,Math.min(pg,parseInt(f.attendingGents)||0)):0, al=hasActual?Math.max(0,Math.min(pl,parseInt(f.attendingLadies)||0)):0, ak=hasActual?Math.max(0,Math.min(pk,parseInt(f.attendingKids)||0)):0;
+        actual += hasActual?ag+al+ak:Math.max(0,parseInt(f.comingCount)||0);
+      }); return {plan,actual};
     }
     function renderFoodPlanning(){
       const hc=getFoodHeadcounts();
-      const pt=document.getElementById('foodPlanTotal'), at=document.getElementById('foodActualTotal');
-      if(!pt||!at)return;
+      const pt=document.getElementById('foodPlanTotal'),at=document.getElementById('foodActualTotal'); if(!pt||!at)return;
       pt.textContent=hc.plan; at.textContent=hc.actual;
       let prepareTotal=0;
       FOOD_MEALS.forEach(meal=>{
-        const qty=document.getElementById(`foodQty_${meal}`);
-        const plan=document.getElementById(`foodPlan_${meal}`), actual=document.getElementById(`foodActual_${meal}`), buffer=document.getElementById(`foodBuffer_${meal}`);
-        if(plan)plan.textContent=hc.plan; if(actual)actual.textContent=hc.actual;
-        const q=qty && qty.value!=='' ? Math.max(0,Number(qty.value)||0) : hc.actual;
-        prepareTotal += q;
-        if(buffer) buffer.textContent='+'+Math.max(0,Math.round(q-hc.actual));
+        let mealPrep=0;
+        FOOD_CATEGORIES[meal].forEach(cat=>{ const q=document.getElementById(`foodQty_${meal}_${cat}`); if(q && q.value!=='') mealPrep+=Math.max(0,Number(q.value)||0); });
+        prepareTotal+=mealPrep;
+        const sm=document.getElementById(`foodMealSummary_${meal}`); if(sm) sm.textContent=`P ${hc.plan} · A ${hc.actual} · Prep ${Number.isInteger(mealPrep)?mealPrep:mealPrep.toFixed(1)}`;
       });
-      const prep=document.getElementById('foodPrepareTotal'); if(prep)prep.textContent=Number.isInteger(prepareTotal)?prepareTotal:prepareTotal.toFixed(1);
+      const prep=document.getElementById('foodPrepareTotal'),buf=document.getElementById('foodBufferTotal');
+      if(prep)prep.textContent=Number.isInteger(prepareTotal)?prepareTotal:prepareTotal.toFixed(1);
+      const buffer=Math.max(0,prepareTotal-(hc.actual*FOOD_MEALS.length)); if(buf)buf.textContent='+'+(Number.isInteger(buffer)?buffer:buffer.toFixed(1));
+    }
+    function toggleFoodMeal(meal){
+      const body=document.getElementById(`foodBody_${meal}`), chevron=document.getElementById(`foodChevron_${meal}`), head=body?.previousElementSibling;
+      if(!body)return; const opening=body.classList.contains('hidden'); body.classList.toggle('hidden',!opening); if(chevron)chevron.style.transform=opening?'rotate(90deg)':'rotate(0deg)'; if(head)head.setAttribute('aria-expanded',String(opening));
+    }
+    function normalizeFoodPlan(raw){
+      const out={};
+      FOOD_MEALS.forEach(meal=>{ out[meal]={categories:{}}; const d=raw?.[meal]||{};
+        if(d.categories && typeof d.categories==='object') out[meal].categories={...d.categories};
+        else if(d.menu || d.qty) out[meal].categories={main:{menu:d.menu||'',qty:d.qty??''}};
+      }); return out;
+    }
+    function clearFoodInputs(){
+      FOOD_MEALS.forEach(meal=>FOOD_CATEGORIES[meal].forEach(cat=>{const i=document.getElementById(`foodItem_${meal}_${cat}`),q=document.getElementById(`foodQty_${meal}_${cat}`);if(i)i.value='';if(q)q.value='';}));
     }
     async function loadFoodPlanning(){
-      const defaults={}; FOOD_MEALS.forEach(m=>defaults[m]={menu:'',qty:''});
-      if(selectedTopFunction==='All'){ foodPlanning=defaults; renderFoodPlanning(); return; }
-      try{
-        const doc=await collectionRef.doc(getFoodStorageDocId()).get();
-        foodPlanning=doc.exists && doc.data().foodPlan ? doc.data().foodPlan : defaults;
-      }catch(e){ console.error('Food planning load failed',e); foodPlanning=defaults; }
-      FOOD_MEALS.forEach(meal=>{
-        const d=foodPlanning[meal]||{};
-        const mi=document.getElementById(`foodMenu_${meal}`), qi=document.getElementById(`foodQty_${meal}`);
-        if(mi)mi.value=d.menu||''; if(qi)qi.value=d.qty??'';
-      });
+      clearFoodInputs();
+      if(selectedTopFunction==='All'){foodPlanning=normalizeFoodPlan({});renderFoodPlanning();return;}
+      try{const doc=await collectionRef.doc(getFoodStorageDocId()).get();foodPlanning=normalizeFoodPlan(doc.exists&&doc.data().foodPlan?doc.data().foodPlan:{});}catch(e){console.error('Food planning load failed',e);foodPlanning=normalizeFoodPlan({});}
+      FOOD_MEALS.forEach(meal=>{const cats=foodPlanning[meal]?.categories||{};FOOD_CATEGORIES[meal].forEach(cat=>{const d=cats[cat]||{};const i=document.getElementById(`foodItem_${meal}_${cat}`),q=document.getElementById(`foodQty_${meal}_${cat}`);if(i)i.value=d.menu||'';if(q)q.value=d.qty??'';});});
       renderFoodPlanning();
     }
     async function saveFoodPlanning(){
-      if(selectedTopFunction==='All'){ alert('Please select a specific Event Function before saving Food Planning.'); return; }
-      const payload={};
-      FOOD_MEALS.forEach(meal=>{
-        payload[meal]={menu:(document.getElementById(`foodMenu_${meal}`)?.value||'').trim(),qty:document.getElementById(`foodQty_${meal}`)?.value||''};
-      });
-      try{
-        await collectionRef.doc(getFoodStorageDocId()).set({isFoodPlan:true,scope:'family-function',familyCode:loggedCode||'',eventFunction:selectedTopFunction,foodPlan:payload,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
-        foodPlanning=payload; renderFoodPlanning(); alert(`Food Planning saved for ${selectedTopFunction}.`);
-      }catch(err){ alert('Unable to save Food Planning: '+(err.message||err)); }
+      if(selectedTopFunction==='All'){alert('Please select a specific Event Function before saving Food Planning.');return;}
+      const payload={}; FOOD_MEALS.forEach(meal=>{payload[meal]={categories:{}};FOOD_CATEGORIES[meal].forEach(cat=>{payload[meal].categories[cat]={menu:(document.getElementById(`foodItem_${meal}_${cat}`)?.value||'').trim(),qty:document.getElementById(`foodQty_${meal}_${cat}`)?.value||''};});});
+      try{await collectionRef.doc(getFoodStorageDocId()).set({isFoodPlan:true,scope:'family-function',familyCode:loggedCode||'',eventFunction:selectedTopFunction,foodPlan:payload,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});foodPlanning=payload;renderFoodPlanning();alert(`Food Planning saved for ${selectedTopFunction}.`);}catch(err){alert('Unable to save Food Planning: '+(err.message||err));}
     }
-    window.renderFoodPlanning=renderFoodPlanning; window.saveFoodPlanning=saveFoodPlanning;
-    FOOD_MEALS.forEach(meal=>{ document.addEventListener('input',e=>{if(e.target && (e.target.id===`foodQty_${meal}`)) renderFoodPlanning();}); });
+    window.renderFoodPlanning=renderFoodPlanning;window.saveFoodPlanning=saveFoodPlanning;window.toggleFoodMeal=toggleFoodMeal;
+    document.addEventListener('input',e=>{if(e.target?.classList?.contains('food-qty-input'))renderFoodPlanning();});
 
     function switchAppTab(tab) {
       currentAppTab = tab;
@@ -1329,12 +1368,7 @@
         const el=document.getElementById(id); if(el) el.classList.toggle('hidden', key!==tab);
       });
       const navs={guests:'tabNavGuests',tasks:'tabNavTasks',food:'tabNavFood'};
-      Object.entries(navs).forEach(([key,id])=>{
-        const el=document.getElementById(id); if(!el)return;
-        const active=key===tab;
-        const color=key==='guests'?'indigo':key==='tasks'?'amber':'emerald';
-        el.className=`flex-1 py-1.5 sm:py-2 text-xs font-black rounded-lg transition ${active?'bg-white '+('text-'+color+'-900')+' shadow-sm':'text-slate-600 hover:text-slate-900'} flex items-center justify-center gap-1.5`;
-      });
+      Object.entries(navs).forEach(([key,id])=>{ const el=document.getElementById(id); if(el) el.classList.toggle('active',key===tab); });
       const topAddButtonText=document.getElementById('topAddButtonText');
       const topAddButtonIcon=document.getElementById('topAddButtonIcon');
       const topAddButton=document.getElementById('topAddButton');
@@ -1346,7 +1380,7 @@
         topAddButton.className='px-2.5 sm:px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1 shrink-0 transition';
         renderTasksList();
       } else {
-        topAddButtonText.textContent='Food Planning'; topAddButtonIcon.className='fa-solid fa-utensils text-[10px]';
+        topAddButtonText.textContent='Add Food'; topAddButtonIcon.className='fa-solid fa-utensils text-[10px]';
         topAddButton.className='px-2.5 sm:px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1 shrink-0 transition';
         renderFoodPlanning();
       }
@@ -1356,7 +1390,8 @@
       if (currentAppTab === 'guests') openAddGuestModal();
       else if (currentAppTab === 'tasks') openAddTaskModal();
       else {
-        const first=document.getElementById('foodMenu_breakfast');
+        toggleFoodMeal('breakfast');
+        const first=document.getElementById('foodItem_breakfast_hot');
         if(first){ first.focus(); first.scrollIntoView({behavior:'smooth',block:'center'}); }
       }
     }
