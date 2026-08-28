@@ -38,6 +38,24 @@
       #countdownChip #countdownText { font-size: 8px !important; }
       #countdownChip i { font-size: 9px !important; }
     }
+
+/* Food Planning - compact UI */
+.food-meal-card{border:1px solid #e2e8f0;border-radius:12px;background:#fff;overflow:hidden;box-shadow:0 1px 2px rgba(15,23,42,.04)}
+.food-meal-head{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:#f8fafc;border-bottom:1px solid #e2e8f0}
+.food-meal-title{font-size:12px;font-weight:900;color:#0f172a;display:flex;align-items:center;gap:7px}
+.food-meal-body{padding:9px 10px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:end}
+.food-field label{display:block;font-size:9px;font-weight:800;text-transform:uppercase;color:#64748b;margin-bottom:3px}
+.food-input{width:100%;border:1px solid #cbd5e1;border-radius:7px;padding:6px 8px;font-size:11px;font-weight:600;outline:none;background:#fff}
+.food-input:focus{border-color:#818cf8;box-shadow:0 0 0 2px rgba(99,102,241,.1)}
+.food-counts{display:grid;grid-template-columns:repeat(3,minmax(52px,1fr));gap:5px;margin-top:8px}
+.food-count-box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:7px;padding:5px 4px;text-align:center}
+.food-count-box .lbl{font-size:8px;font-weight:900;color:#64748b;text-transform:uppercase;display:block}
+.food-count-box .num{font-size:12px;font-weight:900;color:#0f172a;display:block;line-height:14px}
+.food-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.food-summary-card{border:1px solid #e2e8f0;border-radius:10px;padding:8px 10px;background:#fff}
+.food-summary-label{font-size:8px;font-weight:900;text-transform:uppercase;color:#64748b}
+.food-summary-value{font-size:15px;font-weight:900;line-height:18px}
+@media(max-width:640px){.food-meal-body{grid-template-columns:1fr}.food-summary{grid-template-columns:1fr 1fr 1fr}.food-input{font-size:10px}}
 </style>
 </head>
 <body class="bg-slate-100 text-slate-800 antialiased p-2 sm:p-3 md:p-4 min-h-screen">
@@ -650,6 +668,11 @@
         <span>Event Function Tasks</span>
         <span id="tabCountTasks" class="text-[10px] px-1.5 py-0.2 rounded-full bg-amber-100 text-amber-800 font-bold ml-1">0</span>
       </button>
+
+      <button type="button" onclick="switchAppTab('food')" id="tabNavFood" class="flex-1 py-1.5 sm:py-2 text-xs font-black rounded-lg transition text-slate-600 hover:text-slate-900 flex items-center justify-center gap-1.5">
+        <i class="fa-solid fa-utensils text-emerald-600"></i>
+        <span>Food Planning</span>
+      </button>
     </div>
 
     <!-- ==================== MODULE 1: GUESTS & HEADCOUNT TRACKER ==================== -->
@@ -1010,6 +1033,57 @@
       </div>
     </div>
 
+    <!-- ==================== MODULE 3: FOOD PLANNING ==================== -->
+    <div id="foodModule" class="hidden space-y-2.5">
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-3">
+        <div class="flex items-center justify-between gap-2 mb-2.5">
+          <div>
+            <div class="flex items-center gap-2">
+              <div class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs"><i class="fa-solid fa-utensils"></i></div>
+              <div>
+                <h3 class="text-xs sm:text-sm font-black text-slate-900">Food Planning</h3>
+                <p class="text-[9px] text-slate-500">Menu & preparation plan for the selected function</p>
+              </div>
+            </div>
+          </div>
+          <button type="button" onclick="saveFoodPlanning()" class="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-black flex items-center gap-1.5 shadow-sm"><i class="fa-solid fa-floppy-disk"></i> Save</button>
+        </div>
+
+        <div class="food-summary">
+          <div class="food-summary-card bg-indigo-50/60 border-indigo-100"><div class="food-summary-label text-indigo-600">Plan Guests</div><div id="foodPlanTotal" class="food-summary-value text-indigo-900">0</div></div>
+          <div class="food-summary-card bg-emerald-50/60 border-emerald-100"><div class="food-summary-label text-emerald-600">Actual Guests</div><div id="foodActualTotal" class="food-summary-value text-emerald-900">0</div></div>
+          <div class="food-summary-card bg-amber-50/60 border-amber-100"><div class="food-summary-label text-amber-600">Prepare + Buffer</div><div id="foodPrepareTotal" class="food-summary-value text-amber-900">0</div></div>
+        </div>
+        <div class="mt-2 text-[9px] text-slate-500"><i class="fa-solid fa-circle-info mr-1 text-indigo-400"></i>Guest counts follow the selected Function. Set menu and preparation quantity for each meal below.</div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+        <div class="food-meal-card">
+          <div class="food-meal-head"><div class="food-meal-title"><span class="w-6 h-6 rounded-md bg-amber-100 text-amber-700 flex items-center justify-center"><i class="fa-solid fa-mug-hot text-[10px]"></i></span>Breakfast</div><span class="text-[9px] font-bold text-slate-400">Morning</span></div>
+          <div class="food-meal-body"><div class="food-field"><label>Menu / Items</label><input id="foodMenu_breakfast" class="food-input" placeholder="Idli, Vada, Tea..." /></div><div class="food-field w-full sm:w-24"><label>Prepare</label><input id="foodQty_breakfast" type="number" min="0" step="any" class="food-input" placeholder="0" /></div>
+          <div class="col-span-full"><label class="block text-[9px] font-extrabold uppercase text-slate-500 mb-1">Counts</label><div class="food-counts"><div class="food-count-box"><span class="lbl">Plan</span><span id="foodPlan_breakfast" class="num">0</span></div><div class="food-count-box"><span class="lbl">Actual</span><span id="foodActual_breakfast" class="num">0</span></div><div class="food-count-box"><span class="lbl">Buffer</span><span id="foodBuffer_breakfast" class="num">+0</span></div></div></div></div>
+        </div>
+
+        <div class="food-meal-card">
+          <div class="food-meal-head"><div class="food-meal-title"><span class="w-6 h-6 rounded-md bg-orange-100 text-orange-700 flex items-center justify-center"><i class="fa-solid fa-bowl-food text-[10px]"></i></span>Lunch</div><span class="text-[9px] font-bold text-slate-400">Afternoon</span></div>
+          <div class="food-meal-body"><div class="food-field"><label>Menu / Items</label><input id="foodMenu_lunch" class="food-input" placeholder="Rice, Dal, Curry..." /></div><div class="food-field w-full sm:w-24"><label>Prepare</label><input id="foodQty_lunch" type="number" min="0" step="any" class="food-input" placeholder="0" /></div>
+          <div class="col-span-full"><label class="block text-[9px] font-extrabold uppercase text-slate-500 mb-1">Counts</label><div class="food-counts"><div class="food-count-box"><span class="lbl">Plan</span><span id="foodPlan_lunch" class="num">0</span></div><div class="food-count-box"><span class="lbl">Actual</span><span id="foodActual_lunch" class="num">0</span></div><div class="food-count-box"><span class="lbl">Buffer</span><span id="foodBuffer_lunch" class="num">+0</span></div></div></div></div>
+        </div>
+
+        <div class="food-meal-card">
+          <div class="food-meal-head"><div class="food-meal-title"><span class="w-6 h-6 rounded-md bg-pink-100 text-pink-700 flex items-center justify-center"><i class="fa-solid fa-cookie-bite text-[10px]"></i></span>Snacks</div><span class="text-[9px] font-bold text-slate-400">Evening</span></div>
+          <div class="food-meal-body"><div class="food-field"><label>Menu / Items</label><input id="foodMenu_snacks" class="food-input" placeholder="Samosa, Tea, Juice..." /></div><div class="food-field w-full sm:w-24"><label>Prepare</label><input id="foodQty_snacks" type="number" min="0" step="any" class="food-input" placeholder="0" /></div>
+          <div class="col-span-full"><label class="block text-[9px] font-extrabold uppercase text-slate-500 mb-1">Counts</label><div class="food-counts"><div class="food-count-box"><span class="lbl">Plan</span><span id="foodPlan_snacks" class="num">0</span></div><div class="food-count-box"><span class="lbl">Actual</span><span id="foodActual_snacks" class="num">0</span></div><div class="food-count-box"><span class="lbl">Buffer</span><span id="foodBuffer_snacks" class="num">+0</span></div></div></div></div>
+        </div>
+
+        <div class="food-meal-card">
+          <div class="food-meal-head"><div class="food-meal-title"><span class="w-6 h-6 rounded-md bg-indigo-100 text-indigo-700 flex items-center justify-center"><i class="fa-solid fa-moon text-[10px]"></i></span>Dinner</div><span class="text-[9px] font-bold text-slate-400">Night</span></div>
+          <div class="food-meal-body"><div class="food-field"><label>Menu / Items</label><input id="foodMenu_dinner" class="food-input" placeholder="Biryani, Curry, Dessert..." /></div><div class="food-field w-full sm:w-24"><label>Prepare</label><input id="foodQty_dinner" type="number" min="0" step="any" class="food-input" placeholder="0" /></div>
+          <div class="col-span-full"><label class="block text-[9px] font-extrabold uppercase text-slate-500 mb-1">Counts</label><div class="food-counts"><div class="food-count-box"><span class="lbl">Plan</span><span id="foodPlan_dinner" class="num">0</span></div><div class="food-count-box"><span class="lbl">Actual</span><span id="foodActual_dinner" class="num">0</span></div><div class="food-count-box"><span class="lbl">Buffer</span><span id="foodBuffer_dinner" class="num">+0</span></div></div></div></div>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <script>
@@ -1041,7 +1115,8 @@
     let isAdmin = (loggedCode.toUpperCase() === ADMIN_CODE);
     let currentViewMode = localStorage.getItem('fc_view_mode') || 'table';
     let currentTaskViewMode = localStorage.getItem('fc_task_view_mode') || 'table';
-    let currentAppTab = 'guests';
+    let currentAppTab = localStorage.getItem('fc_app_tab') || 'guests';
+    let foodPlanning = {};
     let selectedTopFunction = localStorage.getItem('fc_last_function') || 'All';
     let pendingImportPayload = null;
     let currentEventDate = '';
@@ -1180,41 +1255,109 @@
       input.click();
     }
 
+    // ==================== FOOD PLANNING ====================
+    const FOOD_MEALS = ['breakfast','lunch','snacks','dinner'];
+    function getFoodStorageDocId(){
+      const fn=(selectedTopFunction && selectedTopFunction!=='All')?selectedTopFunction:'All Functions';
+      const code=(loggedCode||'guest').toUpperCase().replace(/[^A-Z0-9_-]/g,'_');
+      const f=fn.replace(/[^A-Za-z0-9_-]/g,'_');
+      return `__food__${code}__${f}`;
+    }
+    function getFoodHeadcounts(){
+      let plan=0,actual=0;
+      const source=Array.isArray(families)?families.filter(x=>x && !x.isTask):[];
+      source.forEach(f=>{
+        if(selectedTopFunction!=='All' && String(f.eventFunction||'').toLowerCase()!==String(selectedTopFunction).toLowerCase()) return;
+        const pg=Math.max(0,parseInt(f.gents)||0), pl=Math.max(0,parseInt(f.ladies)||0), pk=Math.max(0,parseInt(f.kids)||0);
+        plan += pg+pl+pk;
+        const ag=f.attendingGents!==undefined?Math.max(0,Math.min(pg,parseInt(f.attendingGents)||0)):0;
+        const al=f.attendingLadies!==undefined?Math.max(0,Math.min(pl,parseInt(f.attendingLadies)||0)):0;
+        const ak=f.attendingKids!==undefined?Math.max(0,Math.min(pk,parseInt(f.attendingKids)||0)):0;
+        actual += (f.attendingGents!==undefined||f.attendingLadies!==undefined||f.attendingKids!==undefined)?ag+al+ak:Math.max(0,parseInt(f.comingCount)||0);
+      });
+      return {plan,actual};
+    }
+    function renderFoodPlanning(){
+      const hc=getFoodHeadcounts();
+      const pt=document.getElementById('foodPlanTotal'), at=document.getElementById('foodActualTotal');
+      if(!pt||!at)return;
+      pt.textContent=hc.plan; at.textContent=hc.actual;
+      let prepareTotal=0;
+      FOOD_MEALS.forEach(meal=>{
+        const qty=document.getElementById(`foodQty_${meal}`);
+        const plan=document.getElementById(`foodPlan_${meal}`), actual=document.getElementById(`foodActual_${meal}`), buffer=document.getElementById(`foodBuffer_${meal}`);
+        if(plan)plan.textContent=hc.plan; if(actual)actual.textContent=hc.actual;
+        const q=qty && qty.value!=='' ? Math.max(0,Number(qty.value)||0) : hc.actual;
+        prepareTotal += q;
+        if(buffer) buffer.textContent='+'+Math.max(0,Math.round(q-hc.actual));
+      });
+      const prep=document.getElementById('foodPrepareTotal'); if(prep)prep.textContent=Number.isInteger(prepareTotal)?prepareTotal:prepareTotal.toFixed(1);
+    }
+    async function loadFoodPlanning(){
+      const defaults={}; FOOD_MEALS.forEach(m=>defaults[m]={menu:'',qty:''});
+      if(selectedTopFunction==='All'){ foodPlanning=defaults; renderFoodPlanning(); return; }
+      try{
+        const doc=await collectionRef.doc(getFoodStorageDocId()).get();
+        foodPlanning=doc.exists && doc.data().foodPlan ? doc.data().foodPlan : defaults;
+      }catch(e){ console.error('Food planning load failed',e); foodPlanning=defaults; }
+      FOOD_MEALS.forEach(meal=>{
+        const d=foodPlanning[meal]||{};
+        const mi=document.getElementById(`foodMenu_${meal}`), qi=document.getElementById(`foodQty_${meal}`);
+        if(mi)mi.value=d.menu||''; if(qi)qi.value=d.qty??'';
+      });
+      renderFoodPlanning();
+    }
+    async function saveFoodPlanning(){
+      if(selectedTopFunction==='All'){ alert('Please select a specific Event Function before saving Food Planning.'); return; }
+      const payload={};
+      FOOD_MEALS.forEach(meal=>{
+        payload[meal]={menu:(document.getElementById(`foodMenu_${meal}`)?.value||'').trim(),qty:document.getElementById(`foodQty_${meal}`)?.value||''};
+      });
+      try{
+        await collectionRef.doc(getFoodStorageDocId()).set({isFoodPlan:true,scope:'family-function',familyCode:loggedCode||'',eventFunction:selectedTopFunction,foodPlan:payload,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+        foodPlanning=payload; renderFoodPlanning(); alert(`Food Planning saved for ${selectedTopFunction}.`);
+      }catch(err){ alert('Unable to save Food Planning: '+(err.message||err)); }
+    }
+    window.renderFoodPlanning=renderFoodPlanning; window.saveFoodPlanning=saveFoodPlanning;
+    FOOD_MEALS.forEach(meal=>{ document.addEventListener('input',e=>{if(e.target && (e.target.id===`foodQty_${meal}`)) renderFoodPlanning();}); });
+
     function switchAppTab(tab) {
       currentAppTab = tab;
-      const guestsMod = document.getElementById('guestsModule');
-      const tasksMod = document.getElementById('tasksModule');
-      const tabNavGuests = document.getElementById('tabNavGuests');
-      const tabNavTasks = document.getElementById('tabNavTasks');
-      const topAddButtonText = document.getElementById('topAddButtonText');
-      const topAddButtonIcon = document.getElementById('topAddButtonIcon');
-      const topAddButton = document.getElementById('topAddButton');
-
-      if (tab === 'guests') {
-        guestsMod.classList.remove('hidden');
-        tasksMod.classList.add('hidden');
-        tabNavGuests.className = "flex-1 py-1.5 sm:py-2 text-xs font-black rounded-lg transition bg-white text-indigo-900 shadow-sm flex items-center justify-center gap-1.5";
-        tabNavTasks.className = "flex-1 py-1.5 sm:py-2 text-xs font-black rounded-lg transition text-slate-600 hover:text-slate-900 flex items-center justify-center gap-1.5";
-        topAddButtonText.textContent = "Add Guest";
-        topAddButtonIcon.className = "fa-solid fa-plus text-[10px]";
-        topAddButton.className = "px-2.5 sm:px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1 shrink-0 transition";
-      } else {
-        guestsMod.classList.add('hidden');
-        tasksMod.classList.remove('hidden');
-        tabNavTasks.className = "flex-1 py-1.5 sm:py-2 text-xs font-black rounded-lg transition bg-white text-amber-900 shadow-sm flex items-center justify-center gap-1.5";
-        tabNavGuests.className = "flex-1 py-1.5 sm:py-2 text-xs font-black rounded-lg transition text-slate-600 hover:text-slate-900 flex items-center justify-center gap-1.5";
-        topAddButtonText.textContent = "Add Task";
-        topAddButtonIcon.className = "fa-solid fa-clipboard-check text-[10px]";
-        topAddButton.className = "px-2.5 sm:px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1 shrink-0 transition";
+      localStorage.setItem('fc_app_tab', tab);
+      const modules = { guests:'guestsModule', tasks:'tasksModule', food:'foodModule' };
+      Object.entries(modules).forEach(([key,id]) => {
+        const el=document.getElementById(id); if(el) el.classList.toggle('hidden', key!==tab);
+      });
+      const navs={guests:'tabNavGuests',tasks:'tabNavTasks',food:'tabNavFood'};
+      Object.entries(navs).forEach(([key,id])=>{
+        const el=document.getElementById(id); if(!el)return;
+        const active=key===tab;
+        const color=key==='guests'?'indigo':key==='tasks'?'amber':'emerald';
+        el.className=`flex-1 py-1.5 sm:py-2 text-xs font-black rounded-lg transition ${active?'bg-white '+('text-'+color+'-900')+' shadow-sm':'text-slate-600 hover:text-slate-900'} flex items-center justify-center gap-1.5`;
+      });
+      const topAddButtonText=document.getElementById('topAddButtonText');
+      const topAddButtonIcon=document.getElementById('topAddButtonIcon');
+      const topAddButton=document.getElementById('topAddButton');
+      if(tab==='guests'){
+        topAddButtonText.textContent='Add Guest'; topAddButtonIcon.className='fa-solid fa-plus text-[10px]';
+        topAddButton.className='px-2.5 sm:px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1 shrink-0 transition';
+      } else if(tab==='tasks'){
+        topAddButtonText.textContent='Add Task'; topAddButtonIcon.className='fa-solid fa-clipboard-check text-[10px]';
+        topAddButton.className='px-2.5 sm:px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1 shrink-0 transition';
         renderTasksList();
+      } else {
+        topAddButtonText.textContent='Food Planning'; topAddButtonIcon.className='fa-solid fa-utensils text-[10px]';
+        topAddButton.className='px-2.5 sm:px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1 shrink-0 transition';
+        renderFoodPlanning();
       }
     }
 
     function handleTopAddClick() {
-      if (currentAppTab === 'guests') {
-        openAddGuestModal();
-      } else {
-        openAddTaskModal();
+      if (currentAppTab === 'guests') openAddGuestModal();
+      else if (currentAppTab === 'tasks') openAddTaskModal();
+      else {
+        const first=document.getElementById('foodMenu_breakfast');
+        if(first){ first.focus(); first.scrollIntoView({behavior:'smooth',block:'center'}); }
       }
     }
 
@@ -1647,6 +1790,7 @@
         renderDashboard();
         renderFilteredHistory();
         renderTasksList();
+        loadFoodPlanning();
         updateCountdownChip();
         if (!document.getElementById('metaManagerModal').classList.contains('hidden')) {
           renderMetaManagerLists();
@@ -1685,6 +1829,7 @@
       renderDashboard();
       renderFilteredHistory();
       renderTasksList();
+      loadFoodPlanning();
       updateCountdownChip();
     }
 
@@ -4253,6 +4398,8 @@
       }
       return rows;
     }
+    // Restore the last application tab and load its function-specific food plan.
+    setTimeout(() => { try { switchAppTab(currentAppTab); loadFoodPlanning(); } catch(e) { console.error(e); } }, 0);
   </script>
 </body>
 </html>
