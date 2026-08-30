@@ -84,6 +84,11 @@
 .fp-card-icon{width:28px;height:28px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
 .fp-card-title-text{font-size:12.5px;font-weight:900;color:#0f172a;min-width:0}
 .fp-card-title-text small{display:block;font-size:9px;font-weight:700;color:#94a3b8;margin-top:1px}
+.fp-card-title-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.fp-card-guest-wrap{display:flex;align-items:center;gap:4px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:2px 6px 2px 7px;cursor:text}
+.fp-card-guest-wrap i{font-size:9px;color:#94a3b8}
+.fp-card-guest-input{width:44px;border:none;background:transparent;font-size:10.5px;font-weight:800;color:#0f172a;text-align:left;outline:none;padding:2px 0}
+.fp-card-guest-wrap:focus-within{border-color:#10b981;background:#fff;box-shadow:0 0 0 2px rgba(16,185,129,.12)}
 .fp-card-meta{font-size:9.5px;font-weight:700;color:#64748b;white-space:nowrap;flex-shrink:0}
 .fp-card-chevron{font-size:10px;color:#94a3b8;transition:transform .18s;flex-shrink:0}
 
@@ -1350,8 +1355,9 @@
     function normalizeFoodPlan(raw){
       const out = {};
       FOOD_MEALS.forEach(meal=>{
-        out[meal] = { items: {} };
+        out[meal] = { items: {}, guestCount: '' };
         const d = raw?.[meal] || {};
+        out[meal].guestCount = (d.guestCount === undefined || d.guestCount === null) ? '' : d.guestCount;
         if (d.items && typeof d.items === 'object') {
           Object.entries(d.items).forEach(([cat, val]) => {
             if (!cat) return;
@@ -1375,7 +1381,7 @@
     function captureFoodDomIntoState(){
       foodActiveMeals.forEach(meal=>{
         const cats = getFoodCategories(meal);
-        if (!foodPlanning[meal]) foodPlanning[meal] = { items: {} };
+        if (!foodPlanning[meal]) foodPlanning[meal] = { items: {}, guestCount: '' };
         cats.forEach((cat, idx) => {
           const i = document.getElementById(`foodItem_${meal}_${idx}`);
           const q = document.getElementById(`foodQty_${meal}_${idx}`);
@@ -1386,6 +1392,8 @@
             qty: q ? q.value : (prev.qty ?? '')
           };
         });
+        const g = document.getElementById(`foodGuestCount_${meal}`);
+        if (g) foodPlanning[meal].guestCount = g.value;
       });
     }
 
@@ -1434,7 +1442,8 @@
         Object.entries(foodPlanning[meal]?.items || {}).forEach(([cat, val]) => {
           items[cat] = { menu: (val.menu || '').trim(), qty: (val.qty === undefined ? '' : val.qty) };
         });
-        payload[meal] = { items };
+        const gc = foodPlanning[meal]?.guestCount;
+        payload[meal] = { items, guestCount: (gc === undefined || gc === null) ? '' : gc };
       });
 
       try {
@@ -1531,18 +1540,29 @@
         let mealQty = 0;
         cats.forEach(cat => { const q = items[cat]?.qty; if (q !== undefined && q !== '' && !isNaN(Number(q))) mealQty += Math.max(0, Number(q)); });
 
+        const guestCountVal = (foodPlanning[meal]?.guestCount === undefined || foodPlanning[meal]?.guestCount === null) ? '' : String(foodPlanning[meal].guestCount);
+
         html += `
           <div class="fp-card mt-${meal}">
-            <button type="button" class="fp-card-head w-full text-left" onclick="toggleFoodMeal('${meal}')" aria-expanded="${isOpen}">
+            <div class="fp-card-head w-full text-left" role="button" tabindex="0" onclick="toggleFoodMeal('${meal}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleFoodMeal('${meal}');}" aria-expanded="${isOpen}">
               <span class="fp-card-title">
                 <span class="fp-card-icon ${meta.iconBg}"><i class="fa-solid ${meta.icon}"></i></span>
-                <span class="fp-card-title-text">${meta.label}<small>${meta.sub} · ${cats.length} ${cats.length === 1 ? 'category' : 'categories'}</small></span>
+                <span class="fp-card-title-text">
+                  <span class="fp-card-title-row">
+                    ${meta.label}
+                    <span class="fp-card-guest-wrap" onclick="event.stopPropagation()" title="Guests eating ${meta.label}">
+                      <i class="fa-solid fa-user-group"></i>
+                      <input type="number" min="0" step="1" id="foodGuestCount_${meal}" class="fp-card-guest-input" placeholder="Guests" value="${escapeHtml(guestCountVal)}" onclick="event.stopPropagation()" />
+                    </span>
+                  </span>
+                  <small>${meta.sub} · ${cats.length} ${cats.length === 1 ? 'category' : 'categories'}</small>
+                </span>
               </span>
               <span class="flex items-center gap-2">
                 <span class="fp-card-meta">${mealQty > 0 ? ('Qty ' + (Number.isInteger(mealQty) ? mealQty : mealQty.toFixed(1))) : ''}</span>
                 <i id="foodChevron_${meal}" class="fa-solid fa-chevron-right fp-card-chevron" style="transform:${isOpen ? 'rotate(90deg)' : 'rotate(0deg)'}"></i>
               </span>
-            </button>
+            </div>
             <div id="foodBody_${meal}" class="fp-card-body ${isOpen ? '' : 'hidden'}">
               ${rows}
               <div class="fp-add-cat">
