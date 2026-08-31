@@ -66,20 +66,15 @@
 .fp-meal-mini-btn{display:flex;align-items:center;gap:4px;border:1.5px solid #e2e8f0;border-radius:8px;background:#fff;color:#94a3b8;padding:3px 7px;font-size:9px;font-weight:800;cursor:pointer;transition:.15s}
 .fp-meal-mini-btn:hover{border-color:#cbd5e1}
 .fp-meal-mini-btn i{font-size:9px}
-.fp-meal-mini-btn.active.fmm-breakfast{background:#fffbeb;border-color:#f59e0b;color:#b45309}
-.fp-meal-mini-btn.active.fmm-lunch{background:#fff7ed;border-color:#f97316;color:#c2410c}
-.fp-meal-mini-btn.active.fmm-snacks{background:#fdf2f8;border-color:#ec4899;color:#be185d}
-.fp-meal-mini-btn.active.fmm-dinner{background:#eef2ff;border-color:#6366f1;color:#4338ca}
+/* Active-state coloring for .fp-meal-mini-btn is applied inline per meal
+   (accent color comes from getMealMeta()), so it works for both the 4
+   default meal types and any custom ones added later. */
 
 .fp-cards{padding:12px 14px;display:grid;grid-template-columns:1fr;gap:10px}
 @media(min-width:820px){.fp-cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 .fp-card{border:1px solid #e2e8f0;border-radius:14px;background:#fff;overflow:hidden;box-shadow:0 1px 2px rgba(15,23,42,.03)}
 .fp-card-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:11px 12px;cursor:pointer;border-left:4px solid transparent}
-.fp-card.mt-breakfast .fp-card-head{border-left-color:#f59e0b}
-.fp-card.mt-lunch .fp-card-head{border-left-color:#f97316}
-.fp-card.mt-snacks .fp-card-head{border-left-color:#ec4899}
-.fp-card.mt-dinner .fp-card-head{border-left-color:#6366f1}
 .fp-card-title{display:flex;align-items:center;gap:9px;min-width:0}
 .fp-card-icon{width:28px;height:28px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
 .fp-card-title-text{font-size:12.5px;font-weight:900;color:#0f172a;min-width:0}
@@ -98,8 +93,6 @@
 .fp-cat-name{width:92px;flex-shrink:0;font-size:10.5px;font-weight:800;color:#475569;line-height:1.25}
 .fp-cat-menu{flex:1;min-width:0;border:1px solid #d8dee8;border-radius:8px;padding:6px 8px;font-size:10.5px;font-weight:600;outline:none;background:#fff}
 .fp-cat-menu:focus{border-color:#10b981;box-shadow:0 0 0 3px rgba(16,185,129,.12)}
-.fp-cat-qty{width:52px;flex-shrink:0;border:1px solid #d8dee8;border-radius:8px;padding:6px 4px;font-size:10.5px;font-weight:800;text-align:center;outline:none;background:#fff}
-.fp-cat-qty:focus{border-color:#10b981;box-shadow:0 0 0 3px rgba(16,185,129,.12)}
 .fp-cat-del{width:22px;height:22px;flex-shrink:0;border-radius:7px;color:#cbd5e1;display:flex;align-items:center;justify-content:center;font-size:10px;transition:.15s;background:none;border:none;cursor:pointer}
 .fp-cat-del:hover{background:#fef2f2;color:#e11d48}
 
@@ -548,6 +541,27 @@
               </button>
             </div>
             <div id="taskCategoryManageList" class="space-y-1.5"></div>
+          </div>
+        </div>
+
+        <!-- 3b. Meal Types Section (Breakfast, Lunch, Snacks, Dinner + custom, used to build each function's Food Planning cards) -->
+        <div class="border border-emerald-300 rounded-xl overflow-hidden bg-emerald-50/20 shadow-2xs">
+          <button type="button" onclick="toggleAccordion('metaMealBody', 'metaMealChev', 'metaMealTxt')" class="w-full flex items-center justify-between p-2.5 bg-emerald-100/70 hover:bg-emerald-100 text-left border-b border-emerald-300 transition">
+            <div class="flex items-center gap-2">
+              <i id="metaMealChev" class="fa-solid fa-chevron-right text-xs text-emerald-700 transition-transform duration-200"></i>
+              <span class="text-xs font-black text-emerald-950">🍽️ Meal Types (Breakfast, Lunch, Snacks, Dinner...)</span>
+            </div>
+            <span id="metaMealTxt" class="text-[11px] font-semibold text-emerald-700">Tap to Expand</span>
+          </button>
+          <div id="metaMealBody" class="hidden p-2.5 space-y-2">
+            <div class="flex gap-1.5">
+              <input type="text" id="quickAddMealInput" placeholder="New meal type (e.g. High Tea, Midnight Buffet)..." class="flex-1 bg-white border border-emerald-300 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-emerald-600" />
+              <button type="button" onclick="quickAddMeta('mealTypes', 'quickAddMealInput')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition shadow-2xs">
+                + Add
+              </button>
+            </div>
+            <p class="text-[10px] text-emerald-700/80">Each function's "Meals" row below picks from this list — add or remove meal types here, then choose which ones apply to each function.</p>
+            <div id="mealTypeManageList" class="space-y-1.5"></div>
           </div>
         </div>
 
@@ -1292,13 +1306,26 @@
     }
 
     // ==================== FOOD PLANNING ====================
-    const FOOD_MEALS = ['breakfast','lunch','snacks','dinner'];
+    // The 4 default meal types ship with fixed styling; any custom ones a
+    // person adds (e.g. "High Tea") get a label + rotating icon/color and
+    // are fully manageable (add/rename/delete) from "Manage Functions,
+    // Categories & Tasks" — see getMealTypeKeys()/getMealMeta() below.
+    const DEFAULT_FOOD_MEALS = ['breakfast','lunch','snacks','dinner'];
     const FOOD_MEAL_META = {
-      breakfast: { label:'Breakfast', sub:'Morning', icon:'fa-mug-hot', iconBg:'bg-amber-100 text-amber-700' },
-      lunch:     { label:'Lunch',     sub:'Afternoon', icon:'fa-bowl-food', iconBg:'bg-orange-100 text-orange-700' },
-      snacks:    { label:'Snacks',    sub:'Evening', icon:'fa-cookie-bite', iconBg:'bg-pink-100 text-pink-700' },
-      dinner:    { label:'Dinner',    sub:'Night', icon:'fa-moon', iconBg:'bg-indigo-100 text-indigo-700' }
+      breakfast: { label:'Breakfast', sub:'Morning', icon:'fa-mug-hot', iconBg:'bg-amber-100 text-amber-700', accent:'#f59e0b' },
+      lunch:     { label:'Lunch',     sub:'Afternoon', icon:'fa-bowl-food', iconBg:'bg-orange-100 text-orange-700', accent:'#f97316' },
+      snacks:    { label:'Snacks',    sub:'Evening', icon:'fa-cookie-bite', iconBg:'bg-pink-100 text-pink-700', accent:'#ec4899' },
+      dinner:    { label:'Dinner',    sub:'Night', icon:'fa-moon', iconBg:'bg-indigo-100 text-indigo-700', accent:'#6366f1' }
     };
+    // Rotating icon/color assigned (in order added) to any custom meal type.
+    const CUSTOM_MEAL_STYLE_PALETTE = [
+      { icon:'fa-mug-saucer',        iconBg:'bg-emerald-100 text-emerald-700',   accent:'#10b981' },
+      { icon:'fa-utensils',          iconBg:'bg-sky-100 text-sky-700',           accent:'#0ea5e9' },
+      { icon:'fa-drumstick-bite',    iconBg:'bg-violet-100 text-violet-700',     accent:'#8b5cf6' },
+      { icon:'fa-champagne-glasses', iconBg:'bg-rose-100 text-rose-700',         accent:'#f43f5e' },
+      { icon:'fa-bread-slice',       iconBg:'bg-teal-100 text-teal-700',         accent:'#14b8a6' },
+      { icon:'fa-ice-cream',         iconBg:'bg-fuchsia-100 text-fuchsia-700',   accent:'#d946ef' }
+    ];
     // Older saved menus keyed each category by a short internal code
     // (e.g. "hot", "starters") instead of a real name. This maps those
     // codes to display names so existing data keeps showing up correctly
@@ -1309,6 +1336,90 @@
       snacks:    { savouries:'Savouries', chaat:'Chaats / Chutneys', sweets:'Sweets', bakery:'Bakery', fruit:'Fruit', hotbev:'Hot Beverages', coldbev:'Cold Beverages' },
       dinner:    { starters:'Starters', main:'Main Course', rice:'Rice / Biryani', breads:'Breads', sides:'Sides', pickles:'Pickles', raita:'Raita / Salad', dessert:'Dessert', beverages:'Beverages' }
     };
+
+    // Ordered list of meal-type keys currently configured (defaults + any
+    // custom ones added from "Manage Functions, Categories & Tasks").
+    function getMealTypeKeys(){
+      const meta = getCodeMetaData();
+      return Array.isArray(meta.mealTypes) && meta.mealTypes.length ? meta.mealTypes : [...DEFAULT_FOOD_MEALS];
+    }
+
+    function titleCaseMealKey(key){
+      return String(key || '').replace(/[_-]+/g, ' ').replace(/\b\w/g, c => c.toUpperCase()).trim() || 'Meal';
+    }
+
+    // Display/visual info for a meal key — the 4 defaults use fixed
+    // styling; custom ones get their saved label + a rotating icon/color.
+    function getMealMeta(key){
+      if (FOOD_MEAL_META[key]) return FOOD_MEAL_META[key];
+      const meta = getCodeMetaData();
+      const label = (meta.mealTypeLabels && meta.mealTypeLabels[key]) || titleCaseMealKey(key);
+      const customKeys = getMealTypeKeys().filter(k => !FOOD_MEAL_META[k]);
+      const idx = Math.max(0, customKeys.indexOf(key));
+      const style = CUSTOM_MEAL_STYLE_PALETTE[idx % CUSTOM_MEAL_STYLE_PALETTE.length];
+      return { label, sub:'Custom meal', icon: style.icon, iconBg: style.iconBg, accent: style.accent };
+    }
+
+    function slugifyMealKey(label){
+      let base = String(label || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+      return base || 'meal';
+    }
+
+    function addMealType(label){
+      const trimmed = String(label || '').trim();
+      if (!trimmed) return;
+      const meta = getCodeMetaData();
+      const keys = getMealTypeKeys();
+      const existingLabels = keys.map(k => getMealMeta(k).label);
+      if (existingLabels.some(l => l.toLowerCase() === trimmed.toLowerCase())) {
+        alert(`"${trimmed}" already exists as a meal type.`);
+        return;
+      }
+      const base = slugifyMealKey(trimmed);
+      const used = new Set(keys);
+      let finalKey = base, n = 2;
+      while (used.has(finalKey)) { finalKey = `${base}_${n}`; n++; }
+
+      meta.mealTypes = [...keys, finalKey];
+      meta.mealTypeLabels = { ...(meta.mealTypeLabels || {}), [finalKey]: trimmed };
+      saveCodeMetaData(meta);
+      renderMetaManagerLists();
+    }
+
+    function renameMealType(key){
+      const meta = getCodeMetaData();
+      const currentLabel = getMealMeta(key).label;
+      const newLabel = prompt(`Rename meal type "${currentLabel}":`, currentLabel);
+      if (!newLabel || !newLabel.trim() || newLabel.trim().toLowerCase() === currentLabel.toLowerCase()) return;
+      meta.mealTypeLabels = { ...(meta.mealTypeLabels || {}), [key]: newLabel.trim() };
+      saveCodeMetaData(meta);
+      renderMetaManagerLists();
+      if (foodActiveMeals.includes(key)) renderFoodMealCards();
+    }
+
+    function deleteMealType(key, count){
+      if (count > 0) {
+        alert(`Cannot delete "${getMealMeta(key).label}": it's currently selected for ${count} function(s). Turn it off for those functions first.`);
+        return;
+      }
+      if (getMealTypeKeys().length <= 1) { alert('You need at least one meal type.'); return; }
+      if (!confirm(`Delete meal type "${getMealMeta(key).label}"? Any menu items already saved under it stay in the background in case you re-add it.`)) return;
+
+      const meta = getCodeMetaData();
+      meta.mealTypes = getMealTypeKeys().filter(k => k !== key);
+      if (meta.mealTypeLabels) delete meta.mealTypeLabels[key];
+      if (meta.functionMeals) {
+        Object.keys(meta.functionMeals).forEach(fn => {
+          meta.functionMeals[fn] = (meta.functionMeals[fn] || []).filter(m => m !== key);
+        });
+      }
+      saveCodeMetaData(meta);
+      renderMetaManagerLists();
+      if (foodActiveMeals.includes(key)) {
+        foodActiveMeals = foodActiveMeals.filter(m => m !== key);
+        renderFoodMealCards();
+      }
+    }
 
     function getFoodStorageDocId(){
       const fn=(selectedTopFunction && selectedTopFunction!=='All')?selectedTopFunction:'All Functions';
@@ -1333,7 +1444,7 @@
       const meta = getCodeMetaData();
       const fm = meta.functionMeals || {};
       const key = Object.keys(fm).find(k => k.toLowerCase() === String(fn || '').toLowerCase());
-      return key && Array.isArray(fm[key]) ? fm[key] : [...FOOD_MEALS];
+      return key && Array.isArray(fm[key]) ? fm[key] : getMealTypeKeys();
     }
 
     function toggleFunctionMeal(fn, meal){
@@ -1354,20 +1465,20 @@
 
     function normalizeFoodPlan(raw){
       const out = {};
-      FOOD_MEALS.forEach(meal=>{
+      getMealTypeKeys().forEach(meal=>{
         out[meal] = { items: {}, guestCount: '' };
         const d = raw?.[meal] || {};
         out[meal].guestCount = (d.guestCount === undefined || d.guestCount === null) ? '' : d.guestCount;
         if (d.items && typeof d.items === 'object') {
           Object.entries(d.items).forEach(([cat, val]) => {
             if (!cat) return;
-            out[meal].items[cat] = { menu: val?.menu || '', qty: (val?.qty ?? '') };
+            out[meal].items[cat] = { menu: val?.menu || '' };
           });
         } else if (d.categories && typeof d.categories === 'object') {
           const labels = LEGACY_FOOD_CATEGORY_LABELS[meal] || {};
           Object.entries(d.categories).forEach(([key, val]) => {
             const label = labels[key] || key;
-            out[meal].items[label] = { menu: val?.menu || '', qty: (val?.qty ?? '') };
+            out[meal].items[label] = { menu: val?.menu || '' };
           });
         }
       });
@@ -1384,13 +1495,8 @@
         if (!foodPlanning[meal]) foodPlanning[meal] = { items: {}, guestCount: '' };
         cats.forEach((cat, idx) => {
           const i = document.getElementById(`foodItem_${meal}_${idx}`);
-          const q = document.getElementById(`foodQty_${meal}_${idx}`);
-          if (!i && !q) return;
-          const prev = foodPlanning[meal].items[cat] || {};
-          foodPlanning[meal].items[cat] = {
-            menu: i ? i.value : (prev.menu || ''),
-            qty: q ? q.value : (prev.qty ?? '')
-          };
+          if (!i) return;
+          foodPlanning[meal].items[cat] = { menu: i.value };
         });
         const g = document.getElementById(`foodGuestCount_${meal}`);
         if (g) foodPlanning[meal].guestCount = g.value;
@@ -1422,12 +1528,12 @@
         // One-time migration: this function's meal selection used to live
         // only in its own Firestore document. Carry it over into the
         // global "Manage Functions" setting so it's editable from there.
-        foodActiveMeals = data.activeMeals.filter(m => FOOD_MEALS.includes(m));
+        foodActiveMeals = data.activeMeals.filter(m => getMealTypeKeys().includes(m));
         const migratedMeta = getCodeMetaData();
         migratedMeta.functionMeals = { ...(migratedMeta.functionMeals || {}), [selectedTopFunction]: foodActiveMeals };
         saveCodeMetaData(migratedMeta);
       } else {
-        foodActiveMeals = [...FOOD_MEALS];
+        foodActiveMeals = getMealTypeKeys();
       }
       renderFoodModule();
     }
@@ -1440,7 +1546,7 @@
       foodActiveMeals.forEach(meal => {
         const items = {};
         Object.entries(foodPlanning[meal]?.items || {}).forEach(([cat, val]) => {
-          items[cat] = { menu: (val.menu || '').trim(), qty: (val.qty === undefined ? '' : val.qty) };
+          items[cat] = { menu: (val.menu || '').trim() };
         });
         const gc = foodPlanning[meal]?.guestCount;
         payload[meal] = { items, guestCount: (gc === undefined || gc === null) ? '' : gc };
@@ -1474,7 +1580,7 @@
 
       const current = getFoodCategories(meal);
       if (current.some(c => c.toLowerCase() === name.toLowerCase())) {
-        alert(`"${name}" is already a category for ${FOOD_MEAL_META[meal].label}.`);
+        alert(`"${name}" is already a category for ${getMealMeta(meal).label}.`);
         return;
       }
 
@@ -1486,7 +1592,7 @@
     }
 
     function deleteFoodCategory(meal, category){
-      if (!confirm(`Remove "${category}" from ${FOOD_MEAL_META[meal].label}'s categories? Any menu text already entered for it stays saved in the background in case you re-add it.`)) return;
+      if (!confirm(`Remove "${category}" from ${getMealMeta(meal).label}'s categories? Any menu text already entered for it stays saved in the background in case you re-add it.`)) return;
 
       captureFoodDomIntoState();
       const meta = getCodeMetaData();
@@ -1514,9 +1620,9 @@
       }
 
       let html = '';
-      FOOD_MEALS.forEach(meal => {
+      getMealTypeKeys().forEach(meal => {
         if (!foodActiveMeals.includes(meal)) return;
-        const meta = FOOD_MEAL_META[meal];
+        const meta = getMealMeta(meal);
         const cats = getFoodCategories(meal);
         const items = foodPlanning[meal]?.items || {};
         const isOpen = !!foodMealOpenState[meal];
@@ -1524,12 +1630,10 @@
         let rows = '';
         cats.forEach((cat, idx) => {
           const d = items[cat] || {};
-          const qtyVal = (d.qty === undefined || d.qty === null) ? '' : String(d.qty);
           rows += `
             <div class="fp-cat-row">
               <div class="fp-cat-name">${escapeHtml(cat)}</div>
               <input id="foodItem_${meal}_${idx}" class="fp-cat-menu" placeholder="Menu items..." value="${escapeHtml(d.menu || '')}" />
-              <input id="foodQty_${meal}_${idx}" type="number" min="0" step="any" class="fp-cat-qty" placeholder="Qty" value="${escapeHtml(qtyVal)}" />
               <button type="button" class="fp-cat-del" title="Remove category" onclick="deleteFoodCategory('${meal}','${escapeJs(cat)}')"><i class="fa-solid fa-xmark"></i></button>
             </div>`;
         });
@@ -1537,29 +1641,25 @@
           rows = `<div class="fp-empty" style="padding:14px 4px"><i class="fa-solid fa-list"></i><p>No categories yet</p><span>Add your first menu category below.</span></div>`;
         }
 
-        let mealQty = 0;
-        cats.forEach(cat => { const q = items[cat]?.qty; if (q !== undefined && q !== '' && !isNaN(Number(q))) mealQty += Math.max(0, Number(q)); });
-
         const guestCountVal = (foodPlanning[meal]?.guestCount === undefined || foodPlanning[meal]?.guestCount === null) ? '' : String(foodPlanning[meal].guestCount);
 
         html += `
-          <div class="fp-card mt-${meal}">
-            <div class="fp-card-head w-full text-left" role="button" tabindex="0" onclick="toggleFoodMeal('${meal}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleFoodMeal('${meal}');}" aria-expanded="${isOpen}">
+          <div class="fp-card">
+            <div class="fp-card-head w-full text-left" role="button" tabindex="0" onclick="toggleFoodMeal('${meal}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleFoodMeal('${meal}');}" aria-expanded="${isOpen}" style="border-left-color:${meta.accent}">
               <span class="fp-card-title">
                 <span class="fp-card-icon ${meta.iconBg}"><i class="fa-solid ${meta.icon}"></i></span>
                 <span class="fp-card-title-text">
                   <span class="fp-card-title-row">
-                    ${meta.label}
-                    <span class="fp-card-guest-wrap" onclick="event.stopPropagation()" title="Guests eating ${meta.label}">
+                    ${escapeHtml(meta.label)}
+                    <span class="fp-card-guest-wrap" onclick="event.stopPropagation()" title="Guests eating ${escapeHtml(meta.label)}">
                       <i class="fa-solid fa-user-group"></i>
                       <input type="number" min="0" step="1" id="foodGuestCount_${meal}" class="fp-card-guest-input" placeholder="Guests" value="${escapeHtml(guestCountVal)}" onclick="event.stopPropagation()" />
                     </span>
                   </span>
-                  <small>${meta.sub} · ${cats.length} ${cats.length === 1 ? 'category' : 'categories'}</small>
+                  <small>${escapeHtml(meta.sub)} · ${cats.length} ${cats.length === 1 ? 'category' : 'categories'}</small>
                 </span>
               </span>
               <span class="flex items-center gap-2">
-                <span class="fp-card-meta">${mealQty > 0 ? ('Qty ' + (Number.isInteger(mealQty) ? mealQty : mealQty.toFixed(1))) : ''}</span>
                 <i id="foodChevron_${meal}" class="fa-solid fa-chevron-right fp-card-chevron" style="transform:${isOpen ? 'rotate(90deg)' : 'rotate(0deg)'}"></i>
               </span>
             </div>
@@ -2180,7 +2280,9 @@
           lunch: ['Starters', 'Main Course', 'Rice / Biryani', 'Breads', 'Sides', 'Pickles', 'Raita / Salad', 'Dessert', 'Beverages'],
           snacks: ['Savouries', 'Chaats / Chutneys', 'Sweets', 'Bakery', 'Fruit', 'Hot Beverages', 'Cold Beverages'],
           dinner: ['Starters', 'Main Course', 'Rice / Biryani', 'Breads', 'Sides', 'Pickles', 'Raita / Salad', 'Dessert', 'Beverages']
-        }
+        },
+        mealTypes: ['breakfast', 'lunch', 'snacks', 'dinner'],
+        mealTypeLabels: { breakfast: 'Breakfast', lunch: 'Lunch', snacks: 'Snacks', dinner: 'Dinner' }
       };
     }
 
@@ -2208,21 +2310,32 @@
       const functionDates = {};
       functions.forEach(fn => { if (rawDates[fn]) functionDates[fn] = String(rawDates[fn]).slice(0,10); });
 
-      const rawFoodCats = (src.foodCategories && typeof src.foodCategories === 'object') ? src.foodCategories : {};
-      const foodCategories = {};
-      FOOD_MEALS.forEach(meal => {
-        foodCategories[meal] = clean(rawFoodCats[meal], defaults.foodCategories[meal]);
+      // Meal types (Breakfast/Lunch/Snacks/Dinner + any custom ones added
+      // via "Manage Functions, Categories & Tasks"). Note: this must NOT
+      // call getMealTypeKeys()/getCodeMetaData() — those call back into
+      // this function, which would recurse infinitely.
+      const mealTypes = clean(src.mealTypes, defaults.mealTypes);
+      const rawMealLabels = (src.mealTypeLabels && typeof src.mealTypeLabels === 'object') ? src.mealTypeLabels : {};
+      const mealTypeLabels = {};
+      mealTypes.forEach(key => {
+        mealTypeLabels[key] = String(rawMealLabels[key] || defaults.mealTypeLabels[key] || key).trim();
       });
 
-      // Which meals (Breakfast/Lunch/Snacks/Dinner) apply to each function.
-      // A function absent here means "not configured yet" — treated as all
-      // meals applying, until someone toggles it in Manage Functions.
+      const rawFoodCats = (src.foodCategories && typeof src.foodCategories === 'object') ? src.foodCategories : {};
+      const foodCategories = {};
+      mealTypes.forEach(meal => {
+        foodCategories[meal] = clean(rawFoodCats[meal], defaults.foodCategories[meal] || []);
+      });
+
+      // Which meals apply to each function. A function absent here means
+      // "not configured yet" — treated as all meals applying, until
+      // someone toggles it in Manage Functions.
       const rawFunctionMeals = (src.functionMeals && typeof src.functionMeals === 'object') ? src.functionMeals : {};
       const functionMeals = {};
       functions.forEach(fn => {
         const key = Object.keys(rawFunctionMeals).find(k => k.toLowerCase() === fn.toLowerCase());
         if (key && Array.isArray(rawFunctionMeals[key])) {
-          functionMeals[fn] = rawFunctionMeals[key].filter(m => FOOD_MEALS.includes(m));
+          functionMeals[fn] = rawFunctionMeals[key].filter(m => mealTypes.includes(m));
         }
       });
 
@@ -2231,7 +2344,9 @@
         taskCategories: clean(src.taskCategories, defaults.taskCategories),
         relations: clean(src.relations, defaults.relations),
         foodCategories,
-        functionMeals
+        functionMeals,
+        mealTypes,
+        mealTypeLabels
       };
     }
 
@@ -2346,6 +2461,8 @@
         relations: codeMetaData.relations,
         foodCategories: codeMetaData.foodCategories,
         functionMeals: codeMetaData.functionMeals || {},
+        mealTypes: codeMetaData.mealTypes,
+        mealTypeLabels: codeMetaData.mealTypeLabels || {},
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       }).catch(err => {
         console.error('Unable to save global metadata to Firestore:', err);
@@ -2411,6 +2528,12 @@
       if (!input) return;
       const val = input.value.trim();
       if (!val) return;
+
+      if (type === 'mealTypes') {
+        addMealType(val);
+        input.value = '';
+        return;
+      }
 
       const meta = getCodeMetaData();
 
@@ -3233,6 +3356,7 @@
       const catList = document.getElementById('categoryManageList');
       const taskCatList = document.getElementById('taskCategoryManageList');
       const relList = document.getElementById('relationManageList');
+      const mealList = document.getElementById('mealTypeManageList');
 
       const meta = getCodeMetaData();
       const target = getVisibleFamilies();
@@ -3272,11 +3396,12 @@
         const count = funcCountMap[fn] || 0;
         const safeFn = escapeHtml(fn), fnKey = escapeJs(fn), dateKey = Object.keys(functionDates).find(k => k.toLowerCase() === fn.toLowerCase()), dateValue = dateKey ? (functionDates[dateKey] || '') : '';
         const mealsKey = Object.keys(functionMeals).find(k => k.toLowerCase() === fn.toLowerCase());
-        const activeMeals = Array.isArray(functionMeals[mealsKey]) ? functionMeals[mealsKey] : [...FOOD_MEALS];
-        const mealButtons = FOOD_MEALS.map(meal => {
-          const mm = FOOD_MEAL_META[meal];
+        const activeMeals = Array.isArray(functionMeals[mealsKey]) ? functionMeals[mealsKey] : getMealTypeKeys();
+        const mealButtons = getMealTypeKeys().map(meal => {
+          const mm = getMealMeta(meal);
           const isActive = activeMeals.includes(meal);
-          return `<button type="button" onclick="toggleFunctionMeal('${fnKey}','${meal}')" class="fp-meal-mini-btn fmm-${meal} ${isActive ? 'active' : ''}" title="${mm.label}"><i class="fa-solid ${mm.icon}"></i><span>${mm.label}</span></button>`;
+          const activeStyle = isActive ? ` style="background:${mm.accent}1a;border-color:${mm.accent};color:${mm.accent}"` : '';
+          return `<button type="button" onclick="toggleFunctionMeal('${fnKey}','${meal}')" class="fp-meal-mini-btn ${isActive ? 'active' : ''}"${activeStyle} title="${escapeHtml(mm.label)}"><i class="fa-solid ${mm.icon}"></i><span>${escapeHtml(mm.label)}</span></button>`;
         }).join('');
         const row = document.createElement('div');
         row.className = 'p-2 rounded-lg bg-indigo-50/50 border border-indigo-100 text-xs';
@@ -3337,6 +3462,43 @@
         `;
         taskCatList.appendChild(row);
       });
+
+      // 3b. Meal Types List (usage = number of functions that explicitly
+      // include this meal in their Food Planning "Meals" selection)
+      if (mealList) {
+        mealList.innerHTML = '';
+        const mealTypeCountMap = {};
+        getMealTypeKeys().forEach(k => { mealTypeCountMap[k] = 0; });
+        Object.values(meta.functionMeals || {}).forEach(meals => {
+          (meals || []).forEach(m => { if (mealTypeCountMap[m] !== undefined) mealTypeCountMap[m]++; });
+        });
+        getMealTypeKeys().forEach(key => {
+          const mm = getMealMeta(key);
+          const count = mealTypeCountMap[key] || 0;
+          const row = document.createElement('div');
+          row.className = 'flex items-center justify-between p-2 rounded-lg bg-emerald-50/50 border border-emerald-200 text-xs';
+          row.innerHTML = `
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="w-6 h-6 rounded-lg flex items-center justify-center text-[11px] shrink-0 ${mm.iconBg}"><i class="fa-solid ${mm.icon}"></i></span>
+              <span class="font-bold text-emerald-950 truncate">${escapeHtml(mm.label)}</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded font-semibold ${count > 0 ? 'bg-emerald-200 text-emerald-900' : 'bg-slate-200 text-slate-600'} shrink-0">
+                ${count} ${count === 1 ? 'function' : 'functions'}
+              </span>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+              <button type="button" onclick="renameMealType('${escapeJs(key)}')" class="px-2 py-0.5 text-[11px] font-bold bg-white border border-emerald-300 hover:border-emerald-600 rounded text-emerald-800 transition" title="Rename Meal Type">
+                <i class="fa-solid fa-pen"></i> Rename
+              </button>
+              <button type="button" onclick="deleteMealType('${escapeJs(key)}', ${count})" class="px-2 py-0.5 text-[11px] font-bold rounded transition ${
+                count > 0 ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200'
+              }" title="${count > 0 ? 'Cannot delete: still selected for some functions' : 'Delete Meal Type'}">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </div>
+          `;
+          mealList.appendChild(row);
+        });
+      }
 
       // 4. Relations List
       relList.innerHTML = '';
