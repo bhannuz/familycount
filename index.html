@@ -115,6 +115,10 @@
 .fp-card-body{padding:4px 10px 10px}
 .fp-cat-row{display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid #f1f5f9}
 .fp-cat-row:last-of-type{border-bottom:0}
+.fp-cat-move{display:flex;flex-direction:column;gap:2px;flex-shrink:0}
+.fp-cat-move-btn{width:20px;height:15px;padding:0;border:1px solid #e2e8f0;border-radius:5px;background:#fff;color:#94a3b8;font-size:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.15s}
+.fp-cat-move-btn:hover:not(:disabled){background:#ecfdf5;border-color:#a7f3d0;color:#047857}
+.fp-cat-move-btn:disabled{opacity:.3;cursor:not-allowed}
 .fp-cat-name{width:92px;flex-shrink:0;font-size:10.5px;font-weight:800;color:#475569;line-height:1.25}
 .fp-cat-menu{flex:1;min-width:0;border:1px solid #d8dee8;border-radius:8px;padding:6px 8px;font-size:10.5px;font-weight:600;outline:none;background:#fff}
 .fp-cat-menu:focus{border-color:#10b981;box-shadow:0 0 0 3px rgba(16,185,129,.12)}
@@ -1628,6 +1632,32 @@
       renderFoodMealCards();
     }
 
+    // Reorders a meal's category list. direction: -1 = move up one spot,
+    // 1 = move down one spot, 'top' = jump straight to the first position.
+    // Repeating "move up/down" lets a category reach any position.
+    function moveFoodCategory(meal, category, direction){
+      captureFoodDomIntoState();
+      const current = getFoodCategories(meal);
+      const idx = current.findIndex(c => c.toLowerCase() === category.toLowerCase());
+      if (idx === -1) return;
+
+      const next = [...current];
+      if (direction === 'top') {
+        if (idx === 0) return;
+        const [item] = next.splice(idx, 1);
+        next.unshift(item);
+      } else {
+        const swapWith = idx + direction;
+        if (swapWith < 0 || swapWith >= next.length) return;
+        [next[idx], next[swapWith]] = [next[swapWith], next[idx]];
+      }
+
+      const meta = getCodeMetaData();
+      meta.foodCategories = { ...(meta.foodCategories || {}), [meal]: next };
+      saveCodeMetaData(meta);
+      renderFoodMealCards();
+    }
+
     // Guest count per meal is edited here, at the top of the tab, so it's
     // visible for every active meal at once without expanding each card.
     function renderFoodGuestRow(){
@@ -1676,11 +1706,16 @@
         let rows = '';
         cats.forEach((cat, idx) => {
           const d = items[cat] || {};
+          const catKey = escapeJs(cat);
           rows += `
             <div class="fp-cat-row">
+              <div class="fp-cat-move">
+                <button type="button" class="fp-cat-move-btn" title="Move up" onclick="moveFoodCategory('${meal}','${catKey}',-1)" ${idx === 0 ? 'disabled' : ''}><i class="fa-solid fa-chevron-up"></i></button>
+                <button type="button" class="fp-cat-move-btn" title="Move down" onclick="moveFoodCategory('${meal}','${catKey}',1)" ${idx === cats.length - 1 ? 'disabled' : ''}><i class="fa-solid fa-chevron-down"></i></button>
+              </div>
               <div class="fp-cat-name">${escapeHtml(cat)}</div>
               <input id="foodItem_${meal}_${idx}" class="fp-cat-menu" placeholder="Menu items..." value="${escapeHtml(d.menu || '')}" />
-              <button type="button" class="fp-cat-del" title="Remove category" onclick="deleteFoodCategory('${meal}','${escapeJs(cat)}')"><i class="fa-solid fa-xmark"></i></button>
+              <button type="button" class="fp-cat-del" title="Remove category" onclick="deleteFoodCategory('${meal}','${catKey}')"><i class="fa-solid fa-xmark"></i></button>
             </div>`;
         });
         if (!cats.length) {
