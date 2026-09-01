@@ -16,6 +16,26 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <style>
+/* ---- Guest table: Plan / Actual headcount cells ----
+   Replaced a 4-column CSS grid (minmax(0,1fr) tracks force-shrink their
+   content below readable size on narrow/tablet viewports, so numbers and
+   +/- buttons overlapped or got clipped). This version uses two stacked
+   lines plus wrapping flex "chips" instead — nothing here is forced to
+   shrink below its natural size; on a narrow screen it simply wraps to a
+   second line rather than squashing. */
+.hc-plan{display:flex;flex-direction:column;align-items:center;gap:1px;min-width:44px}
+.hc-plan-total{font-size:13px;font-weight:900;color:#0f172a;line-height:15px}
+.hc-plan-breakdown{font-size:8.5px;font-weight:700;color:#94a3b8;white-space:nowrap}
+
+.hc-actual{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:96px}
+.hc-actual-chips{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:3px}
+.hc-chip{display:inline-flex;align-items:center;gap:2px;border:1px solid #dbe3ee;border-radius:999px;padding:1px 2px 1px 6px;background:#fff;white-space:nowrap}
+.hc-chip-label{font-size:8px;font-weight:900}
+.hc-chip-value{min-width:13px;text-align:center;font-size:10px;font-weight:900;color:#0f172a}
+.hc-chip-btn{width:16px;height:16px;padding:0;border:none;border-radius:999px;background:#f1f5f9;color:#475569;font-size:10px;font-weight:900;line-height:16px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+.hc-chip-btn:hover{background:#e0e7ff;color:#3730a3}
+.hc-actual-total{font-size:9px;font-weight:800;color:#047857}
+
 .compact-counts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));align-items:start;justify-items:center;gap:3px;white-space:nowrap}
 .compact-count{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:2px;min-width:30px}
 .compact-count-label{font-size:8px;font-weight:900;line-height:9px;min-height:9px}
@@ -80,10 +100,15 @@
 .fp-card-title-text{font-size:12.5px;font-weight:900;color:#0f172a;min-width:0}
 .fp-card-title-text small{display:block;font-size:9px;font-weight:700;color:#94a3b8;margin-top:1px}
 .fp-card-title-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
-.fp-card-guest-wrap{display:flex;align-items:center;gap:4px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:2px 6px 2px 7px;cursor:text}
-.fp-card-guest-wrap i{font-size:9px;color:#94a3b8}
-.fp-card-guest-input{width:44px;border:none;background:transparent;font-size:10.5px;font-weight:800;color:#0f172a;text-align:left;outline:none;padding:2px 0}
-.fp-card-guest-wrap:focus-within{border-color:#10b981;background:#fff;box-shadow:0 0 0 2px rgba(16,185,129,.12)}
+.fp-card-guest-badge{display:inline-flex;align-items:center;gap:4px;background:#f0fdf4;border:1px solid #bbf7d0;color:#047857;border-radius:999px;padding:2px 8px;font-size:9.5px;font-weight:800}
+.fp-card-guest-badge i{font-size:8.5px}
+
+.fp-guest-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.fp-guest-item{display:flex;align-items:center;gap:6px;background:#fff;border:1.5px solid #e2e8f0;border-radius:11px;padding:6px 9px 6px 6px;flex:1 1 130px;min-width:130px}
+.fp-guest-item:focus-within{border-color:var(--fp-accent,#10b981);box-shadow:0 0 0 3px rgba(16,185,129,.15)}
+.fp-guest-item-icon{width:24px;height:24px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0}
+.fp-guest-item-label{font-size:10px;font-weight:800;color:#475569;white-space:nowrap;flex-shrink:0}
+.fp-guest-item-input{width:100%;min-width:0;border:none;background:transparent;font-size:12px;font-weight:900;color:#0f172a;text-align:right;outline:none;padding:0}
 .fp-card-meta{font-size:9.5px;font-weight:700;color:#64748b;white-space:nowrap;flex-shrink:0}
 .fp-card-chevron{font-size:10px;color:#94a3b8;transition:transform .18s;flex-shrink:0}
 
@@ -1122,6 +1147,7 @@
             </div>
             <button type="button" onclick="saveFoodPlanning()" class="fp-save-btn"><i class="fa-solid fa-floppy-disk"></i> Save Plan</button>
           </div>
+          <div id="foodGuestCountRow" class="fp-guest-row"></div>
         </div>
 
         <!-- Meal cards, built dynamically from the meals chosen per function
@@ -1602,7 +1628,27 @@
       renderFoodMealCards();
     }
 
+    // Guest count per meal is edited here, at the top of the tab, so it's
+    // visible for every active meal at once without expanding each card.
+    function renderFoodGuestRow(){
+      const wrap = document.getElementById('foodGuestCountRow');
+      if (!wrap) return;
+      if (selectedTopFunction === 'All' || !foodActiveMeals.length) { wrap.innerHTML = ''; return; }
+
+      wrap.innerHTML = foodActiveMeals.map(meal => {
+        const meta = getMealMeta(meal);
+        const val = (foodPlanning[meal]?.guestCount === undefined || foodPlanning[meal]?.guestCount === null) ? '' : String(foodPlanning[meal].guestCount);
+        return `
+          <div class="fp-guest-item" style="--fp-accent:${meta.accent}">
+            <span class="fp-guest-item-icon" style="background:${meta.accent}1a;color:${meta.accent}"><i class="fa-solid ${meta.icon}"></i></span>
+            <span class="fp-guest-item-label">${escapeHtml(meta.label)}</span>
+            <input type="number" min="0" step="1" id="foodGuestCount_${meal}" class="fp-guest-item-input" placeholder="0" value="${escapeHtml(val)}" />
+          </div>`;
+      }).join('');
+    }
+
     function renderFoodMealCards(){
+      renderFoodGuestRow();
       const container = document.getElementById('foodMealCardsContainer');
       if (!container) return;
 
@@ -1651,10 +1697,7 @@
                 <span class="fp-card-title-text">
                   <span class="fp-card-title-row">
                     ${escapeHtml(meta.label)}
-                    <span class="fp-card-guest-wrap" onclick="event.stopPropagation()" title="Guests eating ${escapeHtml(meta.label)}">
-                      <i class="fa-solid fa-user-group"></i>
-                      <input type="number" min="0" step="1" id="foodGuestCount_${meal}" class="fp-card-guest-input" placeholder="Guests" value="${escapeHtml(guestCountVal)}" onclick="event.stopPropagation()" />
-                    </span>
+                    ${guestCountVal !== '' ? `<span class="fp-card-guest-badge" title="Guests eating ${escapeHtml(meta.label)}"><i class="fa-solid fa-user-group"></i>${escapeHtml(guestCountVal)}</span>` : ''}
                   </span>
                   <small>${escapeHtml(meta.sub)} · ${cats.length} ${cats.length === 1 ? 'category' : 'categories'}</small>
                 </span>
@@ -1686,6 +1729,7 @@
         if (label) label.textContent = 'Select a specific Event Function above to plan its menu';
         if (saveBtn) saveBtn.style.display = 'none';
         if (tcf) tcf.textContent = '—';
+        const guestRow = document.getElementById('foodGuestCountRow'); if (guestRow) guestRow.innerHTML = '';
         if (container) container.innerHTML = `
           <div class="fp-empty" style="grid-column:1/-1">
             <i class="fa-solid fa-hand-pointer"></i>
@@ -3250,21 +3294,19 @@
             ${colSettings.plan ? (() => {
               const pg = toNumber(item.gents), pl = toNumber(item.ladies), pk = toNumber(item.kids);
               const planTotal = pg + pl + pk;
-              return `<td class="border border-slate-200 py-1 px-1 text-center whitespace-nowrap" title="Planned: Gents ${pg}, Ladies ${pl}, Kids ${pk}, Total ${planTotal}"><div class="plan-counts-compact"><span class="plan-count-pill text-blue-700"><b>G</b><span>${pg}</span></span><span class="plan-count-pill text-pink-700"><b>L</b><span>${pl}</span></span><span class="plan-count-pill text-amber-700"><b>K</b><span>${pk}</span></span><span class="plan-count-pill text-slate-700"><b>T</b><span>${planTotal}</span></span></div></td>`;
+              return `<td class="border border-slate-200 py-1 px-1.5 text-center" title="Planned: Gents ${pg}, Ladies ${pl}, Kids ${pk}, Total ${planTotal}"><div class="hc-plan"><span class="hc-plan-total">${planTotal}</span><span class="hc-plan-breakdown">G${pg} · L${pl} · K${pk}</span></div></td>`;
             })() : ''}
             ${colSettings.actual ? (() => {
               const a = getGuestActualCounts(item);
               const actualTotal = a.gents + a.ladies + a.kids;
-              const compact = (label, value, gender, cls) => `
-                <span class="compact-count" title="${label === 'G' ? 'Gents' : label === 'L' ? 'Ladies' : 'Kids'} actual count">
-                  <b class="${cls} compact-count-label">${label}</b>
-                  <span class="compact-count-controls">
-                    <button type="button" class="actual-step-btn" title="Decrease ${label}" onclick="event.stopPropagation(); adjustGuestActualGender('${safe(item.id)}','${gender}',-1)">−</button>
-                    <b class="actual-count-value">${value}</b>
-                    <button type="button" class="actual-step-btn" title="Increase ${label}" onclick="event.stopPropagation(); adjustGuestActualGender('${safe(item.id)}','${gender}',1)">+</button>
-                  </span>
+              const chip = (label, value, gender, cls) => `
+                <span class="hc-chip" title="${label === 'G' ? 'Gents' : label === 'L' ? 'Ladies' : 'Kids'} actual count">
+                  <b class="${cls} hc-chip-label">${label}</b>
+                  <button type="button" class="hc-chip-btn" title="Decrease ${label}" onclick="event.stopPropagation(); adjustGuestActualGender('${safe(item.id)}','${gender}',-1)">−</button>
+                  <b class="hc-chip-value">${value}</b>
+                  <button type="button" class="hc-chip-btn" title="Increase ${label}" onclick="event.stopPropagation(); adjustGuestActualGender('${safe(item.id)}','${gender}',1)">+</button>
                 </span>`;
-              return `<td class="border border-slate-200 py-1 px-1 text-center whitespace-nowrap" title="Actual: Gents ${a.gents}, Ladies ${a.ladies}, Kids ${a.kids}, Total ${actualTotal}"><div class="compact-counts">${compact('G',a.gents,'gents','text-blue-700')}${compact('L',a.ladies,'ladies','text-pink-700')}${compact('K',a.kids,'kids','text-amber-700')}<span class="compact-count text-emerald-700"><b class="compact-count-label">T</b><b class="compact-count-number">${actualTotal}</b></span></div></td>`;
+              return `<td class="border border-slate-200 py-1.5 px-1.5 text-center" title="Actual: Gents ${a.gents}, Ladies ${a.ladies}, Kids ${a.kids}, Total ${actualTotal}"><div class="hc-actual"><div class="hc-actual-chips">${chip('G',a.gents,'gents','text-blue-700')}${chip('L',a.ladies,'ladies','text-pink-700')}${chip('K',a.kids,'kids','text-amber-700')}</div><span class="hc-actual-total">Total: ${actualTotal}</span></div></td>`;
             })() : ''}
             ${colSettings.inv ? `<td class="border border-slate-200 py-1 px-2 text-center">${guestInvitationSelect(item)}</td>` : ''}
             ${colSettings.gifts ? `<td class="border border-slate-200 py-1.5 px-2 text-right">${gift > 0 ? '₹' + gift.toLocaleString('en-IN') : ''}${item.giftDescription ? `<div class="text-[10px] text-slate-500">${safe(item.giftDescription)}</div>` : ''}</td>` : ''}
