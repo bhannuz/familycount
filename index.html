@@ -11,6 +11,9 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
+  <!-- SortableJS: touch-friendly drag & drop for reordering Food Planning categories -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
+
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -115,10 +118,11 @@
 .fp-card-body{padding:4px 10px 10px}
 .fp-cat-row{display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid #f1f5f9}
 .fp-cat-row:last-of-type{border-bottom:0}
-.fp-cat-move{display:flex;flex-direction:column;gap:2px;flex-shrink:0}
-.fp-cat-move-btn{width:20px;height:15px;padding:0;border:1px solid #e2e8f0;border-radius:5px;background:#fff;color:#94a3b8;font-size:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.15s}
-.fp-cat-move-btn:hover:not(:disabled){background:#ecfdf5;border-color:#a7f3d0;color:#047857}
-.fp-cat-move-btn:disabled{opacity:.3;cursor:not-allowed}
+.fp-cat-drag{width:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#cbd5e1;font-size:11px;cursor:grab;touch-action:none;-webkit-user-select:none;user-select:none}
+.fp-cat-drag:active{cursor:grabbing}
+.fp-cat-row:hover .fp-cat-drag{color:#94a3b8}
+.fp-cat-row.fp-cat-row-chosen{background:#ecfdf5;border-radius:9px;box-shadow:0 2px 8px rgba(16,185,129,.18)}
+.fp-cat-row.fp-cat-row-ghost{opacity:.35}
 .fp-cat-name{width:92px;flex-shrink:0;font-size:10.5px;font-weight:800;color:#475569;line-height:1.25}
 .fp-cat-menu{flex:1;min-width:0;border:1px solid #d8dee8;border-radius:8px;padding:6px 8px;font-size:10.5px;font-weight:600;outline:none;background:#fff}
 .fp-cat-menu:focus{border-color:#10b981;box-shadow:0 0 0 3px rgba(16,185,129,.12)}
@@ -817,19 +821,27 @@
           </div>
         </div>
 
-        <div class="inline-flex items-center gap-2 bg-emerald-900/90 text-white px-3 py-2 rounded-xl shadow-sm border border-emerald-700/70 shrink-0" title="Gift and cash summary">
-          <div class="w-7 h-7 rounded-lg bg-emerald-700/70 flex items-center justify-center">
-            <i class="fa-solid fa-wallet text-emerald-200 text-xs"></i>
+        <div class="bg-emerald-900 text-white p-3 rounded-xl shadow-sm flex flex-col justify-between" title="Gift and cash summary">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-200 block">Gifts & Cash Summary</span>
+            <i class="fa-solid fa-gift text-emerald-300 text-base opacity-80"></i>
           </div>
-          <div class="leading-tight min-w-[145px]">
-            <div class="text-[9px] font-bold uppercase tracking-wide text-emerald-200">Gifts & Cash Summary</div>
-            <div class="flex items-center gap-2 mt-0.5">
-              <span class="text-[11px] font-semibold text-emerald-100">Cash</span>
-              <span class="text-sm font-black text-emerald-200">₹<span id="statTotalCash">0</span></span>
-              <span class="text-emerald-500/70">|</span>
-              <span class="text-[11px] font-semibold text-emerald-100">Gifts</span>
-              <span class="text-sm font-black text-white" id="statGiftsCount">0</span>
+
+          <div class="flex items-center gap-3 sm:gap-4 mt-2">
+            <div class="min-w-0">
+              <div class="text-[9px] font-bold uppercase tracking-wide text-emerald-300">Total Cash</div>
+              <div class="text-xl sm:text-2xl font-black text-white truncate">₹<span id="statTotalCash">0</span></div>
             </div>
+            <div class="h-8 w-px bg-emerald-700/80 shrink-0"></div>
+            <div class="min-w-0">
+              <div class="text-[9px] font-bold uppercase tracking-wide text-emerald-300">Gifts Logged</div>
+              <div class="text-xl sm:text-2xl font-black text-white" id="statGiftsCount">0</div>
+            </div>
+          </div>
+
+          <div class="pt-2 mt-2 border-t border-emerald-800/80 flex items-center justify-between text-[10px] font-semibold">
+            <span class="text-emerald-300 uppercase tracking-wide">Avg. Cash / Gift</span>
+            <span class="text-white font-black">₹<span id="statAvgGift">0</span></span>
           </div>
         </div>
       </div>
@@ -1158,7 +1170,7 @@
              (in Manage Functions, Categories & Tasks) & the current categories -->
         <div id="foodMealCardsContainer" class="fp-cards"></div>
 
-        <div class="fp-footnote"><i class="fa-solid fa-circle-info mr-1 text-emerald-500"></i>Tap a meal card to expand it. Use "+ Add Category" inside a card to add your own menu categories — they'll be available for every function. Which meals apply to each function is set from <b>Manage Functions, Categories & Tasks</b>.</div>
+        <div class="fp-footnote"><i class="fa-solid fa-circle-info mr-1 text-emerald-500"></i>Tap a meal card to expand it. Drag a category by its <i class="fa-solid fa-grip-vertical"></i> handle to reorder it. Use "+ Add Category" inside a card to add your own menu categories — they'll be available for every function. Which meals apply to each function is set from <b>Manage Functions, Categories & Tasks</b>.</div>
       </div>
     </div>
 
@@ -1632,32 +1644,6 @@
       renderFoodMealCards();
     }
 
-    // Reorders a meal's category list. direction: -1 = move up one spot,
-    // 1 = move down one spot, 'top' = jump straight to the first position.
-    // Repeating "move up/down" lets a category reach any position.
-    function moveFoodCategory(meal, category, direction){
-      captureFoodDomIntoState();
-      const current = getFoodCategories(meal);
-      const idx = current.findIndex(c => c.toLowerCase() === category.toLowerCase());
-      if (idx === -1) return;
-
-      const next = [...current];
-      if (direction === 'top') {
-        if (idx === 0) return;
-        const [item] = next.splice(idx, 1);
-        next.unshift(item);
-      } else {
-        const swapWith = idx + direction;
-        if (swapWith < 0 || swapWith >= next.length) return;
-        [next[idx], next[swapWith]] = [next[swapWith], next[idx]];
-      }
-
-      const meta = getCodeMetaData();
-      meta.foodCategories = { ...(meta.foodCategories || {}), [meal]: next };
-      saveCodeMetaData(meta);
-      renderFoodMealCards();
-    }
-
     // Guest count per meal is edited here, at the top of the tab, so it's
     // visible for every active meal at once without expanding each card.
     function renderFoodGuestRow(){
@@ -1708,18 +1694,18 @@
           const d = items[cat] || {};
           const catKey = escapeJs(cat);
           rows += `
-            <div class="fp-cat-row">
-              <div class="fp-cat-move">
-                <button type="button" class="fp-cat-move-btn" title="Move up" onclick="moveFoodCategory('${meal}','${catKey}',-1)" ${idx === 0 ? 'disabled' : ''}><i class="fa-solid fa-chevron-up"></i></button>
-                <button type="button" class="fp-cat-move-btn" title="Move down" onclick="moveFoodCategory('${meal}','${catKey}',1)" ${idx === cats.length - 1 ? 'disabled' : ''}><i class="fa-solid fa-chevron-down"></i></button>
-              </div>
+            <div class="fp-cat-row" data-cat="${escapeHtml(cat)}">
+              <span class="fp-cat-drag" title="Drag to reorder"><i class="fa-solid fa-grip-vertical"></i></span>
               <div class="fp-cat-name">${escapeHtml(cat)}</div>
               <input id="foodItem_${meal}_${idx}" class="fp-cat-menu" placeholder="Menu items..." value="${escapeHtml(d.menu || '')}" />
               <button type="button" class="fp-cat-del" title="Remove category" onclick="deleteFoodCategory('${meal}','${catKey}')"><i class="fa-solid fa-xmark"></i></button>
             </div>`;
         });
+        let bodyRows;
         if (!cats.length) {
-          rows = `<div class="fp-empty" style="padding:14px 4px"><i class="fa-solid fa-list"></i><p>No categories yet</p><span>Add your first menu category below.</span></div>`;
+          bodyRows = `<div class="fp-empty" style="padding:14px 4px"><i class="fa-solid fa-list"></i><p>No categories yet</p><span>Add your first menu category below.</span></div>`;
+        } else {
+          bodyRows = `<div class="fp-cat-list" id="foodCatList_${meal}">${rows}</div>`;
         }
 
         const guestCountVal = (foodPlanning[meal]?.guestCount === undefined || foodPlanning[meal]?.guestCount === null) ? '' : String(foodPlanning[meal].guestCount);
@@ -1742,7 +1728,7 @@
               </span>
             </div>
             <div id="foodBody_${meal}" class="fp-card-body ${isOpen ? '' : 'hidden'}">
-              ${rows}
+              ${bodyRows}
               <div class="fp-add-cat">
                 <input type="text" id="foodNewCat_${meal}" placeholder="Add a category (e.g. Live Counter)..." onkeydown="if(event.key==='Enter'){event.preventDefault();addFoodCategory('${meal}');}" />
                 <button type="button" onclick="addFoodCategory('${meal}')"><i class="fa-solid fa-plus"></i> Add</button>
@@ -1752,6 +1738,39 @@
       });
 
       container.innerHTML = html;
+      initFoodCategoryDragDrop();
+    }
+
+    // Wires up drag-and-drop reordering for each visible meal's category
+    // list. Re-created after every render since renderFoodMealCards()
+    // rebuilds the DOM (old Sortable instances just get garbage collected
+    // along with the nodes they were attached to).
+    function initFoodCategoryDragDrop(){
+      if (typeof Sortable === 'undefined') return; // CDN blocked/offline: falls back to no reordering, rest of the tab still works
+      foodActiveMeals.forEach(meal => {
+        const listEl = document.getElementById(`foodCatList_${meal}`);
+        if (!listEl) return;
+        new Sortable(listEl, {
+          handle: '.fp-cat-drag',
+          animation: 150,
+          ghostClass: 'fp-cat-row-ghost',
+          chosenClass: 'fp-cat-row-chosen',
+          onEnd: () => {
+            // Read values using the CURRENT (pre-reorder) category order —
+            // ids like foodItem_<meal>_<idx> are stable per row regardless
+            // of where drag moved that row visually, so this still maps
+            // each input to the right category.
+            captureFoodDomIntoState();
+            const newOrder = Array.from(listEl.children)
+              .map(el => el.getAttribute('data-cat'))
+              .filter(Boolean);
+            const meta = getCodeMetaData();
+            meta.foodCategories = { ...(meta.foodCategories || {}), [meal]: newOrder };
+            saveCodeMetaData(meta);
+            renderFoodMealCards();
+          }
+        });
+      });
     }
 
     function renderFoodModule(){
@@ -2852,6 +2871,7 @@
       setText('statActualTotal', actualGents + actualLadies + actualKids);
       setText('statTotalCash', totalCash.toLocaleString('en-IN'));
       setText('statGiftsCount', giftsCount);
+      setText('statAvgGift', (giftsCount > 0 ? Math.round(totalCash / giftsCount) : 0).toLocaleString('en-IN'));
       setText('tabCountGuests', target.length);
       setText('historyBadgeCount', `${target.length} Entries`);
     }
