@@ -783,75 +783,67 @@
 
     <!-- ==================== MODULE 1: GUESTS & HEADCOUNT TRACKER ==================== -->
     <div id="guestsModule" class="space-y-2.5">
-      <!-- Side-by-Side Unified Summary Dashboard -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-        <div class="bg-indigo-900 text-white p-3 rounded-xl shadow-sm space-y-2 flex flex-col justify-between">
-          <div>
-            <div class="flex items-center justify-between">
-              <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-200 block" id="chipTitleHeadcount">Pending / Invited / Confirmed / Total Count</span>
-              <i class="fa-solid fa-users text-emerald-400 text-base opacity-80"></i>
-            </div>
-            
-            <div class="flex flex-wrap items-baseline gap-1 sm:gap-1.5 mt-1">
-              <span class="text-xs sm:text-sm font-bold text-slate-300"><span id="statPending" class="text-sm sm:text-base font-black text-slate-200">0</span> <span class="text-[9px] text-slate-400 font-normal">Pending</span></span>
-              <span class="text-indigo-400 font-light">/</span>
-              <span class="text-xs sm:text-sm font-bold text-indigo-200"><span id="statInvited" class="text-sm sm:text-base font-black text-white">0</span> <span class="text-[9px] text-indigo-300 font-normal">Invited</span></span>
-              <span class="text-indigo-400 font-light">/</span>
-              <span class="text-xs sm:text-sm font-bold text-amber-300"><span id="statConfirmed" class="text-sm sm:text-base font-black text-amber-300">0</span> <span class="text-[9px] text-amber-200 font-normal">Confirmed</span></span>
-              <span class="text-indigo-400 font-light">/</span>
-              <span class="text-sm sm:text-base font-black text-emerald-300"><span id="statTotalCount" class="text-base sm:text-lg">0</span> <span class="text-[9px] text-emerald-200 font-normal">Total Count</span></span>
-            </div>
-          </div>
-
-          <div class="pt-2 border-t border-indigo-800/80 space-y-1.5 text-xs">
-            <!-- Planned: de-emphasized reference numbers -->
-            <div class="flex items-center gap-2 px-2.5 py-1">
-              <span class="text-[8px] font-bold uppercase text-indigo-400 w-12 tracking-wide shrink-0">Planned</span>
-              <span class="text-[10px] text-indigo-300">G:<b id="statGents" class="text-indigo-200 font-bold ml-0.5">0</b></span>
-              <span class="text-[10px] text-indigo-300">L:<b id="statLadies" class="text-indigo-200 font-bold ml-0.5">0</b></span>
-              <span class="text-[10px] text-indigo-300">K:<b id="statKids" class="text-indigo-200 font-bold ml-0.5">0</b></span>
-              <span class="text-[10px] font-bold text-indigo-300 ml-auto">T: <b id="statPlannedTotal" class="text-indigo-100">0</b></span>
-            </div>
-
-            <!-- Actual: the number that matters most, made prominent -->
-            <div class="flex items-center gap-2.5 bg-emerald-400/10 px-3 py-2 rounded-lg border border-emerald-400/40">
-              <div class="flex items-center gap-1 shrink-0">
-                <i class="fa-solid fa-circle-check text-emerald-400 text-[11px]"></i>
-                <span class="text-[9px] font-black uppercase text-emerald-300 tracking-wide">Actual</span>
-              </div>
-              <span class="text-[11px] font-bold text-blue-200">G:<b id="statActualGents" class="text-white text-sm ml-0.5">0</b></span>
-              <span class="text-[11px] font-bold text-pink-200">L:<b id="statActualLadies" class="text-white text-sm ml-0.5">0</b></span>
-              <span class="text-[11px] font-bold text-amber-200">K:<b id="statActualKids" class="text-white text-sm ml-0.5">0</b></span>
-              <span class="ml-auto flex items-baseline gap-1 shrink-0">
-                <span class="text-[8px] font-bold text-emerald-300 uppercase">Total</span>
-                <b id="statActualTotal" class="text-xl font-black text-emerald-300 leading-none">0</b>
-              </span>
-            </div>
-          </div>
+      <!-- Guest Summary: 4 equal chips (Planned, Actual, RSVP Status, Gifts & Cash) -->
+      <div class="space-y-1.5">
+        <div class="flex items-center justify-between px-0.5">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500" id="chipTitleHeadcount">All Functions</span>
         </div>
 
-        <div class="bg-emerald-900 text-white p-3 rounded-xl shadow-sm flex flex-col justify-between" title="Gift and cash summary">
-          <div class="flex items-center justify-between">
-            <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-200 block">Gifts & Cash Summary</span>
-            <i class="fa-solid fa-gift text-emerald-300 text-base opacity-80"></i>
-          </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
 
-          <div class="flex items-center gap-3 sm:gap-4 mt-2">
-            <div class="min-w-0">
-              <div class="text-[9px] font-bold uppercase tracking-wide text-emerald-300">Total Cash</div>
-              <div class="text-xl sm:text-2xl font-black text-white truncate">₹<span id="statTotalCash">0</span></div>
+          <!-- Chip 1: Planned -->
+          <div class="bg-indigo-900 text-white p-3 rounded-xl shadow-sm flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+              <span class="text-[9px] font-bold uppercase tracking-wide text-indigo-300">Planned</span>
+              <i class="fa-solid fa-clipboard-list text-indigo-400 text-xs opacity-80"></i>
             </div>
-            <div class="h-8 w-px bg-emerald-700/80 shrink-0"></div>
-            <div class="min-w-0">
-              <div class="text-[9px] font-bold uppercase tracking-wide text-emerald-300">Gifts Logged</div>
-              <div class="text-xl sm:text-2xl font-black text-white" id="statGiftsCount">0</div>
+            <div class="mt-1.5">
+              <div class="text-xl sm:text-2xl font-black text-white leading-none" id="statPlannedTotal">0</div>
+              <div class="text-[9px] text-indigo-300 font-semibold mt-1.5">
+                G:<b id="statGents" class="text-indigo-100 ml-0.5">0</b> L:<b id="statLadies" class="text-indigo-100 ml-0.5">0</b> K:<b id="statKids" class="text-indigo-100 ml-0.5">0</b>
+              </div>
             </div>
           </div>
 
-          <div class="pt-2 mt-2 border-t border-emerald-800/80 flex items-center justify-between text-[10px] font-semibold">
-            <span class="text-emerald-300 uppercase tracking-wide">Avg. Cash / Gift</span>
-            <span class="text-white font-black">₹<span id="statAvgGift">0</span></span>
+          <!-- Chip 2: Actual — the number that matters most, made prominent -->
+          <div class="bg-emerald-700 text-white p-3 rounded-xl shadow-sm flex flex-col justify-between border border-emerald-400/40">
+            <div class="flex items-center justify-between">
+              <span class="text-[9px] font-black uppercase tracking-wide text-emerald-50">Actual</span>
+              <i class="fa-solid fa-circle-check text-emerald-200 text-xs"></i>
+            </div>
+            <div class="mt-1.5">
+              <div class="text-xl sm:text-2xl font-black text-white leading-none" id="statActualTotal">0</div>
+              <div class="text-[9px] text-emerald-100 font-semibold mt-1.5">
+                G:<b id="statActualGents" class="text-white ml-0.5">0</b> L:<b id="statActualLadies" class="text-white ml-0.5">0</b> K:<b id="statActualKids" class="text-white ml-0.5">0</b>
+              </div>
+            </div>
           </div>
+
+          <!-- Chip 3: RSVP Status -->
+          <div class="bg-slate-800 text-white p-3 rounded-xl shadow-sm flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+              <span class="text-[9px] font-bold uppercase tracking-wide text-slate-300">RSVP Status</span>
+              <i class="fa-solid fa-envelope text-slate-400 text-xs opacity-80"></i>
+            </div>
+            <div class="mt-1.5 flex items-baseline gap-2 flex-wrap">
+              <span><b id="statPending" class="text-base font-black text-slate-200">0</b><span class="text-[8px] font-bold text-slate-400 uppercase ml-1">Pending</span></span>
+              <span><b id="statInvited" class="text-base font-black text-sky-300">0</b><span class="text-[8px] font-bold text-sky-400 uppercase ml-1">Invited</span></span>
+              <span><b id="statConfirmed" class="text-base font-black text-amber-300">0</b><span class="text-[8px] font-bold text-amber-400 uppercase ml-1">Confirmed</span></span>
+            </div>
+          </div>
+
+          <!-- Chip 4: Gifts & Cash -->
+          <div class="bg-emerald-900 text-white p-3 rounded-xl shadow-sm flex flex-col justify-between" title="Gift and cash summary">
+            <div class="flex items-center justify-between">
+              <span class="text-[9px] font-bold uppercase tracking-wide text-emerald-300">Gifts & Cash</span>
+              <i class="fa-solid fa-gift text-emerald-300 text-xs opacity-80"></i>
+            </div>
+            <div class="mt-1.5">
+              <div class="text-xl sm:text-2xl font-black text-white leading-none truncate">₹<span id="statTotalCash">0</span></div>
+              <div class="text-[9px] text-emerald-300 font-semibold mt-1.5"><b id="statGiftsCount" class="text-white">0</b> gifts · Avg ₹<b id="statAvgGift" class="text-white">0</b></div>
+            </div>
+          </div>
+
         </div>
       </div>
 
@@ -2324,9 +2316,9 @@
         }
       }
 
-      document.getElementById('chipTitleHeadcount').textContent = (val === 'All') 
-        ? 'Pending / Invited / Confirmed / Total Count' 
-        : `${val}: Pending / Invited / Confirmed / Total`;
+      document.getElementById('chipTitleHeadcount').textContent = (val === 'All')
+        ? 'All Functions'
+        : val;
 
       renderDashboard();
       renderFilteredHistory();
