@@ -803,20 +803,29 @@
             </div>
           </div>
 
-          <div class="pt-2 border-t border-indigo-800/80 space-y-1 text-xs">
-            <div class="flex items-center gap-2 bg-indigo-950/60 px-2.5 py-1 rounded-lg border border-indigo-800">
-              <span class="text-[9px] font-bold uppercase text-indigo-300 w-14">Planned</span>
-              <span class="text-blue-300 font-bold">G: <b id="statGents" class="text-white">0</b></span>
-              <span class="text-pink-300 font-bold">L: <b id="statLadies" class="text-white">0</b></span>
-              <span class="text-amber-300 font-bold">K: <b id="statKids" class="text-white">0</b></span>
-              <span class="text-emerald-300 font-black ml-auto">T: <b id="statPlannedTotal" class="text-white">0</b></span>
+          <div class="pt-2 border-t border-indigo-800/80 space-y-1.5 text-xs">
+            <!-- Planned: de-emphasized reference numbers -->
+            <div class="flex items-center gap-2 px-2.5 py-1">
+              <span class="text-[8px] font-bold uppercase text-indigo-400 w-12 tracking-wide shrink-0">Planned</span>
+              <span class="text-[10px] text-indigo-300">G:<b id="statGents" class="text-indigo-200 font-bold ml-0.5">0</b></span>
+              <span class="text-[10px] text-indigo-300">L:<b id="statLadies" class="text-indigo-200 font-bold ml-0.5">0</b></span>
+              <span class="text-[10px] text-indigo-300">K:<b id="statKids" class="text-indigo-200 font-bold ml-0.5">0</b></span>
+              <span class="text-[10px] font-bold text-indigo-300 ml-auto">T: <b id="statPlannedTotal" class="text-indigo-100">0</b></span>
             </div>
-            <div class="flex items-center gap-2 bg-emerald-950/60 px-2.5 py-1 rounded-lg border border-emerald-800">
-              <span class="text-[9px] font-bold uppercase text-emerald-300 w-14">Actual</span>
-              <span class="text-blue-300 font-bold">G: <b id="statActualGents" class="text-white">0</b></span>
-              <span class="text-pink-300 font-bold">L: <b id="statActualLadies" class="text-white">0</b></span>
-              <span class="text-amber-300 font-bold">K: <b id="statActualKids" class="text-white">0</b></span>
-              <span class="text-emerald-300 font-black ml-auto">T: <b id="statActualTotal" class="text-white">0</b></span>
+
+            <!-- Actual: the number that matters most, made prominent -->
+            <div class="flex items-center gap-2.5 bg-emerald-400/10 px-3 py-2 rounded-lg border border-emerald-400/40">
+              <div class="flex items-center gap-1 shrink-0">
+                <i class="fa-solid fa-circle-check text-emerald-400 text-[11px]"></i>
+                <span class="text-[9px] font-black uppercase text-emerald-300 tracking-wide">Actual</span>
+              </div>
+              <span class="text-[11px] font-bold text-blue-200">G:<b id="statActualGents" class="text-white text-sm ml-0.5">0</b></span>
+              <span class="text-[11px] font-bold text-pink-200">L:<b id="statActualLadies" class="text-white text-sm ml-0.5">0</b></span>
+              <span class="text-[11px] font-bold text-amber-200">K:<b id="statActualKids" class="text-white text-sm ml-0.5">0</b></span>
+              <span class="ml-auto flex items-baseline gap-1 shrink-0">
+                <span class="text-[8px] font-bold text-emerald-300 uppercase">Total</span>
+                <b id="statActualTotal" class="text-xl font-black text-emerald-300 leading-none">0</b>
+              </span>
             </div>
           </div>
         </div>
